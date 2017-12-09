@@ -1,6 +1,7 @@
 ## XTR Toolbox
 Tool to optimize Windows
 
+![Alt text](XTR_main_screenshot.png "Screenshot of the main window")
 ## Features:
 #### Quick Tools:
 - Rebuild Icon Cache
