@@ -2,6 +2,10 @@
 Tool to optimize Windows
 
 ![Alt text](XTR_main_screenshot.png "Screenshot of the main window")
+## Requirements:
+- Windows 7, 8.1, 10 (32, 64 bits)
+- .Net Framework: 4.6.2+
+
 ## Features:
 #### Quick Tools:
 - Rebuild Icon Cache
