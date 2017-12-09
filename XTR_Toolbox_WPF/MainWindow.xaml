@@ -99,7 +99,7 @@
                         Height="Auto" Margin="5" />
             </Grid>
         </GroupBox>
-        <StatusBar x:Name="StatusBar" Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
+        <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
                    Grid.Column="0" Grid.Row="2">
             <TextBlock FontFamily="Roboto" FontSize="16" Margin="5,0,0,0">
                 <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://goo.gl/zEgLR6"

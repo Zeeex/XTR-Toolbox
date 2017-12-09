@@ -22,7 +22,7 @@
             <ColumnDefinition Width="41*" />
             <ColumnDefinition Width="222" />
         </Grid.ColumnDefinitions>
-        <Button x:Name="BtnAnalyze" Margin="10,8,10,10" Click="BtnAnalyze_Click" Grid.Column="1"
+        <Button Margin="10,8,10,10" Click="BtnAnalyze_Click" Grid.Column="1"
                 Grid.Row="2"
                 Height="Auto">
             <StackPanel Orientation="Horizontal">
@@ -37,7 +37,7 @@
                 </Canvas>
             </StackPanel>
         </Button>
-        <Button x:Name="BtnClean" Margin="10,8,10,10" Click="BtnClean_Click" Grid.Column="3"
+        <Button Margin="10,8,10,10" Click="BtnClean_Click" Grid.Column="3"
                 Grid.Row="2" Height="Auto" FontSize="16" FontWeight="Bold">
             <StackPanel Orientation="Horizontal">
                 <Canvas Width="45" Height="20">
