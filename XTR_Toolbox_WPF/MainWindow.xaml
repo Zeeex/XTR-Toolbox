@@ -1,0 +1,118 @@
+﻿<Window x:Class="XTR_Toolbox.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="XTR Toolbox 1.0" Height="385" Width="560"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.FontWeight="Medium"
+        TextElement.FontSize="14"
+        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+        WindowStartupLocation="CenterScreen" Closed="Window_Closed" ResizeMode="NoResize" Icon="settings.ico">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="200*" />
+            <RowDefinition Height="110*" />
+            <RowDefinition Height="30*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130*" />
+            <ColumnDefinition Width="130*" />
+        </Grid.ColumnDefinitions>
+        <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10,10,10,23" Padding="5,8"
+                  Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+            <GroupBox.Header>
+                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                           FontSize="16">
+                    Quick Repairs
+                </TextBlock>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+                <Button Content="Rebuild Icon Cache" Click="BtnIconCacheCleaner_Click" Margin="5" Height="Auto" />
+                <Button Content="Reload DWM" Grid.Row="1" Click="BtnDWMResterter_Click" Margin="5" Height="Auto" />
+                <Button Content="Reset Event Logs" Grid.Row="2" Click="BtnEventsCleaner_Click" Margin="5" Height="Auto" />
+            </Grid>
+        </GroupBox>
+        <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10,0,10,20" Padding="5,8"
+                  Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+            <GroupBox.Header>
+                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                           FontSize="16">
+                    Windows (8.1, 10) Tools
+                </TextBlock>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+                <Button x:Name="BtnWinApps" Content="Remove Windows Apps" Click="BtnMultiWindowOpener" Height="Auto"
+                        Margin="5" />
+            </Grid>
+        </GroupBox>
+        <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10,10,10,23" Padding="5,8"
+                  Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+            <GroupBox.Header>
+                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                           FontSize="16">
+                    Other Tools
+                </TextBlock>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+                <Button x:Name="BtnAutoruns" Content="Autoruns Manager..." Click="BtnMultiWindowOpener" Height="Auto"
+                        Margin="5" />
+                <Button x:Name="BtnServices" Content="Services Manager..." Grid.Row="1" Click="BtnMultiWindowOpener"
+                        Height="Auto" Margin="5" />
+                <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Grid.Row="2"
+                        Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
+            </Grid>
+        </GroupBox>
+        <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10,0,10,20" Padding="5,8"
+                  Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+            <GroupBox.Header>
+                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                           FontSize="16">
+                    Cleanup Tools
+                </TextBlock>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+                <Button x:Name="BtnCleaner" Content="File Scanner (Cleaner)..." Click="BtnMultiWindowOpener"
+                        Height="Auto" Margin="5" />
+            </Grid>
+        </GroupBox>
+        <StatusBar x:Name="StatusBar" Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
+                   Grid.Column="0" Grid.Row="2">
+            <TextBlock FontFamily="Roboto" FontSize="16" Margin="5,0,0,0">
+                <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://goo.gl/zEgLR6"
+                           Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
+                    https://xtrtoolbox.blogspot.com/
+                </Hyperlink>
+            </TextBlock>
+        </StatusBar>
+    </Grid>
+    <Window.CommandBindings>
+        <CommandBinding Command="Close" Executed="OnCloseExecuted" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Command="Close" Key="Escape" />
+    </Window.InputBindings>
+</Window>
