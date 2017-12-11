@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="XTR Toolbox 1.0" Height="385" Width="560"
+        Title="XTR Toolbox 1.01" Height="385" Width="560"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.FontWeight="Medium"
@@ -55,7 +55,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
-                <Button x:Name="BtnWinApps" Content="Remove Windows Apps" Click="BtnMultiWindowOpener" Height="Auto"
+                <Button x:Name="BtnWinApps" Content="Manage Windows Apps..." Click="BtnMultiWindowOpener" Height="Auto"
                         Margin="5" />
             </Grid>
         </GroupBox>

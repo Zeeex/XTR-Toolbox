@@ -1,9 +1,8 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTR_Toolbox", "XTR_Toolbox_WPF\XTR_Toolbox.csproj", "{B588FFEF-D1D0-4D2B-AE7C-ABB619E50848}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTR_Toolbox", "XTR_Toolbox\XTR_Toolbox.csproj", "{B588FFEF-D1D0-4D2B-AE7C-ABB619E50848}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -19,13 +19,13 @@
             <RowDefinition />
             <RowDefinition Height="55" />
         </Grid.RowDefinitions>
-        <RichTextBox x:Name="RtbHostsFile" Background="Black" Foreground="White" FontFamily="Segoe UI"
-                     Block.LineHeight="2" FontSize="14" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto">
-            <FlowDocument />
-        </RichTextBox>
-        <Button x:Name="BtnHostsSave" Content="Save Hosts" Margin="10,10,5,10" Click="BtnHostsSave_Click"
+        <TextBox x:Name="TbHostsFile" Background="Black" Foreground="White" FontFamily="Segoe UI"
+                 FontSize="14" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
+                 AcceptsReturn="True" VerticalContentAlignment="Stretch" />
+        <Button x:Name="BtnHostsSave" Content="Save Hosts" Margin="10,10,5,10" Click="BtnHostsManage_Click"
                 IsEnabled="False" Grid.Row="1" Grid.Column="1" Height="Auto" />
-        <Button Content="Reset Hosts" Margin="5,10,10,10" Click="BtnHostsReset_Click" Grid.Row="1" Grid.Column="2"
+        <Button x:Name="BtnHostsReset" Content="Reset Hosts" Margin="5,10,10,10" Click="BtnHostsManage_Click"
+                Grid.Row="1" Grid.Column="2"
                 Height="Auto" FontSize="14" />
         <CheckBox Content="Dark Theme" HorizontalAlignment="Left" Margin="10,0,0,18" VerticalAlignment="Bottom"
                   Checked="CheckBox_Checked" IsChecked="True" Unchecked="CheckBox_Unchecked" FontSize="18" Grid.Row="1"
