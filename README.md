@@ -1,7 +1,13 @@
-## XTR Toolbox
-Tool to optimize Windows
+<h1 align="center">
+XTR Toolbox
+</h1>
+<p align="center">
+Tool to tweak, clean and optimize Windows.
+<br>
+<br>
+<img src="XTR_main_screenshot.png">
+</p>
 
-![Alt text](XTR_main_screenshot.png "Screenshot of the main window")
 ## Requirements:
 - Windows 7, 8.1, 10 (32, 64 bits)
 - .Net Framework: 4.6.2+
@@ -29,3 +35,6 @@ Supports:
 - Extension Search / Clean
 
 Many more to come in future...
+
+## Download and Changelog:
+Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
