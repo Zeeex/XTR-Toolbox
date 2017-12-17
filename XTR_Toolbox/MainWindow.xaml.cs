@@ -30,6 +30,8 @@ namespace XTR_Toolbox
                 window = new Window4();
             else if (Equals(sender, BtnCleaner))
                 window = new Window5();
+            else if (Equals(sender, BtnSoftware))
+                window = new Window6();
             window.ShowDialog();
         }
 
@@ -142,15 +144,5 @@ namespace XTR_Toolbox
 
         private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e) =>
             Process.Start(e.Uri.AbsoluteUri);
-
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            foreach (Window w in Application.Current.Windows)
-            {
-                if (!Equals(w.DataContext, this))
-                    w.Close();
-            }
-        }
     }
 }

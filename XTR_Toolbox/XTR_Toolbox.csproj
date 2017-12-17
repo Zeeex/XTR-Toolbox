@@ -95,6 +95,9 @@
     <Compile Include="W5_Cleanup.xaml.cs">
       <DependentUpon>W5_Cleanup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="W6_Software.xaml.cs">
+      <DependentUpon>W6_Software.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -124,6 +127,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="W5_Cleanup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="W6_Software.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

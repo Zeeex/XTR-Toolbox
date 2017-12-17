@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Hosts File Editor" Height="576" Width="630"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -22,11 +23,27 @@
         <TextBox x:Name="TbHostsFile" Background="Black" Foreground="White" FontFamily="Segoe UI"
                  FontSize="14" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
                  AcceptsReturn="True" VerticalContentAlignment="Stretch" />
-        <Button x:Name="BtnHostsSave" Content="Save Hosts" Margin="10,10,5,10" Click="BtnHostsManage_Click"
-                IsEnabled="False" Grid.Row="1" Grid.Column="1" Height="Auto" />
-        <Button x:Name="BtnHostsReset" Content="Reset Hosts" Margin="5,10,10,10" Click="BtnHostsManage_Click"
+        <Button x:Name="BtnHostsSave" Margin="10,10,5,10" Click="BtnHostsManage_Click"
+                IsEnabled="False" Grid.Row="1" Grid.Column="1" Height="Auto" FontSize="16">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="ContentSave" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Save Hosts
+                </TextBlock>
+            </StackPanel>
+        </Button>
+        <Button x:Name="BtnHostsReset" Margin="5,10,10,10" Click="BtnHostsManage_Click"
                 Grid.Row="1" Grid.Column="2"
-                Height="Auto" FontSize="14" />
+                Height="Auto" FontSize="16">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="Replay" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Reset Hosts
+                </TextBlock>
+            </StackPanel>
+        </Button>
         <CheckBox Content="Dark Theme" HorizontalAlignment="Left" Margin="10,0,0,18" VerticalAlignment="Bottom"
                   Checked="CheckBox_Checked" IsChecked="True" Unchecked="CheckBox_Unchecked" FontSize="18" Grid.Row="1"
                   Grid.Column="0" />

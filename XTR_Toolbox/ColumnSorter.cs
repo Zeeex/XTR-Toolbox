@@ -13,8 +13,7 @@ namespace XTR_Toolbox
         private static readonly Geometry DescGeometry =
             Geometry.Parse("M 0 0 L 3.5 4 L 7 0 Z");
 
-        public SortAdorner(UIElement element, ListSortDirection dir)
-            : base(element)
+        public SortAdorner(UIElement element, ListSortDirection dir) : base(element)
         {
             Direction = dir;
         }
@@ -24,7 +23,7 @@ namespace XTR_Toolbox
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-
+            
             if (AdornedElement.RenderSize.Width < 20)
                 return;
 
@@ -34,12 +33,12 @@ namespace XTR_Toolbox
                 (AdornedElement.RenderSize.Height - 5) / 2
             );
             drawingContext.PushTransform(transform);
-
+            
             Geometry geometry = AscGeometry;
             if (Direction == ListSortDirection.Descending)
                 geometry = DescGeometry;
             drawingContext.DrawGeometry(Brushes.Black, null, geometry);
-
+            
             drawingContext.Pop();
         }
     }

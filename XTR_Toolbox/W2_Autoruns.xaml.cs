@@ -16,7 +16,7 @@ namespace XTR_Toolbox
 {
     public partial class Window2
     {
-        private static readonly ObservableCollection<RunItem> AutorunsList = new ObservableCollection<RunItem>();
+        private readonly ObservableCollection<RunItem> _autorunsList = new ObservableCollection<RunItem>();
 
         private static readonly string[] GroupName =
             {"All Users", "Current User", "All Users (x64)", "Invalid (Broken)"};
@@ -27,10 +27,9 @@ namespace XTR_Toolbox
         public Window2()
         {
             InitializeComponent();
-            AutorunsList.Clear();
             AutorunsScan();
             DataContext = new RunItem();
-            LvAutoruns.ItemsSource = AutorunsList;
+            LvAutoruns.ItemsSource = _autorunsList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
             if (view.Groups?.Count.ToString() == null)
             {
@@ -39,7 +38,7 @@ namespace XTR_Toolbox
             }
         }
 
-        private static void AutorunsScan()
+        private void AutorunsScan()
         {
             int groupNum = 0;
             HashSet<string> brokenRun = new HashSet<string>();
@@ -71,7 +70,7 @@ namespace XTR_Toolbox
             {
                 List<string> output = brokenRun.ToList(); // .NET 4.0
                 foreach (string outputItem in output)
-                    AutorunsList.Add(new RunItem
+                    _autorunsList.Add(new RunItem
                     {
                         Name = outputItem,
                         Path = "",
@@ -180,11 +179,11 @@ namespace XTR_Toolbox
             registryViewHklm64.Close();
             foreach (RunItem item in collDelete)
             {
-                AutorunsList.Remove(item);
+                _autorunsList.Remove(item);
             }
         }
 
-        private static void GetEntries(RegistryKey entryKey, RegistryKey runKey, string groupName,
+        private void GetEntries(RegistryKey entryKey, RegistryKey runKey, string groupName,
             ISet<string> brokenRun)
         {
             try
@@ -212,7 +211,7 @@ namespace XTR_Toolbox
                             cleanValue =
                                 Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + cleanValue);
                         }
-                        AutorunsList.Add(new RunItem
+                        _autorunsList.Add(new RunItem
                         {
                             Name = runName,
                             Path = Environment.ExpandEnvironmentVariables(cleanValue),
@@ -237,10 +236,10 @@ namespace XTR_Toolbox
 
         private void LvAutoruns_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems.Count > 0)
-                BtnDisable.IsEnabled = BtnEnable.IsEnabled = BtnDelete.IsEnabled = true;
-            else if (e.RemovedItems.Count > 0 && ((ListView) sender).SelectedItems.Count == 0)
-                BtnDisable.IsEnabled = BtnEnable.IsEnabled = BtnDelete.IsEnabled = false;
+            ListView lV = ((ListView) sender);
+            BtnDelete.IsEnabled = lV.SelectedItems.Count > 0;
+            BtnEnable.IsEnabled = BtnDisable.IsEnabled =
+                lV.SelectedItems.Cast<RunItem>().All(item => item.Group != GroupName[GroupName.Length - 1]);
         }
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)

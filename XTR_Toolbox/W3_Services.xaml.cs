@@ -14,18 +14,19 @@ namespace XTR_Toolbox
 {
     public partial class Window3
     {
-        private static readonly List<ServiceItem> ServicesList = new List<ServiceItem>();
+        private readonly List<ServiceItem> _servicesList = new List<ServiceItem>();
         private SortAdorner _listViewSortAdorner;
 
         private GridViewColumnHeader _listViewSortCol;
+        private int _numRunning;
 
         public Window3()
         {
             InitializeComponent();
-            ServicesList.Clear();
             PopulateServices();
+            TbRunNum.Text = _numRunning.ToString();
             DataContext = new ServiceItem();
-            LvServices.ItemsSource = ServicesList;
+            LvServices.ItemsSource = _servicesList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
             view.Filter = UserFilter;
             TxtSearch.Focus();
@@ -48,7 +49,7 @@ namespace XTR_Toolbox
             return tempStartup;
         }
 
-        private static void PopulateServices()
+        private void PopulateServices()
         {
             foreach (ServiceController service in ServiceController.GetServices())
             {
@@ -59,22 +60,24 @@ namespace XTR_Toolbox
                     array[1] = service.DisplayName;
                     array[2] = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
                     array[3] = GetStartupValue(service);
+                    _servicesList.Add(new ServiceItem
+                    {
+                        Name = array[0],
+                        Full = array[1],
+                        Status = array[2],
+                        Startup = array[3]
+                    });
+                    if (array[2] == "Running")
+                        _numRunning++;
                 }
                 catch
                 {
                     // ignored
                 }
-                ServicesList.Add(new ServiceItem
-                {
-                    Name = array[0],
-                    Full = array[1],
-                    Status = array[2],
-                    Startup = array[3]
-                });
             }
         }
 
-        private static void ServiceRestarter(string serviceName, bool serviceRestart)
+        private void ServiceRestarter(string serviceName, bool serviceRestart)
         {
             ServiceController serviceController = new ServiceController(serviceName);
             try
@@ -84,11 +87,13 @@ namespace XTR_Toolbox
                 {
                     serviceController.Stop();
                     serviceController.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(6));
+                    _numRunning--;
                 }
                 if (serviceRestart)
                 {
                     serviceController.Start();
                     serviceController.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(6));
+                    _numRunning++;
                 }
             }
             catch
@@ -123,10 +128,17 @@ namespace XTR_Toolbox
             {
                 string serviceName = listItem.Name;
                 if (Equals(sender, Start))
+                {
                     ServiceRestarter(serviceName, true);
+                    TbRunNum.Text = _numRunning.ToString();
+                }
                 else if (Equals(sender, Stop))
+                {
                     ServiceRestarter(serviceName, false);
+                    TbRunNum.Text = _numRunning.ToString();
+                }
                 else
+                {
                     using (RegistryKey setStartValue =
                         Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\services\" + serviceName, true))
                     {
@@ -152,6 +164,7 @@ namespace XTR_Toolbox
                             setStartValue?.SetValue("Start", startValue, RegistryValueKind.DWord);
                         setStartValue?.Close();
                     }
+                }
                 ServiceController service = new ServiceController(serviceName);
                 listItem.Status = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
                 listItem.Startup = GetStartupValue(service);

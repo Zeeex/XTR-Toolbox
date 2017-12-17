@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Batch Autoruns Manager" Height="480" Width="750"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -51,12 +52,36 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="BtnEnable" Content="Enable" Margin="10,10,5,10" Click="BtnChangeState_Click" Grid.Row="1"
-                Grid.Column="0" Height="Auto" IsEnabled="False" />
-        <Button x:Name="BtnDisable" Content="Disable" Margin="5,10,10,10" Click="BtnChangeState_Click" Grid.Row="1"
-                Grid.Column="1" Height="Auto" IsEnabled="False" />
-        <Button x:Name="BtnDelete" Content="Delete" Margin="10" Click="BtnDelete_Click" Grid.Row="1" Grid.Column="3"
-                Height="Auto" IsEnabled="False" />
+        <Button x:Name="BtnEnable" Margin="10,10,5,10" Click="BtnChangeState_Click" Grid.Row="1"
+                Grid.Column="0" Height="Auto" IsEnabled="False" FontSize="16">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="Check" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Enable
+                </TextBlock>
+            </StackPanel>
+        </Button>
+        <Button x:Name="BtnDisable" Margin="5,10,10,10" Click="BtnChangeState_Click" Grid.Row="1"
+                Grid.Column="1" Height="Auto" IsEnabled="False" FontSize="16">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="BlockHelper" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Disable
+                </TextBlock>
+            </StackPanel>
+        </Button>
+        <Button x:Name="BtnDelete" Margin="10" Click="BtnDelete_Click" Grid.Row="1" Grid.Column="3"
+                Height="Auto" IsEnabled="False" FontSize="16">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="Delete" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Delete
+                </TextBlock>
+            </StackPanel>
+        </Button>
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />

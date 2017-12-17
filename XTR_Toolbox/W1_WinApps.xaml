@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Manage Windows Apps" Height="515" Width="555"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -36,10 +37,26 @@
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
         </ListBox>
-        <Button x:Name="BtnDelApps" Content="Uninstall Selected Apps" Grid.Row="2" Grid.Column="0"
-                FontSize="14" FontWeight="Bold" Click="BtnProcessApps_Click" Margin="10,10,5,10" Height="Auto" />
-        <Button x:Name="BtnRepApps" Content="Reinstall All Apps" Grid.Row="2" Grid.Column="1"
-                FontSize="14" FontWeight="Bold" Click="BtnProcessApps_Click" Margin="5,10,10,10" Height="Auto" />
+        <Button x:Name="BtnDelApps" Grid.Row="2" Grid.Column="0"
+                FontSize="16" FontWeight="Bold" Click="BtnProcessApps_Click" Margin="10,10,5,10" Height="Auto">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="Delete" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Uninstall Selected Apps
+                </TextBlock>
+            </StackPanel>
+        </Button>
+        <Button x:Name="BtnRepApps" Grid.Row="2" Grid.Column="1"
+                FontSize="16" FontWeight="Bold" Click="BtnProcessApps_Click" Margin="5,10,10,10" Height="Auto">
+            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                <materialDesign:PackIcon Kind="BackupRestore" Width="20" Height="20" Margin="0,0,10,0" />
+                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
+                           Margin="0,1,0,0">
+                    Reinstall All Apps
+                </TextBlock>
+            </StackPanel>
+        </Button>
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />

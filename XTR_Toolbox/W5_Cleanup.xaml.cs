@@ -15,9 +15,9 @@ namespace XTR_Toolbox
 {
     public partial class Window5
     {
-        private static readonly ObservableCollection<CleanItem> CleanList = new ObservableCollection<CleanItem>();
-        private static readonly List<CheckBoxCustom> DirList = new List<CheckBoxCustom>();
-        private static readonly List<CheckBoxCustom> TypeList = new List<CheckBoxCustom>();
+        private readonly ObservableCollection<CleanItem> _cleanList = new ObservableCollection<CleanItem>();
+        private readonly List<CheckBoxSidebar> _dirList = new List<CheckBoxSidebar>();
+        private readonly List<CheckBoxSidebar> _typeList = new List<CheckBoxSidebar>();
         private readonly string _extDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         private readonly string[] _fixedDirArray =
@@ -37,16 +37,13 @@ namespace XTR_Toolbox
         public Window5()
         {
             InitializeComponent();
-            DirList.Clear();
-            TypeList.Clear();
-            CleanList.Clear();
             FillSidebar();
-            LbDir.ItemsSource = DirList;
-            LbType.ItemsSource = TypeList;
-            LvCleaner.ItemsSource = CleanList;
+            LbDir.ItemsSource = _dirList;
+            LbType.ItemsSource = _typeList;
+            LvCleaner.ItemsSource = _cleanList;
         }
 
-        private static void FillSidebar()
+        private void FillSidebar()
         {
             string[] dirsList =
             {
@@ -60,7 +57,7 @@ namespace XTR_Toolbox
             {
                 "Temp Files (.tmp)",
                 "Cache Files (.cache)",
-                "Crash Dumb Files (.dmp)",
+                "Crash Dump Files (.dmp)",
                 "System Logs (.log)",
                 "Backup Files (.bak)",
                 "Shortcut Files (.lnk)",
@@ -68,11 +65,10 @@ namespace XTR_Toolbox
                 "Win Installer Files (.msi)"
             };
             foreach (string adder in dirsList)
-                DirList.Add(new CheckBoxCustom {Text = adder});
+                _dirList.Add(new CheckBoxSidebar { Text = adder });
             foreach (string adder in typeList)
-                TypeList.Add(new CheckBoxCustom {Text = adder});
+                _typeList.Add(new CheckBoxSidebar { Text = adder });
         }
-
 
         private static IEnumerable<string> GetDirectoryFilesLoop(string root, IEnumerable<string> types, int depth,
             bool isSteam)
@@ -135,9 +131,9 @@ namespace XTR_Toolbox
         {
             List<string> dirList = new List<string>();
             // DIR ENUM ====
-            for (int index = 0; index < DirList.Count; index++)
+            for (int index = 0; index < _dirList.Count; index++)
             {
-                CheckBoxCustom item = DirList[index];
+                CheckBoxSidebar item = _dirList[index];
                 if (!item.Checked) continue;
                 dirList.Add(_fixedDirArray[index]);
             }
@@ -146,10 +142,10 @@ namespace XTR_Toolbox
                 dirList.Add(_extDir);
             // TYPE ENUM ====
             List<string> typeList = new List<string> {"*"};
-            if (TypeList.Any(item => item.Checked))
+            if (_typeList.Any(item => item.Checked))
             {
                 typeList.Clear();
-                typeList.AddRange(TypeList.Where(item => item.Checked)
+                typeList.AddRange(_typeList.Where(item => item.Checked)
                     .Select(item => item.Text)
                     .Select(tempClean =>
                         "*" + tempClean.Substring(tempClean.IndexOf("(.", StringComparison.Ordinal) + 1).TrimEnd(')')));
@@ -160,7 +156,8 @@ namespace XTR_Toolbox
                 return;
             }
             // DEFAULT VALUES =====
-            CleanList.Clear();
+            ((Button) sender).IsEnabled = false;
+            _cleanList.Clear();
             int totalSize = 0;
             int scanDepth = CbBoxLevel.SelectedIndex == CbBoxLevel.Items.Count - 1
                 ? 20
@@ -184,7 +181,7 @@ namespace XTR_Toolbox
                     {
                         string cleanedPath = fileFull.Replace(oneDir, "").TrimStart('\\');
                         float fileSize = new FileInfo(fileFull).Length / 1024 + 1;
-                        CleanList.Add(new CleanItem
+                        _cleanList.Add(new CleanItem
                         {
                             Path = cleanedPath,
                             Size = fileSize + " KB",
@@ -204,8 +201,9 @@ namespace XTR_Toolbox
                 }
             }
             sw.Stop();
+            ((Button) sender).IsEnabled = true;
             float mSec = sw.ElapsedMilliseconds;
-            LabelScanValue.Content = mSec < 100
+            LabelScanValue.Content = mSec < 1000
                 ? mSec + " ms"
                 : (mSec / 1000.00).ToString("0.00") + " sec";
             ((GridView) LvCleaner.View).Columns[0].Header =
@@ -215,11 +213,7 @@ namespace XTR_Toolbox
 
         private void BtnClean_Click(object sender, EventArgs e)
         {
-            if (LvCleaner.SelectedItems.Count < 1)
-            {
-                MessageBox.Show(@"Select at least one entry to delete.");
-                return;
-            }
+            ((Button) sender).IsEnabled = false;
             List<CleanItem> bindDelete = new List<CleanItem>();
             foreach (CleanItem checkedItem in LvCleaner.SelectedItems)
             {
@@ -238,7 +232,7 @@ namespace XTR_Toolbox
                 }
             }
             foreach (CleanItem d in bindDelete)
-                CleanList.Remove(d);
+                _cleanList.Remove(d);
         }
 
         private void CheckBoxAll_Checked(object sender, RoutedEventArgs e)
@@ -246,11 +240,11 @@ namespace XTR_Toolbox
             switch (((CheckBox) sender).Name)
             {
                 case nameof(CbDir):
-                    foreach (CheckBoxCustom t in DirList)
+                    foreach (CheckBoxSidebar t in _dirList)
                         t.Checked = true;
                     break;
                 case nameof(CbType):
-                    foreach (CheckBoxCustom t in TypeList)
+                    foreach (CheckBoxSidebar t in _typeList)
                         t.Checked = true;
                     break;
             }
@@ -261,11 +255,11 @@ namespace XTR_Toolbox
             switch (((CheckBox) sender).Name)
             {
                 case nameof(CbDir):
-                    foreach (CheckBoxCustom t in DirList)
+                    foreach (CheckBoxSidebar t in _dirList)
                         t.Checked = false;
                     break;
                 case nameof(CbType):
-                    foreach (CheckBoxCustom t in TypeList)
+                    foreach (CheckBoxSidebar t in _typeList)
                         t.Checked = false;
                     break;
             }
@@ -274,10 +268,13 @@ namespace XTR_Toolbox
         private void LbSidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.RemovedItems.Count != 0 || e.AddedItems.Count == 0) return;
-            CheckBoxCustom t = (CheckBoxCustom) e.AddedItems[0];
+            CheckBoxSidebar t = (CheckBoxSidebar) e.AddedItems[0];
             t.Checked = !t.Checked;
             LbDir.SelectedIndex = LbType.SelectedIndex = -1;
         }
+
+        private void LvCleaner_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
+            BtnClean.IsEnabled = ((ListView) sender).SelectedItems.Count > 0;
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
         {
@@ -303,7 +300,7 @@ namespace XTR_Toolbox
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
 
-        private class CheckBoxCustom : INotifyPropertyChanged
+        private class CheckBoxSidebar : INotifyPropertyChanged
         {
             private bool _checked;
 

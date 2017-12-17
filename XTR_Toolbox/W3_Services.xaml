@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Batch Services Manager (Context menu to manage)" Height="561.5" Width="845"
+        Title="Batch Services Manager (Configure with context menu)" Height="565" Width="860"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -12,23 +12,24 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
-            <RowDefinition />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <ListView x:Name="LvServices" Margin="0" Grid.Row="1">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem x:Name="Start" Header="Sta_rt Service" Click="MenuItem_Click" />
-                    <MenuItem x:Name="Stop" Header="_Stop Service" Click="MenuItem_Click" />
+                    <MenuItem x:Name="Start" Click="MenuItem_Click" Header="Start Service" />
+                    <MenuItem x:Name="Stop" Click="MenuItem_Click" Header="Stop Service" />
                     <Separator />
-                    <MenuItem x:Name="Disable" Header="_Disable" Click="MenuItem_Click" />
-                    <MenuItem x:Name="Manual" Header="_Manual" Click="MenuItem_Click" />
-                    <MenuItem x:Name="Auto" Header="_Automatic" Click="MenuItem_Click" />
-                    <MenuItem x:Name="AutoDelayed" Header="Aut_o (Delayed)" Click="MenuItem_Click" />
+                    <MenuItem x:Name="Disable" Click="MenuItem_Click" Header="Disable" />
+                    <MenuItem x:Name="Manual" Click="MenuItem_Click" Header="Manual" />
+                    <MenuItem x:Name="Auto" Click="MenuItem_Click" Header="Automatic" />
+                    <MenuItem x:Name="AutoDelayed" Click="MenuItem_Click" Header="Auto (Delayed)" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="200">
+                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="220">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Service Name</GridViewColumnHeader>
                         </GridViewColumn.Header>
@@ -51,10 +52,18 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox x:Name="TxtSearch" Grid.Row="0" Height="24" Margin="185,6,10,0" TextWrapping="Wrap" TabIndex="0"
-                 FontSize="14" TextChanged="TxtSearch_TextChanged" AcceptsTab="True" VerticalAlignment="Top" />
-        <Label Grid.Row="0" Content="Quick &quot;Full Name&quot; Search:" HorizontalAlignment="Left" Margin="10,7,0,0"
+        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="185,7,10,0" TextWrapping="Wrap" TabIndex="0"
+                 FontSize="14" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Top" />
+        <Label Grid.Row="0" Content="Quick &quot;Full Name&quot; Filter:" HorizontalAlignment="Left" Margin="10,7,0,0"
                VerticalAlignment="Top" FontSize="14" />
+        <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
+                   Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                   FontFamily="Roboto" FontSize="16">
+            <TextBlock Margin="5,0,0,0">Services Shown:</TextBlock>
+            <TextBlock Text="{Binding ElementName=LvServices, Path=Items.Count}" Margin="5,0,0,0" />
+            <TextBlock Margin="50,0,0,0">Running:</TextBlock>
+            <TextBlock x:Name="TbRunNum" Margin="5,0,0,0" />
+        </StatusBar>
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />

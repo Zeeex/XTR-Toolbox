@@ -5,24 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="XTR Toolbox 1.01" Height="385" Width="560"
+        Title="XTR Toolbox 1.1" Height="406" Width="560"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.FontWeight="Medium"
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" Closed="Window_Closed" ResizeMode="NoResize" Icon="settings.ico">
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="settings.ico">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="200*" />
-            <RowDefinition Height="110*" />
-            <RowDefinition Height="30*" />
+            <RowDefinition Height="234" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="130*" />
-            <ColumnDefinition Width="130*" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10,10,10,23" Padding="5,8"
+        <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
@@ -42,7 +42,7 @@
                 <Button Content="Reset Event Logs" Grid.Row="2" Click="BtnEventsCleaner_Click" Margin="5" Height="Auto" />
             </Grid>
         </GroupBox>
-        <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10,0,10,20" Padding="5,8"
+        <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
@@ -59,7 +59,7 @@
                         Margin="5" />
             </Grid>
         </GroupBox>
-        <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10,10,10,23" Padding="5,8"
+        <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
@@ -73,16 +73,19 @@
                     <RowDefinition Height="40" />
                     <RowDefinition Height="40" />
                     <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
                 <Button x:Name="BtnAutoruns" Content="Autoruns Manager..." Click="BtnMultiWindowOpener" Height="Auto"
                         Margin="5" />
                 <Button x:Name="BtnServices" Content="Services Manager..." Grid.Row="1" Click="BtnMultiWindowOpener"
                         Height="Auto" Margin="5" />
-                <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Grid.Row="2"
+                <Button x:Name="BtnSoftware" Content="Software Manager..." Grid.Row="2"
+                        Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
+                <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Grid.Row="3"
                         Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
             </Grid>
         </GroupBox>
-        <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10,0,10,20" Padding="5,8"
+        <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
