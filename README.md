@@ -24,6 +24,7 @@ Tool to tweak, clean and optimize Windows.
 #### Other Tools:
 - Batch Autoruns Manager
 - Batch Services Manager
+- Batch Software Manager
 - Hosts File Editor / Manager
 
 #### Cleanup Tools: File Cleaner / Scanner 
