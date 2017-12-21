@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="XTR Toolbox 1.1" Height="406" Width="560"
+        Title="XTR Toolbox 1.2" Height="406" Width="560"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.FontWeight="Medium"
@@ -24,12 +24,15 @@
         </Grid.ColumnDefinitions>
         <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
-                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                           FontSize="16">
-                    Quick Repairs
-                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
+                    <TextBlock FontSize="16">
+                        Quick Repairs
+                    </TextBlock>
+                </StackPanel>
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>
@@ -44,12 +47,15 @@
         </GroupBox>
         <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
-                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                           FontSize="16">
-                    Windows (8.1, 10) Tools
-                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
+                    <TextBlock FontSize="16">
+                        Windows (8.1, 10) Tools
+                    </TextBlock>
+                </StackPanel>
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>
@@ -61,12 +67,15 @@
         </GroupBox>
         <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
-                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                           FontSize="16">
-                    Other Tools
-                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,-3,5,0" />
+                    <TextBlock FontSize="16">
+                        Other Tools
+                    </TextBlock>
+                </StackPanel>
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>
@@ -87,12 +96,15 @@
         </GroupBox>
         <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,8"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
-                <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                           FontSize="16">
-                    Cleanup Tools
-                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,-3,5,0" />
+                    <TextBlock FontSize="16">
+                        Cleanup Tools
+                    </TextBlock>
+                </StackPanel>
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 
@@ -29,7 +31,7 @@ namespace XTR_Toolbox
             DataContext = new SoftwareItem();
             LvSoftware.ItemsSource = _softwareList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
-            view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            view.SortDescriptions.Add(new SortDescription("DateInstalled", ListSortDirection.Descending));
             view.Filter = UserFilter;
             TxtSearch.Focus();
         }
@@ -113,6 +115,7 @@ namespace XTR_Toolbox
                         string regName = subKey.GetValue("DisplayName").ToString();
                         string regDate = subKey.GetValue("InstallDate", "").ToString();
                         string regSize = subKey.GetValue("EstimatedSize", "").ToString();
+                        string regIcon = subKey.GetValue("DisplayIcon", "").ToString();
                         string regUninstall = subKey.GetValue("UninstallString").ToString();
                         DateTime.TryParseExact(regDate, "yyyyMMdd", null, DateTimeStyles.None, out DateTime dd);
                         float.TryParse(regSize, out float regSizeNum);
@@ -131,12 +134,31 @@ namespace XTR_Toolbox
                                 : regSize.Length != 0
                                     ? regSize + " KB"
                                     : "";
+                        // ICO
+                        BitmapSource bmpSrc = null;
+                        if (!string.IsNullOrEmpty(regIcon))
+                        {
+                            int commaIndex = regIcon.IndexOf(",", StringComparison.Ordinal);
+                            if (commaIndex > 0)
+                            {
+                                regIcon = regIcon.Substring(0, commaIndex);
+                            }
+                            using (Icon sysicon = System.Drawing.Icon.ExtractAssociatedIcon(regIcon))
+                            {
+                                if (sysicon != null)
+                                {
+                                    bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle,
+                                        Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                                }
+                            }
+                        }
                         _softwareList.Add(new SoftwareItem
                         {
                             Name = regName + "  " + regVer,
                             Size = regSizeStr,
                             DateInstalled = dd.Date.Ticks != 0 ? dd.ToString("yyyy-MM-dd") : "",
-                            Uninstall = regUninstall
+                            Uninstall = regUninstall,
+                            Icon = bmpSrc
                         });
                     }
                     catch
@@ -164,6 +186,7 @@ namespace XTR_Toolbox
             public string DateInstalled { [UsedImplicitly] get; set; }
             public string Name { [UsedImplicitly] get; set; }
             public string Size { [UsedImplicitly] get; set; }
+            public BitmapSource Icon { [UsedImplicitly] get; set; }
             public string Uninstall { [UsedImplicitly] get; set; }
         }
     }

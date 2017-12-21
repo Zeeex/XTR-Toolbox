@@ -59,8 +59,10 @@
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                    FontFamily="Roboto" FontSize="16">
-            <TextBlock Margin="5,0,0,0">Services Shown:</TextBlock>
+            <TextBlock Margin="5,0,0,0">Filtered:</TextBlock>
             <TextBlock Text="{Binding ElementName=LvServices, Path=Items.Count}" Margin="5,0,0,0" />
+            <TextBlock Margin="50,0,0,0">Selected:</TextBlock>
+            <TextBlock Text="{Binding ElementName=LvServices, Path=SelectedItems.Count}" Margin="5,0,0,0" />
             <TextBlock Margin="50,0,0,0">Running:</TextBlock>
             <TextBlock x:Name="TbRunNum" Margin="5,0,0,0" />
         </StatusBar>

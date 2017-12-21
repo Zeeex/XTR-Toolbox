@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -9,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 
@@ -211,10 +213,25 @@ namespace XTR_Toolbox
                             cleanValue =
                                 Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + cleanValue);
                         }
+                        // ICO
+                        string cleanPath = Environment.ExpandEnvironmentVariables(cleanValue);
+                        BitmapSource bmpSrc = null;
+                        if (!string.IsNullOrEmpty(cleanPath))
+                        {
+                            using (Icon sysicon = System.Drawing.Icon.ExtractAssociatedIcon(cleanPath))
+                            {
+                                if (sysicon != null)
+                                {
+                                    bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle,
+                                        Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                                }
+                            }
+                        }
                         _autorunsList.Add(new RunItem
                         {
                             Name = runName,
-                            Path = Environment.ExpandEnvironmentVariables(cleanValue),
+                            Icon = bmpSrc,
+                            Path = cleanPath,
                             Enabled = runValueBytes[0] == 02 ? "Yes" : "No",
                             Group = groupName
                         });
@@ -286,6 +303,7 @@ namespace XTR_Toolbox
             public string Group { [UsedImplicitly] get; set; }
             public string Name { [UsedImplicitly] get; set; }
             public string Path { [UsedImplicitly] get; set; }
+            public BitmapSource Icon { [UsedImplicitly] get; set; }
 
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
