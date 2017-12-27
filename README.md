@@ -3,7 +3,7 @@ XTR Toolbox
 </h1>
 <p align="center">
 Tool to tweak, clean and optimize Windows. 
-🚀 Extremely fast. 🚀
+<br>🚀 Extremely fast. 🚀
 <br>
 <br>
 <img src="XTR_main_screenshot.png">
