@@ -32,11 +32,22 @@ namespace XTR_Toolbox
                 window = new Window5();
             else if (Equals(sender, BtnSoftware))
                 window = new Window6();
-            window.ShowDialog();
+            else if (Equals(sender, BtnChrome))
+                window = new Window7();
+            try
+            {
+                window.ShowDialog();
+            }
+            catch
+            {
+                //ignored
+            }
         }
 
         private void BtnIconCacheCleaner_Click(object sender, RoutedEventArgs e)
         {
+            Button btnIconCleaner = (Button) sender;
+            btnIconCleaner.IsEnabled = false;
             try
             {
                 // KILL CURRENT EXPLORER(S) =======
@@ -45,7 +56,7 @@ namespace XTR_Toolbox
                     processKill.Kill();
                 }
                 // CLEANING CACHE =======
-                ProcessStartInfo startInfo = new ProcessStartInfo()
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = "cmd.exe",
@@ -71,15 +82,21 @@ namespace XTR_Toolbox
             {
                 MessageBox.Show("There was an error clearing Icon Cache: " + ex.Message);
             }
+            finally
+            {
+                btnIconCleaner.IsEnabled = true;
+            }
         }
 
         private void BtnDWMResterter_Click(object sender, RoutedEventArgs e)
         {
+            Button btnDwm = (Button) sender;
+            btnDwm.IsEnabled = false;
             try
             {
                 using (Process proc = new Process())
                 {
-                    ProcessStartInfo startInfo = new ProcessStartInfo()
+                    ProcessStartInfo startInfo = new ProcessStartInfo
                     {
                         WindowStyle = ProcessWindowStyle.Hidden,
                         FileName = "cmd.exe",
@@ -95,10 +112,16 @@ namespace XTR_Toolbox
             {
                 MessageBox.Show("There was an error restarting DWM: " + ex.Message);
             }
+            finally
+            {
+                btnDwm.IsEnabled = true;
+            }
         }
 
         private void BtnEventsCleaner_Click(object sender, RoutedEventArgs e)
         {
+            Button btnEvent = (Button) sender;
+            btnEvent.IsEnabled = false;
             string batpath = $@"{Environment.GetEnvironmentVariable("temp")}\Clean_EventLogs.bat";
             if (File.Exists(batpath))
                 File.Delete(batpath);
@@ -120,23 +143,86 @@ namespace XTR_Toolbox
                     sw.WriteLine("exit");
                 }
                 ProcessStartInfo startInfo = new ProcessStartInfo(batpath);
-                Process proc = new Process()
+                Process proc = new Process
                 {
                     StartInfo = startInfo
                 };
-                Button eventBtn = (Button) sender;
-                eventBtn.IsEnabled = false;
                 proc.Start();
                 proc.WaitForExit();
-                eventBtn.IsEnabled = true;
             }
-            catch
+            catch (Exception ex)
             {
-                //ignored
+                MessageBox.Show("There was an error clearing event logs: " + ex.Message);
             }
             finally
             {
                 File.Delete(batpath);
+                btnEvent.IsEnabled = true;
+            }
+        }
+
+        private void BtnRemoveTelemetry_Click(object sender, RoutedEventArgs e)
+        {
+            Button btnTelemetry = (Button) sender;
+            btnTelemetry.IsEnabled = false;
+            string[] updates =
+            {
+                "KB2976978",
+                "KB3075249",
+                "KB3080149",
+                "KB3021917",
+                "KB3022345",
+                "KB3068708",
+                "KB3044374",
+                "KB3035583",
+                "KB2990214",
+                "KB2952664",
+                "KB3075853",
+                "KB3065987",
+                "KB3050265",
+                "KB3075851",
+                "KB2902907"
+            };
+            MessageBoxResult mB = MessageBox.Show(
+                "This will remove Windows Updates related to telemetry in Windows 7 and 8.1. \n\nUpdates to uninstall:\n" +
+                string.Join("\n", updates) +
+                "\n\nAre you sure you want to do this?",
+                "Uninstall Telemetry Updates", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+            if (mB == MessageBoxResult.No)
+            {
+                btnTelemetry.IsEnabled = true;
+                return;
+            }
+            string batpath = $@"{Environment.GetEnvironmentVariable("temp")}\Uninstall_Telemetry_Updates.bat";
+            if (File.Exists(batpath))
+                File.Delete(batpath);
+            try
+            {
+                using (StreamWriter sw = File.CreateText(batpath))
+                {
+                    sw.WriteLine("@echo off");
+                    foreach (string up in updates)
+                    {
+                        sw.WriteLine("start /w wusa.exe /uninstall /kb:" + up.Replace("KB", "") + " /quiet /norestart");
+                    }
+                    sw.WriteLine("exit");
+                }
+                ProcessStartInfo startInfo = new ProcessStartInfo(batpath);
+                Process proc = new Process
+                {
+                    StartInfo = startInfo
+                };
+                proc.Start();
+                proc.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("There was an error uninstalling telemetry updates: " + ex.Message);
+            }
+            finally
+            {
+                File.Delete(batpath);
+                btnTelemetry.IsEnabled = true;
             }
         }
 

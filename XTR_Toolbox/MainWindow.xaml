@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="XTR Toolbox 1.2" Height="406" Width="560"
+        Title="XTR Toolbox 1.3" Height="439" Width="560"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.FontWeight="Medium"
@@ -53,16 +53,19 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
                     <materialDesign:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
                     <TextBlock FontSize="16">
-                        Windows (8.1, 10) Tools
+                        Privacy Tools
                     </TextBlock>
                 </StackPanel>
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
-                <Button x:Name="BtnWinApps" Content="Manage Windows Apps..." Click="BtnMultiWindowOpener" Height="Auto"
+                <Button x:Name="BtnWinApps" Content="Windows Apps Manager..." Click="BtnMultiWindowOpener" Height="Auto"
                         Margin="5" />
+                <Button Grid.Row="1" Content="Remove Telemetry Updates" Height="Auto"
+                        Margin="5" Click="BtnRemoveTelemetry_Click" />
             </Grid>
         </GroupBox>
         <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
@@ -109,8 +112,12 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
-                <Button x:Name="BtnCleaner" Content="File Scanner (Cleaner)..." Click="BtnMultiWindowOpener"
+                <Button x:Name="BtnCleaner" Content="Junk Files Cleaner..." Click="BtnMultiWindowOpener"
+                        Height="Auto" Margin="5" />
+                <Button Grid.Row="1" x:Name="BtnChrome" Content="Chrome Extensions Manager..."
+                        Click="BtnMultiWindowOpener"
                         Height="Auto" Margin="5" />
             </Grid>
         </GroupBox>

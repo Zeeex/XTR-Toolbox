@@ -2,7 +2,8 @@
 XTR Toolbox
 </h1>
 <p align="center">
-Tool to tweak, clean and optimize Windows.
+Tool to tweak, clean and optimize Windows. 
+🚀 Extremely fast. 🚀
 <br>
 <br>
 <img src="XTR_main_screenshot.png">
@@ -18,8 +19,9 @@ Tool to tweak, clean and optimize Windows.
 - Reload Desktop Windows Manager
 - Reset Event Logs
 
-#### Windows (8.1, 10) Tools:
+#### Privacy Tools:
 - Remove / Reinstall Windows Apps
+- Remove Telemety Updates for Win7, Win8.1
 
 #### Other Tools:
 - Batch Autoruns Manager
@@ -27,15 +29,16 @@ Tool to tweak, clean and optimize Windows.
 - Batch Software Manager
 - Hosts File Editor / Manager
 
-#### Cleanup Tools: File Cleaner / Scanner 
-Supports:
-- User and Windows Temporary Directories
-- Windows Installer Cache
-- Windows Update Cache
-- Steam Redistributable Packages
-- Extension Search / Clean
+#### Cleanup Tools: 
+- Junk Files Cleaner:
+  - User and Windows Temporary Directories
+  - Windows Installer Cache
+  - Windows Update Cache
+  - Steam Redistributable Packages
+  - Extension specific cleaner
+- Delete Chrome Extensions Manager
 
-Many more to come in future...
+Many more features to come in future...
 
 ## Download and Changelog:
 Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).

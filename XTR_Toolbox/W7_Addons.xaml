@@ -1,0 +1,53 @@
+﻿<Window x:Class="XTR_Toolbox.Window7"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Chrome Extensions Manager (Delete with context menu)" Height="724" Width="696"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="29" />
+        </Grid.RowDefinitions>
+        <ListView x:Name="LvAddons" Margin="0" Grid.RowSpan="1">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="Delete" Click="MenuItem_Click" Header="Delete" />
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="290">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Name</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Id}" Width="270">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="Id" Click="LvUsersColumnHeader_Click">ID</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
+                   Grid.Column="0" Grid.Row="1" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                   FontFamily="Roboto" FontSize="16">
+            <TextBlock Margin="5,0,0,0">Total:</TextBlock>
+            <TextBlock Text="{Binding ElementName=LvAddons, Path=Items.Count}" Margin="5,0,0,0" />
+            <TextBlock Margin="50,0,0,0">Selected:</TextBlock>
+            <TextBlock Text="{Binding ElementName=LvAddons, Path=SelectedItems.Count}" Margin="5,0,0,0" />
+        </StatusBar>
+    </Grid>
+    <Window.CommandBindings>
+        <CommandBinding Command="Close" Executed="OnCloseExecuted" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Command="Close" Key="Escape" />
+    </Window.InputBindings>
+</Window>

@@ -214,11 +214,11 @@ namespace XTR_Toolbox
         private void BtnClean_Click(object sender, EventArgs e)
         {
             ((Button) sender).IsEnabled = false;
-            List<CleanItem> bindDelete = new List<CleanItem>();
-            foreach (CleanItem checkedItem in LvCleaner.SelectedItems)
+            for (int index = LvCleaner.SelectedItems.Count - 1; index >= 0; index--)
             {
-                string combinedPath = Path.Combine(checkedItem.Group, checkedItem.Path);
-                bindDelete.Add(checkedItem);
+                CleanItem cItem = (CleanItem)LvCleaner.SelectedItems[index];
+                string combinedPath = Path.Combine(cItem.Group, cItem.Path);
+                _cleanList.Remove(cItem);
                 try
                 {
                     File.Delete(combinedPath);
@@ -230,9 +230,7 @@ namespace XTR_Toolbox
                 {
                     //ignored
                 }
-            }
-            foreach (CleanItem d in bindDelete)
-                _cleanList.Remove(d);
+            } 
         }
 
         private void CheckBoxAll_Checked(object sender, RoutedEventArgs e)
