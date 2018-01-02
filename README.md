@@ -21,7 +21,7 @@ Tool to tweak, clean and optimize Windows.
 
 #### Privacy Tools:
 - Remove / Reinstall Windows Apps
-- Remove Telemety Updates for Win7, Win8.1
+- Remove Telemetry Updates for Win7, Win8.1
 
 #### Other Tools:
 - Batch Autoruns Manager
@@ -36,7 +36,7 @@ Tool to tweak, clean and optimize Windows.
   - Windows Update Cache
   - Steam Redistributable Packages
   - Extension specific cleaner
-- Delete Chrome Extensions Manager
+- Chrome Extensions Manager
 
 Many more features to come in future...
 
