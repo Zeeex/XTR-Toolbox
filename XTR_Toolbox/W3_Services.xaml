@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Batch Services Manager (Configure with context menu)" Height="565" Width="860"
+        Title="Batch Services Manager" Height="610" Width="860"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -29,14 +29,14 @@
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="220">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Service Name</GridViewColumnHeader>
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Full}" Width="350">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Tag="Full" Click="LvUsersColumnHeader_Click">Full Name</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="220">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Service Name</GridViewColumnHeader>
                         </GridViewColumn.Header>
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Status}">
@@ -52,9 +52,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="185,7,10,0" TextWrapping="Wrap" TabIndex="0"
+        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="98,7,10,0" TextWrapping="Wrap" TabIndex="0"
                  FontSize="14" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Top" />
-        <Label Grid.Row="0" Content="Quick &quot;Full Name&quot; Filter:" HorizontalAlignment="Left" Margin="10,7,0,0"
+        <Label Grid.Row="0" Content="Quick Filter:" HorizontalAlignment="Left" Margin="10,7,0,0"
                VerticalAlignment="Top" FontSize="14" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"

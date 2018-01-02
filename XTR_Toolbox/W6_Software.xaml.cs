@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
 using Microsoft.Win32;
@@ -22,6 +21,7 @@ namespace XTR_Toolbox
     {
         private readonly ObservableCollection<SoftwareItem> _softwareList = new ObservableCollection<SoftwareItem>();
         private SortAdorner _listViewSortAdorner;
+
         private GridViewColumnHeader _listViewSortCol;
 
         public Window6()
@@ -36,38 +36,117 @@ namespace XTR_Toolbox
             TxtSearch.Focus();
         }
 
-        private static bool ManageSoftware(string uninstallPath)
+        private static string FormatSize(string regSize)
+        {
+            float.TryParse(regSize, out float regSizeNum);
+            return regSize.Length > 6
+                ? (regSizeNum / 1024 / 1024).ToString("0.0") + " GB"
+                : regSize.Length > 3
+                    ? (regSizeNum / 1024).ToString("0.00") + " " +
+                      "MB" +
+                      "" +
+                      ""
+                    : regSize.Length != 0
+                        ? regSize + " KB"
+                        : "";
+        }
+
+        private static string GetMsiIconPath(string guid)
+        {
+            int startIndex = guid.IndexOf('{') + 1;
+            guid = guid.Substring(startIndex, guid.IndexOf('}') - startIndex).Replace("-", "");
+            int[] pattern = {8, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2};
+            StringBuilder returnString = new StringBuilder();
+            int index = 0;
+            foreach (int length in pattern)
+            {
+                returnString.Append(guid.Substring(index, length).Reverse().ToArray());
+                index += length;
+            }
+
+            string decodedGuid = returnString.ToString();
+            string icoPath =
+                Registry.ClassesRoot.OpenSubKey(@"Installer\Products\" + decodedGuid)?.GetValue("ProductIcon", "")
+                    .ToString() ?? Registry.CurrentUser
+                    .OpenSubKey(@"Software\Microsoft\Installer\Products\" + decodedGuid)
+                    ?.GetValue("ProductIcon", "").ToString();
+            return File.Exists(icoPath) ? icoPath : null;
+        }
+
+        private static string GetVersion(RegistryKey subKey, string regName)
+        {
+            if ("0123456789".Contains(regName.ElementAt(regName.Length - 1))) return "";
+            string regVer = subKey.GetValue("DisplayVersion", "").ToString();
+            return regName.Contains(regVer) ? "" : regVer;
+        }
+
+        private static string ParseDate(string regDate, string regRemv)
+        {
+            DateTime.TryParseExact(regDate, "yyyyMMdd", null, DateTimeStyles.None, out DateTime dd);
+            string date;
+            if (dd.Date.Ticks != 0)
+            {
+                date = dd.ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                regRemv = regRemv.Substring(0, regRemv.LastIndexOf("\\", StringComparison.Ordinal));
+                date = Directory.Exists(regRemv) ? Directory.GetLastAccessTime(regRemv).ToString("yyyy-MM-dd") : "";
+            }
+
+            return date;
+        }
+
+        private static bool Uninstall(string uninstallPath, bool isMsi)
         {
             int separatorIndex = uninstallPath.IndexOf(".exe", StringComparison.Ordinal);
             if (separatorIndex < 1)
-            {
-                MessageBox.Show("Invalid uninstall entry");
                 return false;
-            }
             string arg = uninstallPath.Substring(separatorIndex + 4);
             uninstallPath = uninstallPath.Substring(0, separatorIndex + 4);
-            bool msi = uninstallPath.StartsWith("MsiExec");
-            if (msi)
+            if (isMsi)
                 arg = arg.Replace("/I", "/X");
-            if (!File.Exists(uninstallPath) && !msi) return true;
-            int exitCode = StartProc(uninstallPath, arg);
-            return (!msi || exitCode == 0) && !File.Exists(uninstallPath);
+            if (!File.Exists(uninstallPath) && !isMsi) return true;
+            int exitCode = Shared.StartProc(uninstallPath, arg);
+            return (!isMsi || exitCode == 0) && !File.Exists(uninstallPath);
         }
 
-        private static int StartProc(string uninstallPath, string arg)
+        private void GetRegItems(RegistryKey key)
         {
-            using (Process proc = new Process())
-            {
-                ProcessStartInfo startInfo = new ProcessStartInfo
+            if (key == null) return;
+            foreach (string subkeyName in key.GetSubKeyNames())
+                using (RegistryKey subKey = key.OpenSubKey(subkeyName))
                 {
-                    FileName = uninstallPath,
-                    Arguments = arg
-                };
-                proc.StartInfo = startInfo;
-                proc.Start();
-                proc.WaitForExit();
-                return proc.ExitCode;
-            }
+                    if (subKey == null) continue;
+                    try
+                    {
+                        string regName = subKey.GetValue("DisplayName", "").ToString();
+                        string regRemv = subKey.GetValue("UninstallString", "").ToString().Replace("\"", "");
+                        if (regName == "" || regRemv == "") continue;
+                        string regDate = subKey.GetValue("InstallDate", "").ToString();
+                        string regSize = subKey.GetValue("EstimatedSize", "").ToString();
+                        string regIcon = subKey.GetValue("DisplayIcon", "").ToString().Replace("\"", "");
+                        BitmapSource ico = Shared.PathToIcon(regIcon);
+                        bool isMsi = regRemv.Contains("MsiExec");
+                        if (ico == null && isMsi)
+                            ico = Shared.PathToIcon(GetMsiIconPath(regRemv));
+                        _softwareList.Add(new SoftwareItem
+                        {
+                            Name = regName + "  " + GetVersion(subKey, regName),
+                            Size = FormatSize(regSize),
+                            DateInstalled = ParseDate(regDate, regRemv),
+                            Uninstall = regRemv,
+                            Icon = ico,
+                            Msi = isMsi
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error: " + ex.Message);
+                    }
+                }
+
+            key.Close();
         }
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
@@ -94,8 +173,9 @@ namespace XTR_Toolbox
         {
             for (int index = LvSoftware.SelectedItems.Count - 1; index >= 0; index--)
             {
-                SoftwareItem listItem = (SoftwareItem) LvSoftware.SelectedItems[index];
-                if (Equals(sender, Uninstall) && ManageSoftware(listItem.Uninstall)) _softwareList.Remove(listItem);
+                SoftwareItem sItem = (SoftwareItem) LvSoftware.SelectedItems[index];
+                if (Equals(sender, MenuUninstall) && Uninstall(sItem.Uninstall, sItem.Msi))
+                    _softwareList.Remove(sItem);
             }
         }
 
@@ -104,80 +184,15 @@ namespace XTR_Toolbox
         private void PopulateSoftware()
         {
             const string uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-            RegistryKey bitView64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            FillList(Registry.LocalMachine.OpenSubKey(uninstallKey));
-            FillList(bitView64.OpenSubKey(uninstallKey));
-        }
-
-        private void FillList(RegistryKey key)
-        {
-            if (key == null) return;
-            foreach (string subkeyName in key.GetSubKeyNames())
-                using (RegistryKey subKey = key.OpenSubKey(subkeyName))
-                {
-                    if (subKey == null) continue;
-                    try
-                    {
-                        string regName = subKey.GetValue("DisplayName").ToString();
-                        string regDate = subKey.GetValue("InstallDate", "").ToString();
-                        string regSize = subKey.GetValue("EstimatedSize", "").ToString();
-                        string regUninstall = subKey.GetValue("UninstallString").ToString().Replace("\"", "");
-                        DateTime.TryParseExact(regDate, "yyyyMMdd", null, DateTimeStyles.None, out DateTime dd);
-                        float.TryParse(regSize, out float regSizeNum);
-                        string regSizeStr = regSize.Length > 6
-                            ? (regSizeNum / 1024 / 1024).ToString("0.0") + " GB"
-                            : regSize.Length > 3
-                                ? (regSizeNum / 1024).ToString("0.00") + " MB"
-                                : regSize.Length != 0
-                                    ? regSize + " KB"
-                                    : "";
-                        _softwareList.Add(new SoftwareItem
-                        {
-                            Name = regName + "  " + GetVersion(subKey, regName),
-                            Size = regSizeStr,
-                            DateInstalled = dd.Date.Ticks != 0 ? dd.ToString("yyyy-MM-dd") : "",
-                            Uninstall = regUninstall,
-                            Icon = GetIcon(subKey)
-                        });
-                    }
-                    catch (NullReferenceException)
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: " + ex.Message);
-                    }
-                }
-            key.Close();
-        }
-
-
-        private static string GetVersion(RegistryKey subKey, string regName)
-        {
-            if ("0123456789".Contains(regName.ElementAt(regName.Length - 1))) return "";
-            string regVer = subKey.GetValue("DisplayVersion", "").ToString();
-            return regName.Contains(regVer) ? "" : regVer;
-        }
-
-        private static BitmapSource GetIcon(RegistryKey subKey)
-        {
-            string regIcon = subKey.GetValue("DisplayIcon", "").ToString().Trim('\"');
-            if (string.IsNullOrEmpty(regIcon))
-                return null;
-            if (!File.Exists(regIcon))
+            try
             {
-                int commaIndex = regIcon.IndexOf("\"", StringComparison.Ordinal);
-                if (commaIndex >= 0)
-                    regIcon = regIcon.Substring(0, commaIndex);
+                GetRegItems(Registry.LocalMachine.OpenSubKey(uninstallKey));
+                GetRegItems(RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
+                    .OpenSubKey(uninstallKey));
             }
-            if (!File.Exists(regIcon))
-                return null;
-            using (Icon sysicon = System.Drawing.Icon.ExtractAssociatedIcon(regIcon))
+            catch (SecurityException ex)
             {
-                return sysicon == null
-                    ? null
-                    : Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty,
-                        BitmapSizeOptions.FromEmptyOptions());
+                MessageBox.Show("No permission to read registry. Error: " + ex.Message);
             }
         }
 
@@ -196,10 +211,46 @@ namespace XTR_Toolbox
         private class SoftwareItem
         {
             public string DateInstalled { [UsedImplicitly] get; set; }
+            public BitmapSource Icon { [UsedImplicitly] get; set; }
             public string Name { [UsedImplicitly] get; set; }
             public string Size { [UsedImplicitly] get; set; }
-            public BitmapSource Icon { [UsedImplicitly] get; set; }
             public string Uninstall { [UsedImplicitly] get; set; }
+            public bool Msi { [UsedImplicitly] get; set; }
         }
+
+        private void MsiCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>().All(item => item.Msi);
+        }
+
+        private void MsiCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            for (int index = LvSoftware.SelectedItems.Count - 1; index >= 0; index--)
+            {
+                SoftwareItem sItem = (SoftwareItem) LvSoftware.SelectedItems[index];
+                string msiExec = sItem.Uninstall;
+                int separatorIndex = msiExec.IndexOf(".exe", StringComparison.Ordinal);
+                if (separatorIndex < 1)
+                    return;
+                string arg = msiExec.Substring(separatorIndex + 4);
+                msiExec = msiExec.Substring(0, separatorIndex + 4);
+                switch (e.Parameter)
+                {
+                    case "Change":
+                        arg = arg.Replace("/X", "/I");
+                        Shared.StartProc(msiExec, arg);
+                        break;
+                    case "Repair":
+                        arg = arg.Replace("/X", "/I").Replace("/I", "/F ");
+                        Shared.StartProc(msiExec, arg);
+                        break;
+                }
+            }
+        }
+    }
+
+    public static class MsiCommands
+    {
+        public static readonly RoutedUICommand Msi = new RoutedUICommand();
     }
 }

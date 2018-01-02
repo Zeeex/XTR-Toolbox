@@ -81,6 +81,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ColumnSorter.cs" />
+    <Compile Include="Shared.cs" />
     <Compile Include="W1_WinApps.xaml.cs">
       <DependentUpon>W1_WinApps.xaml</DependentUpon>
     </Compile>

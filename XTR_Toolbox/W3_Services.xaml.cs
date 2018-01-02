@@ -28,25 +28,24 @@ namespace XTR_Toolbox
             DataContext = new ServiceItem();
             LvServices.ItemsSource = _servicesList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
+            view.SortDescriptions.Add(new SortDescription("Full", ListSortDirection.Ascending));
             view.Filter = UserFilter;
             TxtSearch.Focus();
         }
 
-        private static string GetStartupValue(ServiceController service)
+        private static string GetStartType(ServiceController service)
         {
-            string tempStartup = service.StartType.ToString(); // .Net 4.6.1
-            if (tempStartup != "Automatic") return tempStartup;
+            string startType = service.StartType.ToString();
+            if (startType != "Automatic") return startType;
             using (RegistryKey delayedValue =
                 Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\services\" + service.ServiceName))
             {
-                object keyValue = delayedValue?.GetValue("DelayedAutostart");
-                if (keyValue == null) return tempStartup;
-                int.TryParse(keyValue.ToString(), out int delayed);
-                if (delayed == 1)
-                    tempStartup += " (Delayed)";
-                delayedValue.Close();
+                string dAuto = delayedValue?.GetValue("DelayedAutostart", "").ToString();
+                if (dAuto == "1")
+                    startType += " (Delayed)";
             }
-            return tempStartup;
+
+            return startType;
         }
 
         private void PopulateServices()
@@ -59,7 +58,7 @@ namespace XTR_Toolbox
                     array[0] = service.ServiceName;
                     array[1] = service.DisplayName;
                     array[2] = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
-                    array[3] = GetStartupValue(service);
+                    array[3] = GetStartType(service);
                     _servicesList.Add(new ServiceItem
                     {
                         Name = array[0],
@@ -74,31 +73,6 @@ namespace XTR_Toolbox
                 {
                     // ignored
                 }
-            }
-        }
-
-        private void ServiceRestarter(string serviceName, bool serviceRestart)
-        {
-            ServiceController serviceController = new ServiceController(serviceName);
-            try
-            {
-                if (serviceController.Status.Equals(ServiceControllerStatus.Running) ||
-                    serviceController.Status.Equals(ServiceControllerStatus.StartPending))
-                {
-                    serviceController.Stop();
-                    serviceController.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(6));
-                    _numRunning--;
-                }
-                if (serviceRestart)
-                {
-                    serviceController.Start();
-                    serviceController.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(6));
-                    _numRunning++;
-                }
-            }
-            catch
-            {
-                // ignored
             }
         }
 
@@ -124,50 +98,49 @@ namespace XTR_Toolbox
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            foreach (ServiceItem listItem in LvServices.SelectedItems)
+            string menuItem = ((MenuItem) sender).Name;
+            foreach (ServiceItem serviceItem in LvServices.SelectedItems)
             {
-                string serviceName = listItem.Name;
-                if (Equals(sender, Start))
+                string serviceName = serviceItem.Name;
+                switch (menuItem)
                 {
-                    ServiceRestarter(serviceName, true);
-                    TbRunNum.Text = _numRunning.ToString();
+                    case nameof(Start):
+                        Shared.ServiceRestarter(serviceName, true);
+                        _numRunning++;
+                        TbRunNum.Text = _numRunning.ToString();
+                        break;
+                    case nameof(Stop):
+                        Shared.ServiceRestarter(serviceName, false);
+                        _numRunning--;
+                        TbRunNum.Text = _numRunning.ToString();
+                        break;
+                    default:
+                        string servType = null, delayed = null;
+                        switch (menuItem)
+                        {
+                            case nameof(Disable):
+                                servType = "4";
+                                break;
+                            case nameof(Manual):
+                                servType = "3";
+                                break;
+                            case nameof(Auto):
+                                servType = "2";
+                                delayed = "0";
+                                break;
+                            case nameof(AutoDelayed):
+                                servType = "2";
+                                delayed = "1";
+                                break;
+                        }
+
+                        Shared.ServiceStartTypeSet(serviceName, servType, delayed);
+                        break;
                 }
-                else if (Equals(sender, Stop))
-                {
-                    ServiceRestarter(serviceName, false);
-                    TbRunNum.Text = _numRunning.ToString();
-                }
-                else
-                {
-                    using (RegistryKey setStartValue =
-                        Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\services\" + serviceName, true))
-                    {
-                        string startValue = null;
-                        if (Equals(sender, Disable))
-                        {
-                            startValue = "4";
-                        }
-                        else if (Equals(sender, Manual))
-                        {
-                            startValue = "3";
-                        }
-                        else if (Equals(sender, Auto))
-                        {
-                            startValue = "2";
-                        }
-                        else if (Equals(sender, AutoDelayed))
-                        {
-                            startValue = "2";
-                            setStartValue?.SetValue("DelayedAutostart", 1, RegistryValueKind.DWord);
-                        }
-                        if (startValue != null)
-                            setStartValue?.SetValue("Start", startValue, RegistryValueKind.DWord);
-                        setStartValue?.Close();
-                    }
-                }
+
                 ServiceController service = new ServiceController(serviceName);
-                listItem.Status = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
-                listItem.Startup = GetStartupValue(service);
+                serviceItem.Status = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
+                serviceItem.Startup = GetStartType(service);
             }
         }
 
@@ -203,7 +176,6 @@ namespace XTR_Toolbox
                     NotifyPropertyChanged(nameof(Startup));
                 }
             }
-
 
             public string Status
             {

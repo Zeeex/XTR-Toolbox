@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="XTR Toolbox 1.3" Height="439" Width="560"
+        Title="XTR Toolbox 1.4" Height="442" Width="560"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.FontWeight="Medium"
@@ -30,7 +30,7 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
                     <materialDesign:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
                     <TextBlock FontSize="16">
-                        Quick Repairs
+                        Quick Tools
                     </TextBlock>
                 </StackPanel>
             </GroupBox.Header>
@@ -39,9 +39,10 @@
                     <RowDefinition Height="40" />
                     <RowDefinition Height="40" />
                     <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
-                <Button Content="Rebuild Icon Cache" Click="BtnIconCacheCleaner_Click" Margin="5" Height="Auto" />
-                <Button Content="Reload DWM" Grid.Row="1" Click="BtnDWMResterter_Click" Margin="5" Height="Auto" />
+                <Button Content="Rebuild Icon Cache" Click="BtnIconRebuild_Click" Margin="5" Height="Auto" />
+                <Button Content="Rebuild Font Cache" Grid.Row="1" Click="BtnFontRebuild_Click" Margin="5" Height="Auto" />
                 <Button Content="Reset Event Logs" Grid.Row="2" Click="BtnEventsCleaner_Click" Margin="5" Height="Auto" />
             </Grid>
         </GroupBox>
@@ -87,7 +88,7 @@
                     <RowDefinition Height="40" />
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
-                <Button x:Name="BtnAutoruns" Content="Autoruns Manager..." Click="BtnMultiWindowOpener" Height="Auto"
+                <Button x:Name="BtnAutoruns" Content="Startup Manager..." Click="BtnMultiWindowOpener" Height="Auto"
                         Margin="5" />
                 <Button x:Name="BtnServices" Content="Services Manager..." Grid.Row="1" Click="BtnMultiWindowOpener"
                         Height="Auto" Margin="5" />

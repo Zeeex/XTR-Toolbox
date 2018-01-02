@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Batch Software Manager (Uninstall with context menu)" Height="565" Width="860"
+        Title="Batch Software Manager" Height="620" Width="925"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -15,24 +17,39 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
-        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="100,7,10,0" TextWrapping="Wrap" TabIndex="0"
+        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="98,7,10,0" TextWrapping="Wrap" TabIndex="0"
                  FontSize="14" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Top" />
         <Label Grid.Row="0" Content="Quick Filter:" HorizontalAlignment="Left" Margin="10,7,0,0"
-               VerticalAlignment="Top" FontSize="14" />
+               VerticalAlignment="Top" />
         <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem x:Name="Uninstall" Click="MenuItem_Click" Header="Uninstall" />
+                    <MenuItem x:Name="MenuUninstall" Click="MenuItem_Click" Header="Uninstall">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="DeleteForever" Width="18" Height="18" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Command="self:MsiCommands.Msi" CommandParameter="Change" Header="Change">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Autorenew" Width="18" Height="18" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Command="self:MsiCommands.Msi" CommandParameter="Repair" Header="Repair">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Wrench" Width="18" Height="18" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn Width="600">
+                    <GridViewColumn Width="660">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData }">
-                                    <Image Source="{Binding Icon}" Height="16" Margin="0,0,5,0" />
-                                    <TextBlock Text="{Binding Name}" />
+                                    <Image Source="{Binding Icon}" Height="18" Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Name}" FontSize="14" />
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -45,7 +62,7 @@
                             <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click">Date Installed</GridViewColumnHeader>
                         </GridViewColumn.Header>
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Size}">
+                    <GridViewColumn DisplayMemberBinding="{Binding Size}" Width="90">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click">Size</GridViewColumnHeader>
                         </GridViewColumn.Header>
@@ -63,6 +80,7 @@
         </StatusBar>
     </Grid>
     <Window.CommandBindings>
+        <CommandBinding Command="self:MsiCommands.Msi" CanExecute="MsiCmd_CanExecute" Executed="MsiCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>

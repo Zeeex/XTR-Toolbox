@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -126,6 +125,7 @@ namespace XTR_Toolbox
                             hasProc = true;
                             printText.WriteLine("get-appxpackage " + winAppsList[index] + " | remove-appxpackage");
                         }
+
                         if (hasProc == false)
                         {
                             MessageBox.Show("Select an app to uninstall first.");
@@ -138,17 +138,8 @@ namespace XTR_Toolbox
                             @"Get-AppXPackage | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register ""$($_.InstallLocation)\AppXManifest.xml""}");
                     }
                 }
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    WindowStyle = ProcessWindowStyle.Normal,
-                    FileName = "powershell.exe",
-                    Arguments = "\"{ Set-ExecutionPolicy Bypass }; clear; & '" + psPath + "'\""
-                };
-                using (Process process = new Process {StartInfo = startInfo})
-                {
-                    process.Start();
-                    process.WaitForExit();
-                }
+
+                Shared.StartProc("powershell.exe", "\"{ Set-ExecutionPolicy Bypass }; clear; & '" + psPath + "'\"");
             }
             finally
             {

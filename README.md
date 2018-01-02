@@ -3,7 +3,7 @@ XTR Toolbox
 </h1>
 <p align="center">
 Tool to tweak, clean and optimize Windows. 
-<br>🚀 Extremely fast. 🚀
+<br>🚀 E<b>xtr</b>emely fast. 🚀
 <br>
 <br>
 <img src="XTR_main_screenshot.png">
@@ -16,7 +16,7 @@ Tool to tweak, clean and optimize Windows.
 ## Features:
 #### Quick Tools:
 - Rebuild Icon Cache
-- Reload Desktop Windows Manager
+- Rebuild Font Cache
 - Reset Event Logs
 
 #### Privacy Tools:

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -10,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
 using Microsoft.Win32;
@@ -19,7 +17,7 @@ namespace XTR_Toolbox
 {
     public partial class Window2
     {
-        private static readonly string[] GroupName =
+        private readonly string[] _groupName =
             {"All Users", "Current User", "All Users (x64)", "Invalid (Broken)"};
 
         private readonly ObservableCollection<RunItem> _autorunsList = new ObservableCollection<RunItem>();
@@ -35,11 +33,8 @@ namespace XTR_Toolbox
             DataContext = new RunItem();
             LvAutoruns.ItemsSource = _autorunsList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
-            if (view.Groups?.Count.ToString() == null)
-            {
-                PropertyGroupDescription groupDescription = new PropertyGroupDescription("Group");
-                view.GroupDescriptions.Add(groupDescription);
-            }
+            PropertyGroupDescription groupBind = new PropertyGroupDescription("Group");
+            view.GroupDescriptions.Add(groupBind);
         }
 
         private void AddBroken(IReadOnlyCollection<string> brokenItems, int groupNum)
@@ -52,7 +47,7 @@ namespace XTR_Toolbox
                     Name = outputItem,
                     Path = "",
                     Enabled = "",
-                    Group = GroupName[groupNum]
+                    Group = _groupName[groupNum]
                 });
         }
 
@@ -62,7 +57,7 @@ namespace XTR_Toolbox
             RegistryKey runInfo64 =
                 regView64.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32");
             if (keyInfo != null && runInfo64 != null)
-                GetEntries(keyInfo, runInfo64, GroupName[groupNum++]);
+                GetEntries(keyInfo, runInfo64, _groupName[groupNum++]);
         }
 
         private void AddHkcu(ref int groupNum)
@@ -72,7 +67,7 @@ namespace XTR_Toolbox
                 Registry.CurrentUser.OpenSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run");
             if (keyInfo != null && runInfo != null)
-                GetEntries(keyInfo, runInfo, GroupName[groupNum++]);
+                GetEntries(keyInfo, runInfo, _groupName[groupNum++]);
         }
 
         private void AddHkcu64(ref int groupNum, RegistryKey regView64)
@@ -81,7 +76,7 @@ namespace XTR_Toolbox
             RegistryKey runInfo64 =
                 regView64.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run");
             if (keyInfo64 != null && runInfo64 != null)
-                GetEntries(keyInfo64, runInfo64, GroupName[groupNum++]);
+                GetEntries(keyInfo64, runInfo64, _groupName[groupNum++]);
         }
 
         private void AutorunsScan()
@@ -94,9 +89,15 @@ namespace XTR_Toolbox
             AddBroken(_brokenRun, groupNum);
         }
 
-        private void BtnChangeState_Click(object sender, RoutedEventArgs e)
+        private void StateChangeCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            byte[] itemState = Equals(sender, BtnDisable)
+            e.CanExecute = LvAutoruns.SelectedItems.Cast<RunItem>()
+                .All(item => item.Group != _groupName[_groupName.Length - 1]);
+        }
+
+        private void StateChangeCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            byte[] itemState = Equals(e.Parameter, "Disable")
                 ? new byte[] {0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
                 : new byte[] {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             string[] runKeyList =
@@ -109,15 +110,16 @@ namespace XTR_Toolbox
                 foreach (RunItem itemToSet in LvAutoruns.SelectedItems)
                 {
                     if (itemToSet == null) continue;
-                    itemToSet.Enabled = Equals(sender, BtnDisable) ? "No" : "Yes";
+                    itemToSet.Enabled = Equals(e.Parameter, "Disable") ? "No" : "Yes";
                     RegistryKey startupKey;
-                    if (Equals(itemToSet.Group, GroupName[0]))
+                    if (Equals(itemToSet.Group, _groupName[0]))
                         startupKey = regView64.OpenSubKey(runKeyList[0], true);
-                    else if (Equals(itemToSet.Group, GroupName[1]))
+                    else if (Equals(itemToSet.Group, _groupName[1]))
                         startupKey = Registry.CurrentUser.OpenSubKey(runKeyList[1], true);
-                    else if (Equals(itemToSet.Group, GroupName[2]))
+                    else if (Equals(itemToSet.Group, _groupName[2]))
                         startupKey = regView64.OpenSubKey(runKeyList[1], true);
-                    else continue;
+                    else
+                        continue;
                     startupKey?.SetValue(itemToSet.Name, itemState, RegistryValueKind.Binary);
                     startupKey?.Close();
                 }
@@ -126,6 +128,10 @@ namespace XTR_Toolbox
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
+            MessageBoxResult mB = MessageBox.Show("Are you sure you want to delete selected item(s)?",
+                "Delete Confirmation",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (mB == MessageBoxResult.No) return;
             const string startKeyString = @"Software\Microsoft\Windows\CurrentVersion\Run";
             string[] runKeyList =
             {
@@ -142,23 +148,23 @@ namespace XTR_Toolbox
                         RegistryKey startupKey, runKey;
                         string nameAutorun = itemToDelete.Name;
                         if (string.IsNullOrEmpty(nameAutorun)) continue;
-                        if (Equals(itemToDelete?.Group, GroupName[0]))
+                        if (Equals(itemToDelete?.Group, _groupName[0]))
                         {
                             startupKey = Registry.LocalMachine.OpenSubKey(startKeyString, true);
                             runKey = regView64.OpenSubKey(runKeyList[0], true);
                         }
-                        else if (Equals(itemToDelete?.Group, GroupName[1]))
+                        else if (Equals(itemToDelete?.Group, _groupName[1]))
                         {
                             startupKey = Registry.CurrentUser.OpenSubKey(startKeyString, true);
                             runKey = Registry.CurrentUser.OpenSubKey(runKeyList[1], true);
                         }
-                        else if (Equals(itemToDelete?.Group, GroupName[2]))
+                        else if (Equals(itemToDelete?.Group, _groupName[2]))
                         {
                             startupKey = regView64.OpenSubKey(startKeyString, true);
                             runKey = regView64.OpenSubKey(runKeyList[1], true);
                         }
                         // INVALID LIST
-                        else if (Equals(itemToDelete?.Group, GroupName[GroupName.Length - 1]))
+                        else if (Equals(itemToDelete?.Group, _groupName[_groupName.Length - 1]))
                         {
                             foreach (string singleRun in runKeyList)
                             {
@@ -166,13 +172,16 @@ namespace XTR_Toolbox
                                 runKeyInvalid?.DeleteValue(nameAutorun, false);
                                 runKeyInvalid.Close();
                             }
+
                             RegistryKey runKeyInvalid1 = Registry.CurrentUser.OpenSubKey(runKeyList[1], true);
                             runKeyInvalid1?.DeleteValue(nameAutorun, false);
                             runKeyInvalid1.Close();
                             collDelete.Add(itemToDelete);
                             continue;
                         }
-                        else continue;
+                        else
+                            continue;
+
                         // DELETING VALID ENTRY
                         startupKey?.DeleteValue(nameAutorun, false);
                         runKey?.DeleteValue(nameAutorun, false);
@@ -185,6 +194,7 @@ namespace XTR_Toolbox
                         //ignored
                     }
             }
+
             foreach (RunItem item in collDelete)
                 _autorunsList.Remove(item);
         }
@@ -216,11 +226,12 @@ namespace XTR_Toolbox
                             cleanValue =
                                 Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + cleanValue);
                         }
+
                         string cleanPath = Environment.ExpandEnvironmentVariables(cleanValue);
                         _autorunsList.Add(new RunItem
                         {
                             Name = runName,
-                            Icon = GetIcon(cleanPath),
+                            Icon = Shared.PathToIcon(cleanPath),
                             Path = cleanPath,
                             Enabled = runValueBytes[0] == 02 ? "Yes" : "No",
                             Group = groupName
@@ -232,6 +243,7 @@ namespace XTR_Toolbox
                             _brokenRun.Add(runName);
                     }
                 }
+
                 entryKey.Close();
                 runKey.Close();
             }
@@ -239,27 +251,6 @@ namespace XTR_Toolbox
             {
                 MessageBox.Show(ex.Message);
             }
-        }
-
-        private static BitmapSource GetIcon(string cleanPath)
-        {
-            if (string.IsNullOrEmpty(cleanPath) || !File.Exists(cleanPath))
-                return null;
-            using (Icon sysicon = System.Drawing.Icon.ExtractAssociatedIcon(cleanPath))
-            {
-                return sysicon == null
-                    ? null
-                    : Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty,
-                        BitmapSizeOptions.FromEmptyOptions());
-            }
-        }
-
-        private void LvAutoruns_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ListView lV = (ListView) sender;
-            BtnDelete.IsEnabled = lV.SelectedItems.Count > 0;
-            BtnEnable.IsEnabled = BtnDisable.IsEnabled =
-                lV.SelectedItems.Cast<RunItem>().All(item => item.Group != GroupName[GroupName.Length - 1]);
         }
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
@@ -311,5 +302,10 @@ namespace XTR_Toolbox
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
+    }
+
+    public static class StartupCmd
+    {
+        public static readonly RoutedUICommand State = new RoutedUICommand();
     }
 }

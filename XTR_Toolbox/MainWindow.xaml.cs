@@ -38,127 +38,133 @@ namespace XTR_Toolbox
             {
                 window.ShowDialog();
             }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+
+        private void BtnIconRebuild_Click(object sender, RoutedEventArgs e)
+        {
+            Button btnIcoReb = (Button) sender;
+            btnIcoReb.IsEnabled = false;
+            try
+            {
+                string env = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                if (env == "") return;
+                foreach (Process proc in Process.GetProcessesByName("explorer"))
+                {
+                    proc.Kill();
+                }
+
+                try
+                {
+                    File.Delete(Path.Combine(env, "IconCache.db"));
+                }
+                catch
+                {
+                    //ignored
+                }
+
+                foreach (string f in Directory.GetFiles(
+                    Path.Combine(env, @"Microsoft\Windows\Explorer"), "iconcache*"))
+                {
+                    try
+                    {
+                        File.Delete(f);
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
+                }
+
+                if (Process.GetProcessesByName("explorer").Length == 0)
+                {
+                    Shared.StartProc("explorer.exe");
+                }
+            }
             catch
             {
                 //ignored
             }
+            finally
+            {
+                btnIcoReb.IsEnabled = true;
+            }
         }
 
-        private void BtnIconCacheCleaner_Click(object sender, RoutedEventArgs e)
+        private void BtnFontRebuild_Click(object sender, RoutedEventArgs e)
         {
-            Button btnIconCleaner = (Button) sender;
-            btnIconCleaner.IsEnabled = false;
+            Button btnFontReb = (Button) sender;
+            btnFontReb.IsEnabled = false;
+            const string servName = "FontCache";
             try
             {
-                // KILL CURRENT EXPLORER(S) =======
-                foreach (Process processKill in Process.GetProcessesByName("explorer"))
+                string env = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                Shared.ServiceStartTypeSet(servName, "4");
+                Shared.ServiceRestarter(servName, false);
+                Shared.StartProc("cmd.exe",
+                    @"/C icacls ""%WinDir%\ServiceProfiles\LocalService"" /grant ""%UserName%"":F /C /T /Q",
+                    ProcessWindowStyle.Hidden);
+                string font1 = Path.Combine(env, @"System32\FNTCACHE.DAT");
+                try
                 {
-                    processKill.Kill();
+                    File.Delete(font1);
                 }
-                // CLEANING CACHE =======
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                catch
                 {
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    FileName = "cmd.exe",
-                    Arguments = @"/C DEL %userprofile%\AppData\Local\IconCache.db && " +
-                                @"DEL %userprofile%\AppData\Local\Microsoft\Windows\Explorer\iconcache_*"
-                };
-                using (Process proc = new Process())
+                    //ignored
+                }
+
+                foreach (string f in Directory.GetFiles(
+                    Path.Combine(env, @"ServiceProfiles\LocalService\AppData\Local\FontCache"), "*FontCache*"))
                 {
-                    proc.StartInfo = startInfo;
-                    proc.Start();
-                    // EXPLORER START =======
-                    Process[] runningProcessByName = Process.GetProcessesByName("explorer");
-                    if (runningProcessByName.Length == 0)
+                    try
                     {
-                        startInfo.FileName = "explorer.exe";
-                        startInfo.Arguments = "";
-                        proc.StartInfo = startInfo;
-                        proc.Start();
+                        File.Delete(f);
+                    }
+                    catch
+                    {
+                        //ignored
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("There was an error clearing Icon Cache: " + ex.Message);
+                //ignored
             }
-            finally
-            {
-                btnIconCleaner.IsEnabled = true;
-            }
-        }
 
-        private void BtnDWMResterter_Click(object sender, RoutedEventArgs e)
-        {
-            Button btnDwm = (Button) sender;
-            btnDwm.IsEnabled = false;
-            try
-            {
-                using (Process proc = new Process())
-                {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
-                    {
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        FileName = "cmd.exe",
-                        Arguments = "/C taskkill /f /im dwm.exe && " +
-                                    "net stop uxsms && net start uxsms"
-                    };
-                    proc.StartInfo = startInfo;
-                    proc.Start();
-                    proc.WaitForExit();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("There was an error restarting DWM: " + ex.Message);
-            }
-            finally
-            {
-                btnDwm.IsEnabled = true;
-            }
+            Shared.ServiceStartTypeSet(servName, "2", "0");
+            Shared.ServiceRestarter(servName, true);
+            btnFontReb.IsEnabled = true;
         }
 
         private void BtnEventsCleaner_Click(object sender, RoutedEventArgs e)
         {
             Button btnEvent = (Button) sender;
             btnEvent.IsEnabled = false;
-            string batpath = $@"{Environment.GetEnvironmentVariable("temp")}\Clean_EventLogs.bat";
-            if (File.Exists(batpath))
-                File.Delete(batpath);
-            try
+            string batPath = Path.Combine(Path.GetTempPath(), "Clean_EventLogs.bat");
+            if (File.Exists(batPath))
+                File.Delete(batPath);
+            using (StreamWriter sw = File.CreateText(batPath))
             {
-                using (StreamWriter sw = File.CreateText(batpath))
-                {
-                    sw.WriteLine("@echo off");
-                    sw.WriteLine("FOR /F \"tokens=1,2*\" %%V IN ('bcdedit') DO SET adminTest=%%V");
-                    sw.WriteLine("IF (%adminTest%)==(Access) goto noAdmin");
-                    sw.WriteLine("for /F \"tokens=*\" %%G in ('wevtutil.exe el') DO (call :do_clear \"%%G\")");
-                    sw.WriteLine("echo.");
-                    sw.WriteLine("echo goto theEnd");
-                    sw.WriteLine(":do_clear");
-                    sw.WriteLine("echo clearing %1");
-                    sw.WriteLine("wevtutil.exe cl %1");
-                    sw.WriteLine("goto :eof");
-                    sw.WriteLine(":noAdmin");
-                    sw.WriteLine("exit");
-                }
-                ProcessStartInfo startInfo = new ProcessStartInfo(batpath);
-                Process proc = new Process
-                {
-                    StartInfo = startInfo
-                };
-                proc.Start();
-                proc.WaitForExit();
+                sw.WriteLine("@echo off");
+                sw.WriteLine("FOR /F \"tokens=1,2*\" %%V IN ('bcdedit') DO SET adminTest=%%V");
+                sw.WriteLine("IF (%adminTest%)==(Access) goto noAdmin");
+                sw.WriteLine("for /F \"tokens=*\" %%G in ('wevtutil.exe el') DO (call :do_clear \"%%G\")");
+                sw.WriteLine("echo.");
+                sw.WriteLine("echo goto theEnd");
+                sw.WriteLine(":do_clear");
+                sw.WriteLine("echo clearing %1");
+                sw.WriteLine("wevtutil.exe cl %1");
+                sw.WriteLine("goto :eof");
+                sw.WriteLine(":noAdmin");
+                sw.WriteLine("exit");
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("There was an error clearing event logs: " + ex.Message);
-            }
-            finally
-            {
-                File.Delete(batpath);
-                btnEvent.IsEnabled = true;
-            }
+
+            Shared.StartProc(batPath, exMsg: "There was an error clearing event logs.\n");
+            File.Delete(batPath);
+            btnEvent.IsEnabled = true;
         }
 
         private void BtnRemoveTelemetry_Click(object sender, RoutedEventArgs e)
@@ -193,37 +199,24 @@ namespace XTR_Toolbox
                 btnTelemetry.IsEnabled = true;
                 return;
             }
-            string batpath = $@"{Environment.GetEnvironmentVariable("temp")}\Uninstall_Telemetry_Updates.bat";
-            if (File.Exists(batpath))
-                File.Delete(batpath);
-            try
+
+            string batPath = Path.Combine(Path.GetTempPath(), "Uninstall_Telemetry_Updates.bat");
+            if (File.Exists(batPath))
+                File.Delete(batPath);
+            using (StreamWriter sw = File.CreateText(batPath))
             {
-                using (StreamWriter sw = File.CreateText(batpath))
+                sw.WriteLine("@echo off");
+                foreach (string up in updates)
                 {
-                    sw.WriteLine("@echo off");
-                    foreach (string up in updates)
-                    {
-                        sw.WriteLine("start /w wusa.exe /uninstall /kb:" + up.Replace("KB", "") + " /quiet /norestart");
-                    }
-                    sw.WriteLine("exit");
+                    sw.WriteLine("start /w wusa.exe /uninstall /kb:" + up.Replace("KB", "") + " /quiet /norestart");
                 }
-                ProcessStartInfo startInfo = new ProcessStartInfo(batpath);
-                Process proc = new Process
-                {
-                    StartInfo = startInfo
-                };
-                proc.Start();
-                proc.WaitForExit();
+
+                sw.WriteLine("exit");
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("There was an error uninstalling telemetry updates: " + ex.Message);
-            }
-            finally
-            {
-                File.Delete(batpath);
-                btnTelemetry.IsEnabled = true;
-            }
+
+            Shared.StartProc(batPath, exMsg: "There was an error uninstalling telemetry updates.\n");
+            File.Delete(batPath);
+            btnTelemetry.IsEnabled = true;
         }
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();

@@ -17,7 +17,7 @@ namespace XTR_Toolbox
     {
         private readonly List<AddonItem> _addonList = new List<AddonItem>();
 
-        private readonly string _chromeData = Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"),
+        private readonly string _chromeData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             @"Google\Chrome\User Data\");
 
         private readonly List<string> _chromeProfileNames = new List<string>();
@@ -45,16 +45,14 @@ namespace XTR_Toolbox
                 if (mB == MessageBoxResult.No) return false;
                 try
                 {
-                    foreach (Process processKill in Process.GetProcessesByName("chrome"))
-                    {
-                        processKill.Kill();
-                    }
+                    foreach (Process processKill in Process.GetProcessesByName("chrome")) processKill.Kill();
                 }
                 catch
                 {
                     return false;
                 }
             }
+
             try
             {
                 Directory.Delete(deletePath, true);
@@ -63,6 +61,7 @@ namespace XTR_Toolbox
             {
                 //ignored
             }
+
             return !Directory.Exists(deletePath);
         }
 
@@ -119,6 +118,7 @@ namespace XTR_Toolbox
                     MessageBox.Show("Error scanning for extensions.");
                     return;
                 }
+
                 string[] addonsIdDirs = Directory.GetDirectories(chromeAddonDir);
 
                 string secureJsonChrome = Path.Combine(_chromeData, prof, "Secure Preferences");

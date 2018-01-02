@@ -95,6 +95,7 @@ namespace XTR_Toolbox
                 catch (UnauthorizedAccessException)
                 {
                 }
+
             if (depth <= 0) return foundFiles;
             try
             {
@@ -107,6 +108,7 @@ namespace XTR_Toolbox
                         if (!dirPattern.Any(folder.Contains))
                             continue;
                     }
+
                     foundFiles.AddRange(GetDirectoryFilesLoop(folder, typeListArray, depth - 1, isSteam));
                 }
             }
@@ -116,6 +118,7 @@ namespace XTR_Toolbox
             catch (PathTooLongException)
             {
             }
+
             return foundFiles;
         }
 
@@ -137,6 +140,7 @@ namespace XTR_Toolbox
                 if (!item.Checked) continue;
                 dirList.Add(_fixedDirArray[index]);
             }
+
             int dirCount = dirList.Count;
             if (dirCount == 0)
                 dirList.Add(_extDir);
@@ -155,6 +159,7 @@ namespace XTR_Toolbox
                 MessageBox.Show(@"Select an option for searching.");
                 return;
             }
+
             // DEFAULT VALUES =====
             ((Button) sender).IsEnabled = false;
             _cleanList.Clear();
@@ -173,6 +178,7 @@ namespace XTR_Toolbox
                     isSteam = true;
                     // BENCHMARK - OLD STEAM SCAN .11-.13 , NEW .16-.18
                 }
+
                 if (!Directory.Exists(oneDir))
                     continue;
                 try
@@ -200,6 +206,7 @@ namespace XTR_Toolbox
                     MessageBox.Show(@"Scan Error: " + ex.Message);
                 }
             }
+
             sw.Stop();
             ((Button) sender).IsEnabled = true;
             float mSec = sw.ElapsedMilliseconds;
@@ -216,7 +223,7 @@ namespace XTR_Toolbox
             ((Button) sender).IsEnabled = false;
             for (int index = LvCleaner.SelectedItems.Count - 1; index >= 0; index--)
             {
-                CleanItem cItem = (CleanItem)LvCleaner.SelectedItems[index];
+                CleanItem cItem = (CleanItem) LvCleaner.SelectedItems[index];
                 string combinedPath = Path.Combine(cItem.Group, cItem.Path);
                 _cleanList.Remove(cItem);
                 try
@@ -230,7 +237,7 @@ namespace XTR_Toolbox
                 {
                     //ignored
                 }
-            } 
+            }
         }
 
         private void CheckBoxAll_Checked(object sender, RoutedEventArgs e)

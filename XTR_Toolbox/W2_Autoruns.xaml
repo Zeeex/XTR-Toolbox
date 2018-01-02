@@ -4,24 +4,35 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Batch Autoruns Manager" Height="520" Width="750"
+        Title="Startup Manager" Height="520" Width="750"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" FontSize="14">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="170*" />
-            <ColumnDefinition Width="170*" />
-            <ColumnDefinition Width="267*" />
-            <ColumnDefinition Width="170*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="55" />
-        </Grid.RowDefinitions>
-        <ListView x:Name="LvAutoruns" Margin="0" SelectionChanged="LvAutoruns_SelectionChanged" Grid.ColumnSpan="4">
+        <ListView x:Name="LvAutoruns">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="self:StartupCmd.State" CommandParameter="Enable" Header="Enable">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Check" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Command="self:StartupCmd.State" CommandParameter="Disable" Header="Disable">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="BlockHelper" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Click="BtnDelete_Click" Header="Delete">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Delete" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
@@ -38,8 +49,8 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData }">
-                                    <Image Source="{Binding Icon}" Height="16" Margin="0,0,5,0" />
-                                    <TextBlock Text="{Binding Name}" />
+                                    <Image Source="{Binding Icon}" Height="18" Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Name}" FontSize="14" />
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -60,38 +71,10 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="BtnEnable" Margin="10,10,5,10" Click="BtnChangeState_Click" Grid.Row="1"
-                Grid.Column="0" Height="Auto" IsEnabled="False" FontSize="16">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="Check" Width="20" Height="20" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Enable
-                </TextBlock>
-            </StackPanel>
-        </Button>
-        <Button x:Name="BtnDisable" Margin="5,10,10,10" Click="BtnChangeState_Click" Grid.Row="1"
-                Grid.Column="1" Height="Auto" IsEnabled="False" FontSize="16">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="BlockHelper" Width="20" Height="20" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Disable
-                </TextBlock>
-            </StackPanel>
-        </Button>
-        <Button x:Name="BtnDelete" Margin="10" Click="BtnDelete_Click" Grid.Row="1" Grid.Column="3"
-                Height="Auto" IsEnabled="False" FontSize="16">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="Delete" Width="20" Height="20" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Delete
-                </TextBlock>
-            </StackPanel>
-        </Button>
     </Grid>
     <Window.CommandBindings>
+        <CommandBinding Command="self:StartupCmd.State" CanExecute="StateChangeCmd_CanExecute"
+                        Executed="StateChangeCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>
