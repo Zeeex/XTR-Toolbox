@@ -50,4 +50,6 @@ Many more features to come in future...
 ## Download and Changelog:
 Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
 
-Reviews by [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) and [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml)
+## Reviews
+By [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) </br>
+By [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml)
