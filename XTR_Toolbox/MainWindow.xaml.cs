@@ -15,32 +15,41 @@ namespace XTR_Toolbox
             InitializeComponent();
             if (Environment.OSVersion.Version.Major <= 6 && Environment.OSVersion.Version.Minor < 2)
                 BtnWinApps.IsEnabled = false; // DISABLED FOR WIN7
+            BtnChrome.IsEnabled = ChromeBtnState();
+        }
+
+        private static bool ChromeBtnState()
+        {
+            try
+            {
+                return Directory.Exists(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Google\Chrome\User Data\"));
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void BtnMultiWindowOpener(object sender, RoutedEventArgs e)
         {
-            Window window = new Window();
+            Window w = new Window();
             if (Equals(sender, BtnWinApps))
-                window = new Window1();
+                w = new Window1();
             else if (Equals(sender, BtnAutoruns))
-                window = new Window2();
+                w = new Window2();
             else if (Equals(sender, BtnServices))
-                window = new Window3();
+                w = new Window3();
             else if (Equals(sender, BtnHostsEditor))
-                window = new Window4();
+                w = new Window4();
             else if (Equals(sender, BtnCleaner))
-                window = new Window5();
+                w = new Window5();
             else if (Equals(sender, BtnSoftware))
-                window = new Window6();
+                w = new Window6();
             else if (Equals(sender, BtnChrome))
-                window = new Window7();
-            try
-            {
-                window.ShowDialog();
-            }
-            catch (InvalidOperationException)
-            {
-            }
+                w = new Window7();
+            w.ShowDialog();
         }
 
         private void BtnIconRebuild_Click(object sender, RoutedEventArgs e)
@@ -51,10 +60,7 @@ namespace XTR_Toolbox
             {
                 string env = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 if (env == "") return;
-                foreach (Process proc in Process.GetProcessesByName("explorer"))
-                {
-                    proc.Kill();
-                }
+                foreach (Process proc in Process.GetProcessesByName("explorer")) proc.Kill();
 
                 try
                 {
@@ -67,7 +73,6 @@ namespace XTR_Toolbox
 
                 foreach (string f in Directory.GetFiles(
                     Path.Combine(env, @"Microsoft\Windows\Explorer"), "iconcache*"))
-                {
                     try
                     {
                         File.Delete(f);
@@ -76,12 +81,8 @@ namespace XTR_Toolbox
                     {
                         //ignored
                     }
-                }
 
-                if (Process.GetProcessesByName("explorer").Length == 0)
-                {
-                    Shared.StartProc("explorer.exe");
-                }
+                if (Process.GetProcessesByName("explorer").Length == 0) Shared.StartProc("explorer.exe");
             }
             catch
             {
@@ -118,7 +119,6 @@ namespace XTR_Toolbox
 
                 foreach (string f in Directory.GetFiles(
                     Path.Combine(env, @"ServiceProfiles\LocalService\AppData\Local\FontCache"), "*FontCache*"))
-                {
                     try
                     {
                         File.Delete(f);
@@ -127,7 +127,6 @@ namespace XTR_Toolbox
                     {
                         //ignored
                     }
-                }
             }
             catch
             {
@@ -138,6 +137,7 @@ namespace XTR_Toolbox
             Shared.ServiceRestarter(servName, true);
             btnFontReb.IsEnabled = true;
         }
+
 
         private void BtnEventsCleaner_Click(object sender, RoutedEventArgs e)
         {
@@ -190,7 +190,7 @@ namespace XTR_Toolbox
                 "KB2902907"
             };
             MessageBoxResult mB = MessageBox.Show(
-                "This will remove Windows Updates related to telemetry in Windows 7 and 8.1. \n\nUpdates to uninstall:\n" +
+                "This will remove Windows Updates related to telemetry in Windows 7 and 8.1. This has no effect on Windows 10. It's safe to run. \n\nUpdates to uninstall:\n" +
                 string.Join("\n", updates) +
                 "\n\nAre you sure you want to do this?",
                 "Uninstall Telemetry Updates", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
@@ -207,9 +207,7 @@ namespace XTR_Toolbox
             {
                 sw.WriteLine("@echo off");
                 foreach (string up in updates)
-                {
                     sw.WriteLine("start /w wusa.exe /uninstall /kb:" + up.Replace("KB", "") + " /quiet /norestart");
-                }
 
                 sw.WriteLine("exit");
             }
@@ -219,9 +217,9 @@ namespace XTR_Toolbox
             btnTelemetry.IsEnabled = true;
         }
 
-        private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
-
         private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e) =>
             Process.Start(e.Uri.AbsoluteUri);
+
+        private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
     }
 }

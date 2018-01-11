@@ -9,11 +9,10 @@
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14">
+        WindowStartupLocation="CenterScreen" FontSize="16">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="150*" />
-            <RowDefinition Height="170*" />
             <RowDefinition Height="55" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -26,49 +25,41 @@
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
-                <CheckBox x:Name="CbDir" Checked="CheckBoxAll_Checked" Unchecked="CheckBoxAll_Unchecked"
-                          Foreground="White"
-                          FontWeight="Bold">
+                <CheckBox Checked="CheckBoxAll_Checked" Unchecked="CheckBoxAll_Unchecked"
+                          FontWeight="Bold"
+                          Style="{DynamicResource MaterialDesignUserForegroundCheckBox}">
                     Directory
                 </CheckBox>
             </GroupBox.Header>
-            <ListBox x:Name="LbDir" SelectionChanged="LbSidebar_SelectionChanged"
-                     DockPanel.Dock="Top">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <CheckBox Content="{Binding Text}" IsChecked="{Binding Checked}"
-                                  d:DataContext="{d:DesignData ''}" IsTabStop="False" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </GroupBox>
-        <GroupBox Margin="10,5,10,8" Grid.Row="1" Grid.Column="0"
-                  Style="{DynamicResource MaterialDesignCardGroupBox}"
-                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
-            <GroupBox.Header>
-                <CheckBox x:Name="CbType" Checked="CheckBoxAll_Checked" Unchecked="CheckBoxAll_Unchecked"
-                          Foreground="White"
-                          FontWeight="Bold">
-                    Extension
-                </CheckBox>
-            </GroupBox.Header>
-            <StackPanel>
-                <ListBox x:Name="LbType" SelectionChanged="LbSidebar_SelectionChanged">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="15" />
+                    <RowDefinition Height="70" />
+                </Grid.RowDefinitions>
+                <ListBox x:Name="LbDir" SelectionChanged="LbSidebar_SelectionChanged"
+                         DockPanel.Dock="Top">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <CheckBox Content="{Binding Text}" IsChecked="{Binding Checked}"
-                                      d:DataContext="{d:DesignData }" IsTabStop="False" />
+                                      IsEnabled="{Binding Enabled}" IsTabStop="False"
+                                      d:DataContext="{d:DesignData ''}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </StackPanel>
+                <Separator Grid.Row="1" Style="{StaticResource MaterialDesignDarkSeparator}" Margin="5,0" />
+                <StackPanel Grid.Row="2" Margin="0,4">
+                    <TextBlock Margin="0,0,0,5">Filter by extension</TextBlock>
+                    <TextBox x:Name="TBoxTypes" materialDesign:HintAssist.Hint=".tmp, *.log" Margin="0,5,0,0" />
+                </StackPanel>
+            </Grid>
         </GroupBox>
-        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="10,0">
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="10,0">
             <Label Content="Scan Depth Level:"
                    Margin="10,14,0,14" HorizontalAlignment="Left" VerticalAlignment="Center"
                    Height="27"
-                   Width="119" />
-            <ComboBox x:Name="CbBoxLevel" SelectedIndex="5" Margin="70,0,0,0" Width="50">
+                   Width="167" />
+            <ComboBox x:Name="CbBoxLevel" SelectedIndex="5" Margin="20,0,0,0" Width="50">
                 <ComboBoxItem Content="0" />
                 <ComboBoxItem Content="1" />
                 <ComboBoxItem Content="2" />
@@ -79,16 +70,16 @@
             </ComboBox>
         </StackPanel>
         <Label Content="Scan time: " HorizontalAlignment="Left" Margin="10,14,0,14" VerticalAlignment="Center"
-               Grid.Row="2"
-               Grid.Column="2" Height="27" Width="77" />
-        <Label x:Name="LabelScanValue" Content="" HorizontalAlignment="Left" Margin="92,14,0,14"
-               VerticalAlignment="Center" Grid.Row="2"
-               Grid.Column="2" Width="87" Height="27" />
-        <ListView x:Name="LvCleaner" Margin="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3"
+               Grid.Row="1"
+               Grid.Column="2" Height="27" />
+        <Label x:Name="LabelScanValue" Content="" HorizontalAlignment="Left" Margin="102,14,0,14"
+               VerticalAlignment="Center" Grid.Row="1"
+               Grid.Column="2" Width="105" Height="27" />
+        <ListView x:Name="LvCleaner" Margin="0,0,0,8" Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="3"
                   SelectionChanged="LvCleaner_SelectionChanged">
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn DisplayMemberBinding="{Binding Path}">
+                    <GridViewColumn DisplayMemberBinding="{Binding Path}" Width="520">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click">Path</GridViewColumnHeader>
                         </GridViewColumn.Header>
@@ -107,7 +98,7 @@
             </ListView.View>
         </ListView>
         <Button Margin="10,8,10,10" Click="BtnAnalyze_Click" Grid.Column="1" FontSize="18"
-                Grid.Row="2"
+                Grid.Row="1"
                 Height="Auto">
             <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
                 <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" Margin="0,0,10,0" />
@@ -118,7 +109,7 @@
             </StackPanel>
         </Button>
         <Button x:Name="BtnClean" Margin="10,8,10,10" Click="BtnClean_Click" Grid.Column="3"
-                Grid.Row="2" Height="Auto" FontSize="18" FontWeight="Bold" IsEnabled="False">
+                Grid.Row="1" Height="Auto" FontSize="18" FontWeight="Bold" IsEnabled="False">
             <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
                 <materialDesign:PackIcon Kind="Delete" Width="22" Height="22" Margin="0,0,10,0" />
                 <TextBlock HorizontalAlignment="Right" FontWeight="Bold"

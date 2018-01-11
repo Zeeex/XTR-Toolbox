@@ -16,8 +16,7 @@ namespace XTR_Toolbox
     public partial class Window5
     {
         private readonly ObservableCollection<CleanItem> _cleanList = new ObservableCollection<CleanItem>();
-        private readonly List<CheckBoxSidebar> _dirList = new List<CheckBoxSidebar>();
-        private readonly List<CheckBoxSidebar> _typeList = new List<CheckBoxSidebar>();
+        private readonly List<CheckBoxDirs> _dirList = new List<CheckBoxDirs>();
         private readonly string _extDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         private readonly string[] _fixedDirArray =
@@ -28,6 +27,11 @@ namespace XTR_Toolbox
                 @"Installer\$PatchCache$\Managed"),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
                 @"SoftwareDistribution\Download"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                @"Logs"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                @"Prefetch"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"CrashDumps"),
             SteamLibraryDir() // ALWAYS LAST
         };
 
@@ -37,37 +41,29 @@ namespace XTR_Toolbox
         public Window5()
         {
             InitializeComponent();
-            FillSidebar();
+            InitDirList();
             LbDir.ItemsSource = _dirList;
-            LbType.ItemsSource = _typeList;
             LvCleaner.ItemsSource = _cleanList;
         }
 
-        private void FillSidebar()
+        private void InitDirList()
         {
-            string[] dirsList =
+            string[] dirs =
             {
                 "Temporary Directory",
                 "Win Temporary Directory",
                 "Windows Installer Cache",
                 "Windows Update Cache",
+                "Windows Logs Directory",
+                "Prefetch Cache",
+                "Crash Dump Directory",
                 "Steam Redist Pacakges"
             };
-            string[] typeList =
+            for (int index = 0; index < dirs.Length; index++)
             {
-                "Temp Files (.tmp)",
-                "Cache Files (.cache)",
-                "Crash Dump Files (.dmp)",
-                "System Logs (.log)",
-                "Backup Files (.bak)",
-                "Shortcut Files (.lnk)",
-                "Executable Files (.exe)",
-                "Win Installer Files (.msi)"
-            };
-            foreach (string adder in dirsList)
-                _dirList.Add(new CheckBoxSidebar { Text = adder });
-            foreach (string adder in typeList)
-                _typeList.Add(new CheckBoxSidebar { Text = adder });
+                string oneDir = dirs[index];
+                _dirList.Add(new CheckBoxDirs {Text = oneDir, Enabled = Directory.Exists(_fixedDirArray[index])});
+            }
         }
 
         private static IEnumerable<string> GetDirectoryFilesLoop(string root, IEnumerable<string> types, int depth,
@@ -81,7 +77,7 @@ namespace XTR_Toolbox
                 try
                 {
                     foreach (string ext in typeListArray)
-                        foundFiles = Directory.EnumerateFiles(root, ext).ToList();
+                        foundFiles.AddRange(Directory.EnumerateFiles(root, ext).ToList());
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -136,7 +132,7 @@ namespace XTR_Toolbox
             // DIR ENUM ====
             for (int index = 0; index < _dirList.Count; index++)
             {
-                CheckBoxSidebar item = _dirList[index];
+                CheckBoxDirs item = _dirList[index];
                 if (!item.Checked) continue;
                 dirList.Add(_fixedDirArray[index]);
             }
@@ -146,13 +142,18 @@ namespace XTR_Toolbox
                 dirList.Add(_extDir);
             // TYPE ENUM ====
             List<string> typeList = new List<string> {"*"};
-            if (_typeList.Any(item => item.Checked))
+            if (TBoxTypes.Text != "")
             {
                 typeList.Clear();
-                typeList.AddRange(_typeList.Where(item => item.Checked)
-                    .Select(item => item.Text)
-                    .Select(tempClean =>
-                        "*" + tempClean.Substring(tempClean.IndexOf("(.", StringComparison.Ordinal) + 1).TrimEnd(')')));
+                string[] split = TBoxTypes.Text.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string item in split)
+                {
+                    string trimmed = item.Trim(' ');
+                    if (trimmed.StartsWith("*"))
+                        typeList.Add(trimmed);
+                    if (trimmed.StartsWith("."))
+                        typeList.Add("*" + trimmed);
+                }
             }
             else if (dirCount == 0)
             {
@@ -242,40 +243,23 @@ namespace XTR_Toolbox
 
         private void CheckBoxAll_Checked(object sender, RoutedEventArgs e)
         {
-            switch (((CheckBox) sender).Name)
-            {
-                case nameof(CbDir):
-                    foreach (CheckBoxSidebar t in _dirList)
-                        t.Checked = true;
-                    break;
-                case nameof(CbType):
-                    foreach (CheckBoxSidebar t in _typeList)
-                        t.Checked = true;
-                    break;
-            }
+            foreach (CheckBoxDirs t in _dirList)
+                t.Checked = true;
         }
 
         private void CheckBoxAll_Unchecked(object sender, RoutedEventArgs e)
         {
-            switch (((CheckBox) sender).Name)
-            {
-                case nameof(CbDir):
-                    foreach (CheckBoxSidebar t in _dirList)
-                        t.Checked = false;
-                    break;
-                case nameof(CbType):
-                    foreach (CheckBoxSidebar t in _typeList)
-                        t.Checked = false;
-                    break;
-            }
+            foreach (CheckBoxDirs t in _dirList)
+                t.Checked = false;
         }
 
         private void LbSidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.RemovedItems.Count != 0 || e.AddedItems.Count == 0) return;
-            CheckBoxSidebar t = (CheckBoxSidebar) e.AddedItems[0];
-            t.Checked = !t.Checked;
-            LbDir.SelectedIndex = LbType.SelectedIndex = -1;
+            CheckBoxDirs t = (CheckBoxDirs) e.AddedItems[0];
+            if (t.Enabled)
+                t.Checked = !t.Checked;
+            LbDir.SelectedIndex = -1;
         }
 
         private void LvCleaner_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
@@ -305,7 +289,7 @@ namespace XTR_Toolbox
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
 
-        private class CheckBoxSidebar : INotifyPropertyChanged
+        private class CheckBoxDirs : INotifyPropertyChanged
         {
             private bool _checked;
 
@@ -323,6 +307,7 @@ namespace XTR_Toolbox
             }
 
             public string Text { [UsedImplicitly] get; set; }
+            public bool Enabled { [UsedImplicitly] get; set; }
 
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));

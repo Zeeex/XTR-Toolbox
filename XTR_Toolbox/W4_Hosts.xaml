@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Hosts File Editor" Height="576" Width="630"
+        Title="Hosts File Editor" Height="620" Width="720"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -13,40 +13,35 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
-            <ColumnDefinition Width="190" />
-            <ColumnDefinition Width="190" />
+            <ColumnDefinition Width="20" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="55" />
+            <RowDefinition Height="90" />
         </Grid.RowDefinitions>
-        <TextBox x:Name="TbHostsFile" Background="Black" Foreground="White" FontFamily="Segoe UI"
-                 FontSize="14" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
-                 AcceptsReturn="True" VerticalContentAlignment="Stretch" />
-        <Button x:Name="BtnHostsSave" Margin="10,10,5,10" Click="BtnHostsManage_Click"
-                IsEnabled="False" Grid.Row="1" Grid.Column="1" Height="Auto" FontSize="16">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="ContentSave" Width="20" Height="20" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Save Hosts
-                </TextBlock>
-            </StackPanel>
-        </Button>
-        <Button x:Name="BtnHostsReset" Margin="5,10,10,10" Click="BtnHostsManage_Click"
-                Grid.Row="1" Grid.Column="2"
-                Height="Auto" FontSize="16">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="Replay" Width="20" Height="20" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Reset Hosts
-                </TextBlock>
-            </StackPanel>
-        </Button>
-        <CheckBox Content="Dark Theme" HorizontalAlignment="Left" Margin="10,0,0,18" VerticalAlignment="Bottom"
-                  Checked="CheckBox_Checked" IsChecked="True" Unchecked="CheckBox_Unchecked" FontSize="18" Grid.Row="1"
-                  Grid.Column="0" />
+        <TextBox x:Name="TbHostsFile" Foreground="White" Background="#FF272727" SelectionBrush="Chocolate"
+                 FontFamily="Consolas" TextWrapping="Wrap" AcceptsReturn="True"
+                 VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch"
+                 Grid.ColumnSpan="3" Grid.RowSpan="2" />
+        <StackPanel x:Name="StackPanelBtns" Orientation="Horizontal" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right">
+            <Button x:Name="BtnSave" Click="BtnHostsManage_Click"
+                    Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                    ToolTip="Save Hosts File"
+                    IsEnabled="False" HorizontalAlignment="Right" Margin="8,0">
+                <materialDesign:PackIcon Kind="ContentSave" Width="24" Height="24" />
+            </Button>
+            <Button Click="BtnDownload_Click"
+                    Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                    ToolTip="Download Hosts File from winhelp2002.mvps.org"
+                    HorizontalAlignment="Right" Margin="8,0">
+                <materialDesign:PackIcon Kind="CloudDownload" Width="24" Height="24" />
+            </Button>
+            <Button x:Name="BtnReset" Click="BtnHostsManage_Click"
+                    Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                    ToolTip="Reset Rules" HorizontalAlignment="Right" Margin="8,0">
+                <materialDesign:PackIcon Kind="Replay" Width="24" Height="24" />
+            </Button>
+        </StackPanel>
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />

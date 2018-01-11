@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Batch Software Manager" Height="620" Width="925"
+        Title="Batch Software Manager" Height="650" Width="925"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -24,20 +24,37 @@
         <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem x:Name="MenuUninstall" Click="MenuItem_Click" Header="Uninstall">
+                    <MenuItem Command="self:SoftwareCmd.Remove" Header="Uninstall">
                         <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="DeleteForever" Width="18" Height="18" />
+                            <materialDesign:PackIcon Kind="DeleteForever" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Command="self:SoftwareCmd.Force" CommandParameter="Force" Header="Force Remove">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="FolderRemove" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="self:MsiCommands.Msi" CommandParameter="Change" Header="Change">
+                    <MenuItem Command="self:SoftwareCmd.Msi" CommandParameter="Change" Header="Change">
                         <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Autorenew" Width="18" Height="18" />
+                            <materialDesign:PackIcon Kind="Autorenew" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Command="self:MsiCommands.Msi" CommandParameter="Repair" Header="Repair">
+                    <MenuItem Command="self:SoftwareCmd.Msi" CommandParameter="Repair" Header="Repair">
                         <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Wrench" Width="18" Height="18" />
+                            <materialDesign:PackIcon Kind="Wrench" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Command="self:SoftwareCmd.Dir" Header="Open Directory">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Folder" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Click="Clipboard_Click" Header="Copy to Clipboard">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ClipboardOutline" />
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>
@@ -80,7 +97,10 @@
         </StatusBar>
     </Grid>
     <Window.CommandBindings>
-        <CommandBinding Command="self:MsiCommands.Msi" CanExecute="MsiCmd_CanExecute" Executed="MsiCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Msi" CanExecute="MsiCmd_CanExecute" Executed="MsiCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Dir" CanExecute="LocationCmd_CanExecute" Executed="OpenDirCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Force" CanExecute="LocationCmd_CanExecute" Executed="UninstallCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Remove" Executed="UninstallCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>

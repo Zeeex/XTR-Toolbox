@@ -123,6 +123,7 @@ namespace XTR_Toolbox
                         string regName = subKey.GetValue("DisplayName", "").ToString();
                         string regRemv = subKey.GetValue("UninstallString", "").ToString().Replace("\"", "");
                         if (regName == "" || regRemv == "") continue;
+                        string regLoca = subKey.GetValue("InstallLocation", "").ToString();
                         string regDate = subKey.GetValue("InstallDate", "").ToString();
                         string regSize = subKey.GetValue("EstimatedSize", "").ToString();
                         string regIcon = subKey.GetValue("DisplayIcon", "").ToString().Replace("\"", "");
@@ -137,7 +138,8 @@ namespace XTR_Toolbox
                             DateInstalled = ParseDate(regDate, regRemv),
                             Uninstall = regRemv,
                             Icon = ico,
-                            Msi = isMsi
+                            Msi = isMsi,
+                            Location = regLoca
                         });
                     }
                     catch (Exception ex)
@@ -169,14 +171,19 @@ namespace XTR_Toolbox
             if (sortBy != null) LvSoftware.Items.SortDescriptions.Add(new SortDescription(sortBy, newDir));
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void Clipboard_Click(object sender, RoutedEventArgs e)
         {
-            for (int index = LvSoftware.SelectedItems.Count - 1; index >= 0; index--)
+            StringBuilder sb = new StringBuilder();
+            int maxNameLength = (from SoftwareItem t in LvSoftware.SelectedItems select t.Name.Length)
+                .Concat(new[] {0}).Max();
+            foreach (SoftwareItem t in LvSoftware.SelectedItems)
             {
-                SoftwareItem sItem = (SoftwareItem) LvSoftware.SelectedItems[index];
-                if (Equals(sender, MenuUninstall) && Uninstall(sItem.Uninstall, sItem.Msi))
-                    _softwareList.Remove(sItem);
+                string format = "{0,-" + maxNameLength + "}  |{1,12}  |{2,11}";
+                sb.AppendFormat(format, t.Name, t.DateInstalled, t.Size);
+                sb.AppendLine();
             }
+
+            Clipboard.SetText(sb.ToString());
         }
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
@@ -215,12 +222,19 @@ namespace XTR_Toolbox
             public string Name { [UsedImplicitly] get; set; }
             public string Size { [UsedImplicitly] get; set; }
             public string Uninstall { [UsedImplicitly] get; set; }
+            public string Location { [UsedImplicitly] get; set; }
             public bool Msi { [UsedImplicitly] get; set; }
         }
 
         private void MsiCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>().All(item => item.Msi);
+        }
+
+        private void LocationCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>()
+                .All(item => !string.IsNullOrEmpty(item.Location));
         }
 
         private void MsiCmd_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -247,10 +261,62 @@ namespace XTR_Toolbox
                 }
             }
         }
+
+        private void OpenDirCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            try
+            {
+                foreach (SoftwareItem item in LvSoftware.SelectedItems)
+                {
+                    System.Diagnostics.Process.Start(item.Location);
+                }
+            }
+            catch
+            {
+                //ignored
+            }
+        }
+
+        private void UninstallCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            bool force = false;
+            if (Equals(e.Parameter, "Force"))
+            {
+                MessageBoxResult ques = MessageBox.Show(
+                    "This option will remove the application's directory.\nThis can potentially remove your settings for that application." +
+                    "\n\nAre you sure you want to do this?",
+                    "Remove application directory", MessageBoxButton.YesNo, MessageBoxImage.Question,
+                    MessageBoxResult.Yes);
+                if (ques == MessageBoxResult.Yes) force = true;
+                else return;
+            }
+
+            for (int index = LvSoftware.SelectedItems.Count - 1; index >= 0; index--)
+            {
+                SoftwareItem item = (SoftwareItem) LvSoftware.SelectedItems[index];
+                if (!Uninstall(item.Uninstall, item.Msi)) continue;
+                if (force)
+                {
+                    try
+                    {
+                        Directory.Delete(item.Location, true);
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
+                }
+
+                _softwareList.Remove(item);
+            }
+        }
     }
 
-    public static class MsiCommands
+    public static class SoftwareCmd
     {
         public static readonly RoutedUICommand Msi = new RoutedUICommand();
+        public static readonly RoutedUICommand Dir = new RoutedUICommand();
+        public static readonly RoutedUICommand Force = new RoutedUICommand();
+        public static readonly RoutedUICommand Remove = new RoutedUICommand();
     }
 }

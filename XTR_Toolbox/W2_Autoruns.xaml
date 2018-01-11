@@ -26,6 +26,12 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
+                    <MenuItem Command="self:StartupCmd.Dir" Header="Open Directory">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Folder" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
                     <MenuItem Click="BtnDelete_Click" Header="Delete">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Delete" />
@@ -73,8 +79,10 @@
         </ListView>
     </Grid>
     <Window.CommandBindings>
-        <CommandBinding Command="self:StartupCmd.State" CanExecute="StateChangeCmd_CanExecute"
+        <CommandBinding Command="self:StartupCmd.State" CanExecute="ValidItemCmd_CanExecute"
                         Executed="StateChangeCmd_Executed" />
+        <CommandBinding Command="self:StartupCmd.Dir" CanExecute="ValidItemCmd_CanExecute"
+                        Executed="OpenDirCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>
