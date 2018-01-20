@@ -3,40 +3,50 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Chrome Extensions Manager (Delete with context menu)" Height="724" Width="696"
+        Title="Chrome Extensions Manager" Height="724" Width="696"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
-        <ListView x:Name="LvAddons" Margin="0" Grid.RowSpan="1">
+        <DockPanel Grid.Row="0" Margin="10,5">
+            <Label Content="Quick Filter:" VerticalAlignment="Center" />
+            <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+                     TextChanged="TbSearch_TextChanged" />
+        </DockPanel>
+        <ListView x:Name="LvAddons" Margin="0" Grid.Row="1">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem x:Name="Delete" Click="MenuItem_Click" Header="Delete" />
+                    <MenuItem Command="self:BrowserCmd.Delete">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Delete" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
                     <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="290">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Name</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" FontWeight="Bold" />
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Id}" Width="270">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Id" Click="LvUsersColumnHeader_Click">ID</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                    <GridViewColumn DisplayMemberBinding="{Binding Id}" Width="280">
+                        <GridViewColumnHeader Tag="Id" Click="LvUsersColumnHeader_Click" Content="ID" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
+        <materialDesign:Snackbar Grid.Row="1" MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar"
+                                 IsTabStop="False" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
-                   Grid.Column="0" Grid.Row="1" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                   Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                    FontFamily="Roboto" FontSize="16">
             <TextBlock Margin="5,0,0,0">Total:</TextBlock>
             <TextBlock Text="{Binding ElementName=LvAddons, Path=Items.Count}" Margin="5,0,0,0" />
@@ -45,6 +55,7 @@
         </StatusBar>
     </Grid>
     <Window.CommandBindings>
+        <CommandBinding Command="self:BrowserCmd.Delete" Executed="DeleteCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>

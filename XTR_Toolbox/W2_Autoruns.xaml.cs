@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -36,6 +35,7 @@ namespace XTR_Toolbox
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
             PropertyGroupDescription groupBind = new PropertyGroupDescription("Group");
             view.GroupDescriptions.Add(groupBind);
+            Shared.SnackBarTip(MainSnackbar);
         }
 
         private void AddBroken(IReadOnlyCollection<string> brokenItems, int groupNum)
@@ -90,7 +90,7 @@ namespace XTR_Toolbox
             AddBroken(_brokenRun, groupNum);
         }
 
-        private void BtnDelete_Click(object sender, RoutedEventArgs e)
+        private void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             MessageBoxResult mB = MessageBox.Show("Are you sure you want to delete selected item(s)?",
                 "Delete Confirmation",
@@ -250,7 +250,7 @@ namespace XTR_Toolbox
                 {
                     string dirFull = Path.GetDirectoryName(item.Path);
                     if (dirFull != null)
-                        Process.Start(dirFull);
+                        Shared.StartProc(dirFull, wait: false);
                 }
             }
             catch
@@ -261,9 +261,11 @@ namespace XTR_Toolbox
 
         private void StateChangeCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            byte[] itemState = Equals(e.Parameter, "Disable")
-                ? new byte[] {0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-                : new byte[] {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            if (!(e.Command is RoutedUICommand eCommand)) return;
+            bool enb = eCommand == StartupCmd.Enable;
+            byte[] itemState = enb
+                ? new byte[] {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+                : new byte[] {0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             string[] runKeyList =
             {
                 @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32",
@@ -274,7 +276,7 @@ namespace XTR_Toolbox
                 foreach (RunItem itemToSet in LvAutoruns.SelectedItems)
                 {
                     if (itemToSet == null) continue;
-                    itemToSet.Enabled = Equals(e.Parameter, "Disable") ? "No" : "Yes";
+                    itemToSet.Enabled = enb ? "Yes" : "No";
                     RegistryKey startupKey;
                     if (Equals(itemToSet.Group, _groupName[0]))
                         startupKey = reg64.OpenSubKey(runKeyList[0], true);
@@ -296,7 +298,7 @@ namespace XTR_Toolbox
                 .All(item => item.Group != _groupName[_groupName.Length - 1]);
         }
 
-        public class RunItem : INotifyPropertyChanged
+        private class RunItem : INotifyPropertyChanged
         {
             private string _enabled;
 
@@ -325,7 +327,16 @@ namespace XTR_Toolbox
 
     public static class StartupCmd
     {
-        public static readonly RoutedUICommand Dir = new RoutedUICommand();
-        public static readonly RoutedUICommand State = new RoutedUICommand();
+        public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir", typeof(StartupCmd),
+            new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Enable = new RoutedUICommand("Enable", "En", typeof(StartupCmd),
+            new InputGestureCollection {new KeyGesture(Key.E, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis", typeof(StartupCmd),
+            new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Delete = new RoutedUICommand("Delete", "Del", typeof(StartupCmd),
+            new InputGestureCollection {new KeyGesture(Key.Delete, ModifierKeys.Control)});
     }
 }

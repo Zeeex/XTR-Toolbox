@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using JetBrains.Annotations;
@@ -15,54 +16,46 @@ namespace XTR_Toolbox
 {
     public partial class Window5
     {
-        private readonly ObservableCollection<CleanItem> _cleanList = new ObservableCollection<CleanItem>();
+        private ObservableCollection<CleanItem> _cleanList = new ObservableCollection<CleanItem>();
         private readonly List<CheckBoxDirs> _dirList = new List<CheckBoxDirs>();
-        private readonly string _extDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-        private readonly string[] _fixedDirArray =
+        private static readonly string WinDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+        private readonly Dictionary<string, string> _dirPreset = new Dictionary<string, string>
         {
-            Path.GetTempPath(),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Temp"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                @"Installer\$PatchCache$\Managed"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                @"SoftwareDistribution\Download"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                @"Logs"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                @"Prefetch"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"CrashDumps"),
-            SteamLibraryDir() // ALWAYS LAST
+            {"Temporary Directory", Path.GetTempPath()},
+            {"Win Temporary Directory", Path.Combine(WinDir, @"Temp")},
+            {"Windows Installer Cache", Path.Combine(WinDir, @"Installer\$PatchCache$\Managed")},
+            {"Windows Update Cache", Path.Combine(WinDir, @"SoftwareDistribution\Download")},
+            {"Windows Logs Directory", Path.Combine(WinDir, @"Logs")},
+            {"Prefetch Cache", Path.Combine(WinDir, @"Prefetch")},
+            {
+                "Crash Dump Directory",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"CrashDumps")
+            },
+            {"Steam Redist Packages", SteamLibraryDir()}
         };
 
+        private readonly BackgroundWorker _worker = new BackgroundWorker();
+        private bool _tipShown;
         private SortAdorner _listViewSortAdorner;
         private GridViewColumnHeader _listViewSortCol;
 
         public Window5()
         {
             InitializeComponent();
-            InitDirList();
+            InitDirBind();
             LbDir.ItemsSource = _dirList;
             LvCleaner.ItemsSource = _cleanList;
+            _worker.DoWork += ScanWorker;
+            _worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
         }
 
-        private void InitDirList()
+        private void InitDirBind()
         {
-            string[] dirs =
+            foreach (KeyValuePair<string, string> oneDir in _dirPreset)
             {
-                "Temporary Directory",
-                "Win Temporary Directory",
-                "Windows Installer Cache",
-                "Windows Update Cache",
-                "Windows Logs Directory",
-                "Prefetch Cache",
-                "Crash Dump Directory",
-                "Steam Redist Pacakges"
-            };
-            for (int index = 0; index < dirs.Length; index++)
-            {
-                string oneDir = dirs[index];
-                _dirList.Add(new CheckBoxDirs {Text = oneDir, Enabled = Directory.Exists(_fixedDirArray[index])});
+                _dirList.Add(new CheckBoxDirs {Text = oneDir.Key, Enabled = Directory.Exists(oneDir.Value)});
             }
         }
 
@@ -128,95 +121,125 @@ namespace XTR_Toolbox
 
         private void BtnAnalyze_Click(object sender, EventArgs e)
         {
-            List<string> dirList = new List<string>();
-            // DIR ENUM ====
-            for (int index = 0; index < _dirList.Count; index++)
+            BtnAnalyze.IsEnabled = false;
+            List<string> dirToScan = (from item in _dirList where item.Checked select _dirPreset[item.Text]).ToList();
+            if (dirToScan.Count == 0)
             {
-                CheckBoxDirs item = _dirList[index];
-                if (!item.Checked) continue;
-                dirList.Add(_fixedDirArray[index]);
-            }
-
-            int dirCount = dirList.Count;
-            if (dirCount == 0)
-                dirList.Add(_extDir);
-            // TYPE ENUM ====
-            List<string> typeList = new List<string> {"*"};
-            if (TBoxTypes.Text != "")
-            {
-                typeList.Clear();
-                string[] split = TBoxTypes.Text.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string item in split)
-                {
-                    string trimmed = item.Trim(' ');
-                    if (trimmed.StartsWith("*"))
-                        typeList.Add(trimmed);
-                    if (trimmed.StartsWith("."))
-                        typeList.Add("*" + trimmed);
-                }
-            }
-            else if (dirCount == 0)
-            {
-                MessageBox.Show(@"Select an option for searching.");
+                MessageBox.Show(@"Select an option to start searching.");
+                BtnAnalyze.IsEnabled = true;
                 return;
             }
 
-            // DEFAULT VALUES =====
-            ((Button) sender).IsEnabled = false;
-            _cleanList.Clear();
-            int totalSize = 0;
-            int scanDepth = CbBoxLevel.SelectedIndex == CbBoxLevel.Items.Count - 1
-                ? 20
-                : Convert.ToInt32(CbBoxLevel.SelectionBoxItem);
-            // DEFAULT VALUES END =====
+            List<string> typeToScan = new List<string>();
+            string ext = TBoxTypes.Text.Trim();
+            if (ext != "")
+            {
+                string[] split = ext.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string type in split)
+                {
+                    string trimmed = type.Trim();
+                    if (trimmed.StartsWith("*"))
+                        typeToScan.Add(trimmed);
+                    if (trimmed.StartsWith("."))
+                        typeToScan.Add("*" + trimmed);
+                }
+            }
+            else typeToScan.Add("*");
+
+            _worker.RunWorkerAsync(new StartData(Convert.ToInt32(CbBoxLevel.SelectionBoxItem), typeToScan, dirToScan));
+        }
+
+        private struct StartData
+        {
+            public readonly int ScanDepth;
+            public readonly List<string> TypesList;
+            public readonly List<string> DirsLists;
+
+            public StartData(int scanDepth, List<string> typesList, List<string> dirsLists)
+            {
+                ScanDepth = scanDepth;
+                TypesList = typesList;
+                DirsLists = dirsLists;
+            }
+        }
+
+        private static void ScanWorker(object sender, DoWorkEventArgs e)
+        {
             Stopwatch sw = Stopwatch.StartNew();
-            foreach (string oneDir in dirList)
+            StartData sD = (StartData) e.Argument;
+            int scanDepth = sD.ScanDepth;
+            int totalSize = 0;
+            List<CleanItem> tempList = new List<CleanItem>();
+            foreach (string baseDir in sD.DirsLists)
             {
                 bool isSteam = false;
-                if (oneDir.Equals(SteamLibraryDir()))
+                if (baseDir.Equals(SteamLibraryDir()))
                 {
                     scanDepth = 2; // WORKS FOR OTHERS BECAUSE LAST
                     isSteam = true;
-                    // BENCHMARK - OLD STEAM SCAN .11-.13 , NEW .16-.18
                 }
 
-                if (!Directory.Exists(oneDir))
-                    continue;
-                try
+                foreach (string fileFull in GetDirectoryFilesLoop(baseDir, sD.TypesList, scanDepth, isSteam))
                 {
-                    foreach (string fileFull in GetDirectoryFilesLoop(oneDir, typeList, scanDepth, isSteam))
+                    string cleanedPath = fileFull.Replace(baseDir, "").TrimStart('\\');
+                    float fileSize = new FileInfo(fileFull).Length / 1024 + 1;
+                    tempList.Add(new CleanItem
                     {
-                        string cleanedPath = fileFull.Replace(oneDir, "").TrimStart('\\');
-                        float fileSize = new FileInfo(fileFull).Length / 1024 + 1;
-                        _cleanList.Add(new CleanItem
-                        {
-                            Path = cleanedPath,
-                            Size = fileSize + " KB",
-                            Extension = Path.GetExtension(cleanedPath).ToLower(),
-                            Group = oneDir
-                        });
-                        totalSize += Convert.ToInt32(fileSize) / 1000;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    //ignored
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(@"Scan Error: " + ex.Message);
+                        Path = cleanedPath,
+                        Size = fileSize + " KB",
+                        Extension = Path.GetExtension(cleanedPath).ToLower(),
+                        Group = baseDir
+                    });
+                    totalSize += Convert.ToInt32(fileSize) / 1000;
                 }
             }
 
             sw.Stop();
-            ((Button) sender).IsEnabled = true;
-            float mSec = sw.ElapsedMilliseconds;
+            e.Result = new EndData(sw.ElapsedMilliseconds, totalSize, tempList);
+        }
+
+        private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null) return;
+            EndData eD = (EndData) e.Result;
+            Stopwatch sw = Stopwatch.StartNew();
+            _cleanList = new ObservableCollection<CleanItem>(eD.TempList);
+            LvCleaner.ItemsSource = _cleanList;
+            if (BtnGroup.IsChecked != null && (bool) BtnGroup.IsChecked)
+            {
+                CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvCleaner.ItemsSource);
+                PropertyGroupDescription groupBind = new PropertyGroupDescription("Group");
+                view.GroupDescriptions.Add(groupBind);
+            }
+
+            sw.Stop();
+            float mSec = eD.ScanTimeMsec + sw.ElapsedMilliseconds;
             LabelScanValue.Content = mSec < 1000
                 ? mSec + " ms"
                 : (mSec / 1000.00).ToString("0.00") + " sec";
             ((GridView) LvCleaner.View).Columns[0].Header =
-                @"File Path (" + Convert.ToString(LvCleaner.Items.Count) + @" Files) - (" +
-                totalSize + @" MB)";
+                @"File Path (" + Convert.ToString(LvCleaner.Items.Count) + @" Files) - (" + eD.TotalSize + @" MB)";
+            if (!_tipShown)
+            {
+                Shared.SnackBarTip(MainSnackbar);
+                _tipShown = true;
+            }
+
+            BtnAnalyze.IsEnabled = true;
+        }
+
+        private struct EndData
+        {
+            public readonly List<CleanItem> TempList;
+            public readonly float ScanTimeMsec;
+            public readonly int TotalSize;
+
+            public EndData(float scanTimeMsec, int totalSize, List<CleanItem> tempList)
+            {
+                TotalSize = totalSize;
+                TempList = tempList;
+                ScanTimeMsec = scanTimeMsec;
+            }
         }
 
         private void BtnClean_Click(object sender, EventArgs e)
@@ -244,7 +267,10 @@ namespace XTR_Toolbox
         private void CheckBoxAll_Checked(object sender, RoutedEventArgs e)
         {
             foreach (CheckBoxDirs t in _dirList)
-                t.Checked = true;
+            {
+                if (t.Enabled)
+                    t.Checked = true;
+            }
         }
 
         private void CheckBoxAll_Unchecked(object sender, RoutedEventArgs e)
@@ -297,7 +323,7 @@ namespace XTR_Toolbox
 
             public bool Checked
             {
-                [UsedImplicitly] get => _checked;
+                get => _checked;
                 set
                 {
                     if (_checked == value) return;

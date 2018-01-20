@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -33,8 +34,10 @@ namespace XTR_Toolbox
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("DateInstalled", ListSortDirection.Descending));
             view.Filter = UserFilter;
-            TxtSearch.Focus();
+            TbSearch.Focus();
+            Shared.SnackBarTip(MainSnackbar);
         }
+
 
         private static string FormatSize(string regSize)
         {
@@ -114,15 +117,15 @@ namespace XTR_Toolbox
         private void GetRegItems(RegistryKey key)
         {
             if (key == null) return;
-            foreach (string subkeyName in key.GetSubKeyNames())
-                using (RegistryKey subKey = key.OpenSubKey(subkeyName))
+            foreach (string subSoftware in key.GetSubKeyNames())
+                try
                 {
-                    if (subKey == null) continue;
-                    try
+                    using (RegistryKey subKey = key.OpenSubKey(subSoftware))
                     {
+                        if (subKey == null) continue;
                         string regName = subKey.GetValue("DisplayName", "").ToString();
                         string regRemv = subKey.GetValue("UninstallString", "").ToString().Replace("\"", "");
-                        if (regName == "" || regRemv == "") continue;
+                        if (regName.Length == 0 || regRemv.Length == 0) continue;
                         string regLoca = subKey.GetValue("InstallLocation", "").ToString();
                         string regDate = subKey.GetValue("InstallDate", "").ToString();
                         string regSize = subKey.GetValue("EstimatedSize", "").ToString();
@@ -142,13 +145,19 @@ namespace XTR_Toolbox
                             Location = regLoca
                         });
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: " + ex.Message);
-                    }
+                }
+                catch
+                {
+                    //ignored
                 }
 
             key.Close();
+        }
+
+        private void LocationCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>()
+                .All(item => !string.IsNullOrEmpty(item.Location));
         }
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
@@ -171,7 +180,7 @@ namespace XTR_Toolbox
             if (sortBy != null) LvSoftware.Items.SortDescriptions.Add(new SortDescription(sortBy, newDir));
         }
 
-        private void Clipboard_Click(object sender, RoutedEventArgs e)
+        private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             StringBuilder sb = new StringBuilder();
             int maxNameLength = (from SoftwareItem t in LvSoftware.SelectedItems select t.Name.Length)
@@ -185,8 +194,6 @@ namespace XTR_Toolbox
 
             Clipboard.SetText(sb.ToString());
         }
-
-        private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
 
         private void PopulateSoftware()
         {
@@ -203,38 +210,20 @@ namespace XTR_Toolbox
             }
         }
 
-        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource).Refresh();
         }
 
         private bool UserFilter(object item)
         {
-            if (string.IsNullOrEmpty(TxtSearch.Text))
-                return true;
-            return ((SoftwareItem) item).Name.IndexOf(TxtSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private class SoftwareItem
-        {
-            public string DateInstalled { [UsedImplicitly] get; set; }
-            public BitmapSource Icon { [UsedImplicitly] get; set; }
-            public string Name { [UsedImplicitly] get; set; }
-            public string Size { [UsedImplicitly] get; set; }
-            public string Uninstall { [UsedImplicitly] get; set; }
-            public string Location { [UsedImplicitly] get; set; }
-            public bool Msi { [UsedImplicitly] get; set; }
+            if (TbSearch.Text.Length == 0) return true;
+            return ((SoftwareItem) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void MsiCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>().All(item => item.Msi);
-        }
-
-        private void LocationCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>()
-                .All(item => !string.IsNullOrEmpty(item.Location));
         }
 
         private void MsiCmd_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -262,14 +251,13 @@ namespace XTR_Toolbox
             }
         }
 
+        private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
+
         private void OpenDirCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             try
             {
-                foreach (SoftwareItem item in LvSoftware.SelectedItems)
-                {
-                    System.Diagnostics.Process.Start(item.Location);
-                }
+                foreach (SoftwareItem item in LvSoftware.SelectedItems) Shared.StartProc(item.Location, wait: false);
             }
             catch
             {
@@ -279,15 +267,20 @@ namespace XTR_Toolbox
 
         private void UninstallCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            bool force = false;
-            if (Equals(e.Parameter, "Force"))
+            if (!(e.Command is RoutedUICommand eCommand)) return;
+            bool cmdForce = eCommand == SoftwareCmd.Force;
+            bool isForce = false;
+            if (cmdForce)
             {
+                List<string> dirsRemove =
+                    LvSoftware.SelectedItems.Cast<SoftwareItem>().Select(it => it.Location).ToList();
                 MessageBoxResult ques = MessageBox.Show(
-                    "This option will remove the application's directory.\nThis can potentially remove your settings for that application." +
+                    "These directories will be removed:\n\n" +
+                    string.Join("\n", dirsRemove) +
                     "\n\nAre you sure you want to do this?",
                     "Remove application directory", MessageBoxButton.YesNo, MessageBoxImage.Question,
                     MessageBoxResult.Yes);
-                if (ques == MessageBoxResult.Yes) force = true;
+                if (ques == MessageBoxResult.Yes) isForce = true;
                 else return;
             }
 
@@ -295,8 +288,7 @@ namespace XTR_Toolbox
             {
                 SoftwareItem item = (SoftwareItem) LvSoftware.SelectedItems[index];
                 if (!Uninstall(item.Uninstall, item.Msi)) continue;
-                if (force)
-                {
+                if (isForce)
                     try
                     {
                         Directory.Delete(item.Location, true);
@@ -305,18 +297,38 @@ namespace XTR_Toolbox
                     {
                         //ignored
                     }
-                }
 
                 _softwareList.Remove(item);
             }
+        }
+
+        private class SoftwareItem
+        {
+            public string DateInstalled { [UsedImplicitly] get; set; }
+            public BitmapSource Icon { [UsedImplicitly] get; set; }
+            public string Location { [UsedImplicitly] get; set; }
+            public bool Msi { [UsedImplicitly] get; set; }
+            public string Name { [UsedImplicitly] get; set; }
+            public string Size { [UsedImplicitly] get; set; }
+            public string Uninstall { [UsedImplicitly] get; set; }
         }
     }
 
     public static class SoftwareCmd
     {
+        public static readonly RoutedUICommand Clip = new RoutedUICommand("Copy to Clipboard", "Clip",
+            typeof(SoftwareCmd),
+            new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir", typeof(SoftwareCmd),
+            new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Force = new RoutedUICommand("Force Remove", "Force", typeof(SoftwareCmd),
+            new InputGestureCollection {new KeyGesture(Key.F, ModifierKeys.Control)});
+
         public static readonly RoutedUICommand Msi = new RoutedUICommand();
-        public static readonly RoutedUICommand Dir = new RoutedUICommand();
-        public static readonly RoutedUICommand Force = new RoutedUICommand();
-        public static readonly RoutedUICommand Remove = new RoutedUICommand();
+
+        public static readonly RoutedUICommand Remove = new RoutedUICommand("Uninstall", "Rem", typeof(SoftwareCmd),
+            new InputGestureCollection {new KeyGesture(Key.R, ModifierKeys.Control)});
     }
 }

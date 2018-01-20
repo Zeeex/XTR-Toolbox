@@ -5,29 +5,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Junk File Cleaner" Height="754.375" Width="1069"
+        Title="Junk File Cleaner" Height="754" Width="1070"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" FontSize="16">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="150*" />
-            <RowDefinition Height="55" />
+            <RowDefinition />
+            <RowDefinition Height="120" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="74*" MaxWidth="284" />
-            <ColumnDefinition Width="210" />
-            <ColumnDefinition Width="41*" />
-            <ColumnDefinition Width="210" />
+            <ColumnDefinition MaxWidth="284" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <GroupBox Margin="10,5,10,8" Grid.Row="0" Grid.Column="0"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
                 <CheckBox Checked="CheckBoxAll_Checked" Unchecked="CheckBoxAll_Unchecked"
-                          FontWeight="Bold"
-                          Style="{DynamicResource MaterialDesignUserForegroundCheckBox}">
+                          FontWeight="Bold" Style="{DynamicResource MaterialDesignUserForegroundCheckBox}"
+                          Padding="4,0,0,0">
                     Directory
                 </CheckBox>
             </GroupBox.Header>
@@ -54,70 +52,92 @@
                 </StackPanel>
             </Grid>
         </GroupBox>
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="10,0">
-            <Label Content="Scan Depth Level:"
-                   Margin="10,14,0,14" HorizontalAlignment="Left" VerticalAlignment="Center"
-                   Height="27"
-                   Width="167" />
-            <ComboBox x:Name="CbBoxLevel" SelectedIndex="5" Margin="20,0,0,0" Width="50">
-                <ComboBoxItem Content="0" />
-                <ComboBoxItem Content="1" />
-                <ComboBoxItem Content="2" />
-                <ComboBoxItem Content="3" />
-                <ComboBoxItem Content="4" />
-                <ComboBoxItem Content="5" />
-                <ComboBoxItem Content="Max" />
-            </ComboBox>
-        </StackPanel>
-        <Label Content="Scan time: " HorizontalAlignment="Left" Margin="10,14,0,14" VerticalAlignment="Center"
-               Grid.Row="1"
-               Grid.Column="2" Height="27" />
-        <Label x:Name="LabelScanValue" Content="" HorizontalAlignment="Left" Margin="102,14,0,14"
-               VerticalAlignment="Center" Grid.Row="1"
-               Grid.Column="2" Width="105" Height="27" />
-        <ListView x:Name="LvCleaner" Margin="0,0,0,8" Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="3"
+        <Grid Grid.Row="1" Grid.Column="0" Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <CheckBox x:Name="BtnGroup" Content="Show Groups (Impacts speed)" Margin="10,2" Height="26" />
+            <DockPanel Grid.Row="1" Margin="10,0">
+                <Label Content="Scan Depth Level:"
+                       Margin="0" VerticalAlignment="Center" />
+                <ComboBox x:Name="CbBoxLevel" SelectedIndex="5" Margin="0" Width="50" VerticalAlignment="Center"
+                          HorizontalAlignment="Right">
+                    <ComboBoxItem Content="0" />
+                    <ComboBoxItem Content="1" />
+                    <ComboBoxItem Content="2" />
+                    <ComboBoxItem Content="3" />
+                    <ComboBoxItem Content="4" />
+                    <ComboBoxItem Content="5" />
+                    <ComboBoxItem Content="20" />
+                </ComboBox>
+            </DockPanel>
+            <DockPanel Grid.Row="2" Margin="10,3">
+                <Label Content="Scan Time: " FontWeight="Bold" VerticalAlignment="Center" />
+                <Label x:Name="LabelScanValue" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Right"
+                       HorizontalContentAlignment="Right" />
+            </DockPanel>
+        </Grid>
+        <ListView x:Name="LvCleaner" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
                   SelectionChanged="LvCleaner_SelectionChanged">
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Expander IsExpanded="True">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                                               Foreground="Brown" FontSize="16" />
+                                                    <TextBlock Text="{Binding ItemCount}" FontSize="16"
+                                                               FontWeight="Bold" Margin="10,0,0,0" />
+                                                    <TextBlock Text=" item(s) found" FontSize="16" />
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </ListView.GroupStyle>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
                     <GridViewColumn DisplayMemberBinding="{Binding Path}" Width="520">
                         <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click">Path</GridViewColumnHeader>
+                            <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click" Content="File Path"/>
                         </GridViewColumn.Header>
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Size}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click">File Size</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click" Content="File Size" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Extension}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Extension" Click="LvUsersColumnHeader_Click">Extension</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Extension" Click="LvUsersColumnHeader_Click" Content="Extension" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button Margin="10,8,10,10" Click="BtnAnalyze_Click" Grid.Column="1" FontSize="18"
-                Grid.Row="1"
-                Height="Auto">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Analyze
-                </TextBlock>
-            </StackPanel>
-        </Button>
-        <Button x:Name="BtnClean" Margin="10,8,10,10" Click="BtnClean_Click" Grid.Column="3"
-                Grid.Row="1" Height="Auto" FontSize="18" FontWeight="Bold" IsEnabled="False">
-            <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
-                <materialDesign:PackIcon Kind="Delete" Width="22" Height="22" Margin="0,0,10,0" />
-                <TextBlock HorizontalAlignment="Right" FontWeight="Bold"
-                           Margin="0,1,0,0">
-                    Clean
-                </TextBlock>
-            </StackPanel>
-        </Button>
+        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" Grid.Row="1"
+                                 Grid.Column="1" IsTabStop="False" />
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom" Margin="0,0,30,19">
+            <Button x:Name="BtnAnalyze" Click="BtnAnalyze_Click"
+                    Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                    ToolTip="Start Scan" Margin="8">
+                <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" />
+            </Button>
+            <Button x:Name="BtnClean" Click="BtnClean_Click"
+                    Style="{DynamicResource MaterialDesignFloatingActionButton}" IsEnabled="False"
+                    ToolTip="Delete Selected Files" Margin="8">
+                <materialDesign:PackIcon Kind="Delete" Width="24" Height="24" />
+            </Button>
+        </StackPanel>
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />

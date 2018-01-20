@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Batch Services Manager" Height="610" Width="860"
+        Title="Services Manager" Height="700" Width="910"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -15,47 +17,42 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="10,5">
+            <Label Content="Quick Filter:" VerticalAlignment="Center" />
+            <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+                     TextChanged="TbSearch_TextChanged" />
+        </DockPanel>
         <ListView x:Name="LvServices" Margin="0" Grid.Row="1">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem x:Name="Start" Click="MenuItem_Click" Header="Start Service" />
-                    <MenuItem x:Name="Stop" Click="MenuItem_Click" Header="Stop Service" />
+                    <MenuItem Command="self:ServiceCmd.Start" />
+                    <MenuItem Command="self:ServiceCmd.Stop" />
                     <Separator />
-                    <MenuItem x:Name="Disable" Click="MenuItem_Click" Header="Disable" />
-                    <MenuItem x:Name="Manual" Click="MenuItem_Click" Header="Manual" />
-                    <MenuItem x:Name="Auto" Click="MenuItem_Click" Header="Automatic" />
-                    <MenuItem x:Name="AutoDelayed" Click="MenuItem_Click" Header="Auto (Delayed)" />
+                    <MenuItem Command="self:ServiceCmd.Disable" />
+                    <MenuItem Command="self:ServiceCmd.Manual" />
+                    <MenuItem Command="self:ServiceCmd.Automatic" />
+                    <MenuItem Command="self:ServiceCmd.AutoDelayed" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn DisplayMemberBinding="{Binding Full}" Width="350">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Full" Click="LvUsersColumnHeader_Click">Full Name</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                    <GridViewColumn DisplayMemberBinding="{Binding Full}" Width="380">
+                        <GridViewColumnHeader Tag="Full" Click="LvUsersColumnHeader_Click" Content="Full Name" FontWeight="Bold" />
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="220">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Service Name</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                    <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="240">
+                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Service Name" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Status}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Status" Click="LvUsersColumnHeader_Click">Status</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Status" Click="LvUsersColumnHeader_Click" Content="Status" />
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Startup}" Width="150">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Startup" Click="LvUsersColumnHeader_Click">Startup Type</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                    <GridViewColumn DisplayMemberBinding="{Binding Startup}" Width="160">
+                        <GridViewColumnHeader Tag="Startup" Click="LvUsersColumnHeader_Click" Content="Startup Type" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="98,7,10,0" TextWrapping="Wrap" TabIndex="0"
-                 FontSize="14" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Top" />
-        <Label Grid.Row="0" Content="Quick Filter:" HorizontalAlignment="Left" Margin="10,7,0,0"
-               VerticalAlignment="Top" FontSize="14" />
+        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar"
+                                 Grid.Row="1" IsTabStop="False" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                    FontFamily="Roboto" FontSize="16">
@@ -68,6 +65,12 @@
         </StatusBar>
     </Grid>
     <Window.CommandBindings>
+        <CommandBinding Command="self:ServiceCmd.Start" Executed="ServiceChange_Executed" />
+        <CommandBinding Command="self:ServiceCmd.Stop" Executed="ServiceChange_Executed" />
+        <CommandBinding Command="self:ServiceCmd.Disable" Executed="ServiceChange_Executed" />
+        <CommandBinding Command="self:ServiceCmd.Manual" Executed="ServiceChange_Executed" />
+        <CommandBinding Command="self:ServiceCmd.Automatic" Executed="ServiceChange_Executed" />
+        <CommandBinding Command="self:ServiceCmd.AutoDelayed" Executed="ServiceChange_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>

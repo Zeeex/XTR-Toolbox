@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using JetBrains.Annotations;
@@ -15,9 +17,10 @@ namespace XTR_Toolbox
 {
     public partial class Window7
     {
-        private readonly List<AddonItem> _addonList = new List<AddonItem>();
+        private readonly ObservableCollection<AddonItem> _addonList = new ObservableCollection<AddonItem>();
 
-        private readonly string _chromeData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        private readonly string _chromeData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             @"Google\Chrome\User Data\");
 
         private readonly List<string> _chromeProfileNames = new List<string>();
@@ -30,6 +33,10 @@ namespace XTR_Toolbox
             PopulateAddons();
             DataContext = new AddonItem();
             LvAddons.ItemsSource = _addonList;
+            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAddons.ItemsSource);
+            view.Filter = UserFilter;
+            TbSearch.Focus();
+            Shared.SnackBarTip(MainSnackbar);
         }
 
         private static bool DeleteAddon(string deletePath)
@@ -65,6 +72,16 @@ namespace XTR_Toolbox
             return !Directory.Exists(deletePath);
         }
 
+        private void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            for (int index = LvAddons.SelectedItems.Count - 1; index >= 0; index--)
+            {
+                AddonItem listItem = (AddonItem) LvAddons.SelectedItems[index];
+                if (DeleteAddon(Path.Combine(listItem.Path, listItem.Id)))
+                    _addonList.Remove(listItem);
+            }
+        }
+
         private IEnumerable<string> GetProfileNames()
         {
             string localJsonChrome = Path.Combine(_chromeData, "Local State");
@@ -93,16 +110,6 @@ namespace XTR_Toolbox
             _listViewSortAdorner = new SortAdorner(_listViewSortCol, newDir);
             if (_listViewSortCol != null) AdornerLayer.GetAdornerLayer(_listViewSortCol).Add(_listViewSortAdorner);
             if (sortBy != null) LvAddons.Items.SortDescriptions.Add(new SortDescription(sortBy, newDir));
-        }
-
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            for (int index = LvAddons.SelectedItems.Count - 1; index >= 0; index--)
-            {
-                AddonItem listItem = (AddonItem) LvAddons.SelectedItems[index];
-                if (Equals(sender, Delete) && DeleteAddon(Path.Combine(listItem.Path, listItem.Id)))
-                    _addonList.Remove(listItem);
-            }
         }
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
@@ -148,6 +155,15 @@ namespace XTR_Toolbox
             }
         }
 
+        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e) =>
+            CollectionViewSource.GetDefaultView(LvAddons.ItemsSource).Refresh();
+
+        private bool UserFilter(object item)
+        {
+            if (TbSearch.Text.Length == 0) return true;
+            return ((AddonItem) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (!Directory.Exists(_chromeData)) Close();
@@ -159,5 +175,11 @@ namespace XTR_Toolbox
             public string Name { [UsedImplicitly] get; set; }
             public string Path { [UsedImplicitly] get; set; }
         }
+    }
+
+    public static class BrowserCmd
+    {
+        public static readonly RoutedUICommand Delete = new RoutedUICommand("Delete", "Del", typeof(BrowserCmd),
+            new InputGestureCollection {new KeyGesture(Key.Delete, ModifierKeys.Control)});
     }
 }

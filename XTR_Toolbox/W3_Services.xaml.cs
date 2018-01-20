@@ -30,7 +30,8 @@ namespace XTR_Toolbox
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("Full", ListSortDirection.Ascending));
             view.Filter = UserFilter;
-            TxtSearch.Focus();
+            TbSearch.Focus();
+            Shared.SnackBarTip(MainSnackbar);
         }
 
         private static string GetStartType(ServiceController service)
@@ -96,74 +97,72 @@ namespace XTR_Toolbox
             if (sortBy != null) LvServices.Items.SortDescriptions.Add(new SortDescription(sortBy, newDir));
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void ServiceChange_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            string menuItem = ((MenuItem) sender).Name;
-            foreach (ServiceItem serviceItem in LvServices.SelectedItems)
+            if (!(e.Command is RoutedUICommand eCommand)) return;
+            foreach (ServiceItem item in LvServices.SelectedItems)
             {
-                string serviceName = serviceItem.Name;
-                switch (menuItem)
+                string serviceName = item.Name;
+                if (eCommand == ServiceCmd.Start)
                 {
-                    case nameof(Start):
-                        Shared.ServiceRestarter(serviceName, true);
-                        _numRunning++;
-                        TbRunNum.Text = _numRunning.ToString();
-                        break;
-                    case nameof(Stop):
-                        Shared.ServiceRestarter(serviceName, false);
-                        _numRunning--;
-                        TbRunNum.Text = _numRunning.ToString();
-                        break;
-                    default:
-                        string servType = null, delayed = null;
-                        switch (menuItem)
-                        {
-                            case nameof(Disable):
-                                servType = "4";
-                                break;
-                            case nameof(Manual):
-                                servType = "3";
-                                break;
-                            case nameof(Auto):
-                                servType = "2";
-                                delayed = "0";
-                                break;
-                            case nameof(AutoDelayed):
-                                servType = "2";
-                                delayed = "1";
-                                break;
-                        }
+                    Shared.ServiceRestarter(serviceName, true);
+                    _numRunning++;
+                    TbRunNum.Text = _numRunning.ToString();
+                }
+                else if (eCommand == ServiceCmd.Stop)
+                {
+                    Shared.ServiceRestarter(serviceName, false);
+                    _numRunning--;
+                    TbRunNum.Text = _numRunning.ToString();
+                }
+                else
+                {
+                    string startType = null, delayed = null;
+                    if (eCommand == ServiceCmd.Disable)
+                    {
+                        startType = "4";
+                    }
+                    else if (eCommand == ServiceCmd.Manual)
+                    {
+                        startType = "3";
+                    }
+                    else if (eCommand == ServiceCmd.Automatic)
+                    {
+                        startType = "2";
+                        delayed = "0";
+                    }
+                    else if (eCommand == ServiceCmd.AutoDelayed)
+                    {
+                        startType = "2";
+                        delayed = "1";
+                    }
 
-                        Shared.ServiceStartTypeSet(serviceName, servType, delayed);
-                        break;
+                    Shared.ServiceStartType(serviceName, startType, delayed);
                 }
 
                 ServiceController service = new ServiceController(serviceName);
-                serviceItem.Status = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
-                serviceItem.Startup = GetStartType(service);
+                item.Status = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
+                item.Startup = GetStartType(service);
             }
         }
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
 
-        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e) =>
+        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e) =>
             CollectionViewSource.GetDefaultView(LvServices.ItemsSource).Refresh();
 
         private bool UserFilter(object item)
         {
-            if (string.IsNullOrEmpty(TxtSearch.Text))
-                return true;
-            return ((ServiceItem) item).Full.IndexOf(TxtSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+            if (TbSearch.Text.Length == 0) return true;
+            return ((ServiceItem) item).Full.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private class ServiceItem : INotifyPropertyChanged
         {
+            public event PropertyChangedEventHandler PropertyChanged;
             private string _startup;
             private string _status;
-
-            public event PropertyChangedEventHandler PropertyChanged;
             public string Full { [UsedImplicitly] get; set; }
-
             public string Name { [UsedImplicitly] get; set; }
 
             public string Startup
@@ -191,5 +190,27 @@ namespace XTR_Toolbox
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
+    }
+
+    public static class ServiceCmd
+    {
+        public static readonly RoutedUICommand Start = new RoutedUICommand("Start Service", "Start", typeof(ServiceCmd),
+            new InputGestureCollection {new KeyGesture(Key.S, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Stop = new RoutedUICommand("Stop Service", "Stop", typeof(ServiceCmd),
+            new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis", typeof(ServiceCmd),
+            new InputGestureCollection {new KeyGesture(Key.D1, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Manual = new RoutedUICommand("Manual", "Man", typeof(ServiceCmd),
+            new InputGestureCollection {new KeyGesture(Key.D2, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Automatic = new RoutedUICommand("Automatic", "Auto", typeof(ServiceCmd),
+            new InputGestureCollection {new KeyGesture(Key.D3, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand AutoDelayed = new RoutedUICommand("Auto (Delayed)", "AutoDel",
+            typeof(ServiceCmd),
+            new InputGestureCollection {new KeyGesture(Key.D4, ModifierKeys.Control)});
     }
 }

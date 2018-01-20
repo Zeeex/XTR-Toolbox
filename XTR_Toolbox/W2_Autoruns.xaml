@@ -15,24 +15,24 @@
         <ListView x:Name="LvAutoruns">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="self:StartupCmd.State" CommandParameter="Enable" Header="Enable">
+                    <MenuItem Command="self:StartupCmd.Enable">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Check" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Command="self:StartupCmd.State" CommandParameter="Disable" Header="Disable">
+                    <MenuItem Command="self:StartupCmd.Disable">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="BlockHelper" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="self:StartupCmd.Dir" Header="Open Directory">
+                    <MenuItem Command="self:StartupCmd.Dir">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Folder" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Click="BtnDelete_Click" Header="Delete">
+                    <MenuItem Command="self:StartupCmd.Delete">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Delete" />
                         </MenuItem.Icon>
@@ -60,29 +60,27 @@
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Name</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Path}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click">Path</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click" Content="Path" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Enabled}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Enabled" Click="LvUsersColumnHeader_Click">Enabled</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Enabled" Click="LvUsersColumnHeader_Click" Content="Enabled" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
+        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" />
     </Grid>
     <Window.CommandBindings>
-        <CommandBinding Command="self:StartupCmd.State" CanExecute="ValidItemCmd_CanExecute"
+        <CommandBinding Command="self:StartupCmd.Enable" CanExecute="ValidItemCmd_CanExecute"
+                        Executed="StateChangeCmd_Executed" />
+        <CommandBinding Command="self:StartupCmd.Disable" CanExecute="ValidItemCmd_CanExecute"
                         Executed="StateChangeCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Dir" CanExecute="ValidItemCmd_CanExecute"
                         Executed="OpenDirCmd_Executed" />
+        <CommandBinding Command="self:StartupCmd.Delete" Executed="DeleteCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>

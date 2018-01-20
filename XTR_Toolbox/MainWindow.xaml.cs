@@ -59,7 +59,7 @@ namespace XTR_Toolbox
             try
             {
                 string env = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                if (env == "") return;
+                if (env.Length == 0) return;
                 foreach (Process proc in Process.GetProcessesByName("explorer")) proc.Kill();
 
                 try
@@ -102,7 +102,7 @@ namespace XTR_Toolbox
             try
             {
                 string env = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-                Shared.ServiceStartTypeSet(servName, "4");
+                Shared.ServiceStartType(servName, "4");
                 Shared.ServiceRestarter(servName, false);
                 Shared.StartProc("cmd.exe",
                     @"/C icacls ""%WinDir%\ServiceProfiles\LocalService"" /grant ""%UserName%"":F /C /T /Q",
@@ -133,7 +133,7 @@ namespace XTR_Toolbox
                 //ignored
             }
 
-            Shared.ServiceStartTypeSet(servName, "2", "0");
+            Shared.ServiceStartType(servName, "2", "0");
             Shared.ServiceRestarter(servName, true);
             btnFontReb.IsEnabled = true;
         }

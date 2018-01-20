@@ -5,40 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Hosts File Editor" Height="620" Width="720"
+        Title="Hosts File Editor" Height="630" Width="750"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" FontSize="14">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="20" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="90" />
-        </Grid.RowDefinitions>
         <TextBox x:Name="TbHostsFile" Foreground="White" Background="#FF272727" SelectionBrush="Chocolate"
                  FontFamily="Consolas" TextWrapping="Wrap" AcceptsReturn="True"
-                 VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch"
-                 Grid.ColumnSpan="3" Grid.RowSpan="2" />
-        <StackPanel x:Name="StackPanelBtns" Orientation="Horizontal" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right">
+                 VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch"/>
+        <StackPanel x:Name="StackPanelBtns" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,17">
             <Button x:Name="BtnSave" Click="BtnHostsManage_Click"
                     Style="{DynamicResource MaterialDesignFloatingActionButton}"
                     ToolTip="Save Hosts File"
-                    IsEnabled="False" HorizontalAlignment="Right" Margin="8,0">
+                    IsEnabled="False" HorizontalAlignment="Right" Margin="8">
                 <materialDesign:PackIcon Kind="ContentSave" Width="24" Height="24" />
             </Button>
             <Button Click="BtnDownload_Click"
                     Style="{DynamicResource MaterialDesignFloatingActionButton}"
                     ToolTip="Download Hosts File from winhelp2002.mvps.org"
-                    HorizontalAlignment="Right" Margin="8,0">
+                    HorizontalAlignment="Right" Margin="8">
                 <materialDesign:PackIcon Kind="CloudDownload" Width="24" Height="24" />
             </Button>
             <Button x:Name="BtnReset" Click="BtnHostsManage_Click"
                     Style="{DynamicResource MaterialDesignFloatingActionButton}"
-                    ToolTip="Reset Rules" HorizontalAlignment="Right" Margin="8,0">
+                    ToolTip="Reset Rules" HorizontalAlignment="Right" Margin="8">
                 <materialDesign:PackIcon Kind="Replay" Width="24" Height="24" />
             </Button>
         </StackPanel>

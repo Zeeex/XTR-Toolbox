@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Batch Software Manager" Height="650" Width="925"
+        Title="Software Manager" Height="650" Width="925"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -17,19 +17,20 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
-        <TextBox x:Name="TxtSearch" Grid.Row="0" Margin="98,7,10,0" TextWrapping="Wrap" TabIndex="0"
-                 FontSize="14" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Top" />
-        <Label Grid.Row="0" Content="Quick Filter:" HorizontalAlignment="Left" Margin="10,7,0,0"
-               VerticalAlignment="Top" />
+        <DockPanel Grid.Row="0" Margin="10,5">
+            <Label Content="Quick Filter:" VerticalAlignment="Center" />
+            <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+                     TextChanged="TbSearch_TextChanged" />
+        </DockPanel>
         <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="self:SoftwareCmd.Remove" Header="Uninstall">
+                    <MenuItem Command="self:SoftwareCmd.Remove">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="DeleteForever" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Command="self:SoftwareCmd.Force" CommandParameter="Force" Header="Force Remove">
+                    <MenuItem Command="self:SoftwareCmd.Force">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="FolderRemove" />
                         </MenuItem.Icon>
@@ -46,13 +47,13 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Dir" Header="Open Directory">
+                    <MenuItem Command="self:SoftwareCmd.Dir">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Folder" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Click="Clipboard_Click" Header="Copy to Clipboard">
+                    <MenuItem Command="self:SoftwareCmd.Clip">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="ClipboardOutline" />
                         </MenuItem.Icon>
@@ -70,23 +71,20 @@
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click">Name</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" FontWeight="Bold" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding DateInstalled}" Width="120">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click">Date Installed</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click"
+                                              Content="Date Installed" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Size}" Width="90">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click">Size</GridViewColumnHeader>
-                        </GridViewColumn.Header>
+                        <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click" Content="Size" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
+        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar"
+                                 Grid.Row="1" IsTabStop="False" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                    FontFamily="Roboto" FontSize="16">
@@ -98,9 +96,12 @@
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="self:SoftwareCmd.Msi" CanExecute="MsiCmd_CanExecute" Executed="MsiCmd_Executed" />
-        <CommandBinding Command="self:SoftwareCmd.Dir" CanExecute="LocationCmd_CanExecute" Executed="OpenDirCmd_Executed" />
-        <CommandBinding Command="self:SoftwareCmd.Force" CanExecute="LocationCmd_CanExecute" Executed="UninstallCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Dir" CanExecute="LocationCmd_CanExecute"
+                        Executed="OpenDirCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Force" CanExecute="LocationCmd_CanExecute"
+                        Executed="UninstallCmd_Executed" />
         <CommandBinding Command="self:SoftwareCmd.Remove" Executed="UninstallCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.Clip" Executed="ClipboardCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>
