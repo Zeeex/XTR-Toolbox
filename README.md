@@ -54,5 +54,7 @@ Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
 By [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) </br>
 By [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml) </br>
 By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) </br>
+By [Trishtech.com](https://www.trishtech.com/2018/01/xtr-toolbox-portable-windows-tweaker-and-optimizer/) </br>
 By [SnapFiles](http://www.snapfiles.com/get/xtrtoolbox.html) </br>
-By [Stahuj.cz](http://www.stahuj.centrum.cz/utility_a_ostatni/systemove_nastroje/ostatni/xtr-toolbox/)
+
+
