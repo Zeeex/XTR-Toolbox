@@ -59,7 +59,7 @@ Unlike others, this toolbox aims:
 - You can request a feature, open for all kinds of suggestions
 - Expected to get on par with other full toolbox suites in months' time
 
-## Support me if you can and enjoy my software
+## Support me if you like my software
 [DigitalTipJar](https://digitaltipjar.com/zex)
 Every bit helps me out and will make me focus more time on this.
 
