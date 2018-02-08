@@ -10,7 +10,7 @@
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14">
+        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
@@ -18,8 +18,9 @@
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="10,5">
-            <Label Content="Quick Filter:" VerticalAlignment="Center" />
+            <materialDesign:PackIcon Kind="Magnify" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
             <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+                     materialDesign:HintAssist.Hint=" Quick Name Filter"
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
         <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1">
@@ -71,7 +72,8 @@
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
-                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" FontWeight="Bold" />
+                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name"
+                                              FontWeight="Bold" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding DateInstalled}" Width="120">
                         <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click"

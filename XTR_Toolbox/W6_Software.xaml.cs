@@ -20,7 +20,7 @@ namespace XTR_Toolbox
 {
     public partial class Window6
     {
-        private readonly ObservableCollection<SoftwareItem> _softwareList = new ObservableCollection<SoftwareItem>();
+        private readonly ObservableCollection<SoftwareModel> _softwareList = new ObservableCollection<SoftwareModel>();
         private SortAdorner _listViewSortAdorner;
 
         private GridViewColumnHeader _listViewSortCol;
@@ -29,13 +29,7 @@ namespace XTR_Toolbox
         {
             InitializeComponent();
             PopulateSoftware();
-            DataContext = new SoftwareItem();
-            LvSoftware.ItemsSource = _softwareList;
-            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
-            view.SortDescriptions.Add(new SortDescription("DateInstalled", ListSortDirection.Descending));
-            view.Filter = UserFilter;
             TbSearch.Focus();
-            Shared.SnackBarTip(MainSnackbar);
         }
 
 
@@ -134,7 +128,7 @@ namespace XTR_Toolbox
                         bool isMsi = regRemv.Contains("MsiExec");
                         if (ico == null && isMsi)
                             ico = Shared.PathToIcon(GetMsiIconPath(regRemv));
-                        _softwareList.Add(new SoftwareItem
+                        _softwareList.Add(new SoftwareModel
                         {
                             Name = regName + "  " + GetVersion(subKey, regName),
                             Size = FormatSize(regSize),
@@ -156,7 +150,7 @@ namespace XTR_Toolbox
 
         private void LocationCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>()
+            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareModel>()
                 .All(item => !string.IsNullOrEmpty(item.Location));
         }
 
@@ -183,9 +177,9 @@ namespace XTR_Toolbox
         private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             StringBuilder sb = new StringBuilder();
-            int maxNameLength = (from SoftwareItem t in LvSoftware.SelectedItems select t.Name.Length)
+            int maxNameLength = (from SoftwareModel t in LvSoftware.SelectedItems select t.Name.Length)
                 .Concat(new[] {0}).Max();
-            foreach (SoftwareItem t in LvSoftware.SelectedItems)
+            foreach (SoftwareModel t in LvSoftware.SelectedItems)
             {
                 string format = "{0,-" + maxNameLength + "}  |{1,12}  |{2,11}";
                 sb.AppendFormat(format, t.Name, t.DateInstalled, t.Size);
@@ -218,20 +212,20 @@ namespace XTR_Toolbox
         private bool UserFilter(object item)
         {
             if (TbSearch.Text.Length == 0) return true;
-            return ((SoftwareItem) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+            return ((SoftwareModel) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void MsiCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareItem>().All(item => item.Msi);
+            e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareModel>().All(item => item.Msi);
         }
 
         private void MsiCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             for (int index = LvSoftware.SelectedItems.Count - 1; index >= 0; index--)
             {
-                SoftwareItem sItem = (SoftwareItem) LvSoftware.SelectedItems[index];
-                string msiExec = sItem.Uninstall;
+                SoftwareModel item = (SoftwareModel) LvSoftware.SelectedItems[index];
+                string msiExec = item.Uninstall;
                 int separatorIndex = msiExec.IndexOf(".exe", StringComparison.Ordinal);
                 if (separatorIndex < 1)
                     return;
@@ -257,7 +251,7 @@ namespace XTR_Toolbox
         {
             try
             {
-                foreach (SoftwareItem item in LvSoftware.SelectedItems) Shared.StartProc(item.Location, wait: false);
+                foreach (SoftwareModel item in LvSoftware.SelectedItems) Shared.StartProc(item.Location, wait: false);
             }
             catch
             {
@@ -273,7 +267,7 @@ namespace XTR_Toolbox
             if (cmdForce)
             {
                 List<string> dirsRemove =
-                    LvSoftware.SelectedItems.Cast<SoftwareItem>().Select(it => it.Location).ToList();
+                    LvSoftware.SelectedItems.Cast<SoftwareModel>().Select(it => it.Location).ToList();
                 MessageBoxResult ques = MessageBox.Show(
                     "These directories will be removed:\n\n" +
                     string.Join("\n", dirsRemove) +
@@ -286,7 +280,7 @@ namespace XTR_Toolbox
 
             for (int index = LvSoftware.SelectedItems.Count - 1; index >= 0; index--)
             {
-                SoftwareItem item = (SoftwareItem) LvSoftware.SelectedItems[index];
+                SoftwareModel item = (SoftwareModel) LvSoftware.SelectedItems[index];
                 if (!Uninstall(item.Uninstall, item.Msi)) continue;
                 if (isForce)
                     try
@@ -302,7 +296,7 @@ namespace XTR_Toolbox
             }
         }
 
-        private class SoftwareItem
+        private class SoftwareModel
         {
             public string DateInstalled { [UsedImplicitly] get; set; }
             public BitmapSource Icon { [UsedImplicitly] get; set; }
@@ -311,6 +305,16 @@ namespace XTR_Toolbox
             public string Name { [UsedImplicitly] get; set; }
             public string Size { [UsedImplicitly] get; set; }
             public string Uninstall { [UsedImplicitly] get; set; }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            DataContext = new SoftwareModel();
+            LvSoftware.ItemsSource = _softwareList;
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
+            view.SortDescriptions.Add(new SortDescription("DateInstalled", ListSortDirection.Descending));
+            view.Filter = UserFilter;
+            Shared.SnackBarTip(MainSnackbar);
         }
     }
 

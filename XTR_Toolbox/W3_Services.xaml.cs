@@ -14,7 +14,7 @@ namespace XTR_Toolbox
 {
     public partial class Window3
     {
-        private readonly List<ServiceItem> _servicesList = new List<ServiceItem>();
+        private readonly List<ServiceModel> _servicesList = new List<ServiceModel>();
         private SortAdorner _listViewSortAdorner;
 
         private GridViewColumnHeader _listViewSortCol;
@@ -25,7 +25,7 @@ namespace XTR_Toolbox
             InitializeComponent();
             PopulateServices();
             TbRunNum.Text = _numRunning.ToString();
-            DataContext = new ServiceItem();
+            DataContext = new ServiceModel();
             LvServices.ItemsSource = _servicesList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("Full", ListSortDirection.Ascending));
@@ -60,7 +60,7 @@ namespace XTR_Toolbox
                     array[1] = service.DisplayName;
                     array[2] = service.Status.ToString() == "Stopped" ? "" : service.Status.ToString();
                     array[3] = GetStartType(service);
-                    _servicesList.Add(new ServiceItem
+                    _servicesList.Add(new ServiceModel
                     {
                         Name = array[0],
                         Full = array[1],
@@ -100,7 +100,7 @@ namespace XTR_Toolbox
         private void ServiceChange_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (!(e.Command is RoutedUICommand eCommand)) return;
-            foreach (ServiceItem item in LvServices.SelectedItems)
+            foreach (ServiceModel item in LvServices.SelectedItems)
             {
                 string serviceName = item.Name;
                 if (eCommand == ServiceCmd.Start)
@@ -154,10 +154,10 @@ namespace XTR_Toolbox
         private bool UserFilter(object item)
         {
             if (TbSearch.Text.Length == 0) return true;
-            return ((ServiceItem) item).Full.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+            return ((ServiceModel) item).Full.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private class ServiceItem : INotifyPropertyChanged
+        private class ServiceModel : INotifyPropertyChanged
         {
             public event PropertyChangedEventHandler PropertyChanged;
             private string _startup;

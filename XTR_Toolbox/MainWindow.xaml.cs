@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,12 +11,33 @@ namespace XTR_Toolbox
 {
     public partial class MainWindow
     {
+        private readonly HttpClient _cl = new HttpClient();
+        public const string XtrVer = "1.7";
+
         public MainWindow()
         {
             InitializeComponent();
+            Title += XtrVer;
             if (Environment.OSVersion.Version.Major <= 6 && Environment.OSVersion.Version.Minor < 2)
                 BtnWinApps.IsEnabled = false; // DISABLED FOR WIN7
             BtnChrome.IsEnabled = ChromeBtnState();
+            UpdateCheckAsync();
+        }
+
+        private async void UpdateCheckAsync()
+        {
+            try
+            {
+                string res =
+                    await _cl.GetStringAsync(
+                        "https://gist.githubusercontent.com/Zeeex/33dc2b1bda3a4055a5bd293c4e425473/raw/");
+                if (string.CompareOrdinal(XtrVer, res) < 0)
+                    Title += @" (Latest: " + res + @")";
+            }
+            catch
+            {
+                // OFFLINE
+            }
         }
 
         private static bool ChromeBtnState()
@@ -49,7 +71,9 @@ namespace XTR_Toolbox
                 w = new Window6();
             else if (Equals(sender, BtnChrome))
                 w = new Window7();
+            Hide();
             w.ShowDialog();
+            Show();
         }
 
         private void BtnIconRebuild_Click(object sender, RoutedEventArgs e)

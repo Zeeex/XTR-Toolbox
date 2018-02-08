@@ -32,6 +32,12 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
+                    <MenuItem Command="self:StartupCmd.Clip">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ClipboardOutline" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
                     <MenuItem Command="self:StartupCmd.Delete">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Delete" />
@@ -80,6 +86,7 @@
                         Executed="StateChangeCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Dir" CanExecute="ValidItemCmd_CanExecute"
                         Executed="OpenDirCmd_Executed" />
+        <CommandBinding Command="self:StartupCmd.Clip" Executed="ClipboardCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Delete" Executed="DeleteCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>

@@ -17,7 +17,7 @@ namespace XTR_Toolbox
 {
     public partial class Window7
     {
-        private readonly ObservableCollection<AddonItem> _addonList = new ObservableCollection<AddonItem>();
+        private readonly ObservableCollection<AddonModel> _addonList = new ObservableCollection<AddonModel>();
 
         private readonly string _chromeData = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -31,7 +31,7 @@ namespace XTR_Toolbox
         {
             InitializeComponent();
             PopulateAddons();
-            DataContext = new AddonItem();
+            DataContext = new AddonModel();
             LvAddons.ItemsSource = _addonList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAddons.ItemsSource);
             view.Filter = UserFilter;
@@ -76,9 +76,9 @@ namespace XTR_Toolbox
         {
             for (int index = LvAddons.SelectedItems.Count - 1; index >= 0; index--)
             {
-                AddonItem listItem = (AddonItem) LvAddons.SelectedItems[index];
-                if (DeleteAddon(Path.Combine(listItem.Path, listItem.Id)))
-                    _addonList.Remove(listItem);
+                AddonModel item = (AddonModel) LvAddons.SelectedItems[index];
+                if (DeleteAddon(Path.Combine(item.Path, item.Id)))
+                    _addonList.Remove(item);
             }
         }
 
@@ -140,7 +140,7 @@ namespace XTR_Toolbox
                     try
                     {
                         string addonName = (string) i.First["manifest"]["name"];
-                        _addonList.Add(new AddonItem
+                        _addonList.Add(new AddonModel
                         {
                             Id = addonId,
                             Name = addonName,
@@ -161,7 +161,7 @@ namespace XTR_Toolbox
         private bool UserFilter(object item)
         {
             if (TbSearch.Text.Length == 0) return true;
-            return ((AddonItem) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+            return ((AddonModel) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -169,7 +169,7 @@ namespace XTR_Toolbox
             if (!Directory.Exists(_chromeData)) Close();
         }
 
-        private class AddonItem
+        private class AddonModel
         {
             public string Id { [UsedImplicitly] get; set; }
             public string Name { [UsedImplicitly] get; set; }

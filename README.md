@@ -13,7 +13,7 @@ Portable tool to tweak, clean and optimize Windows.
 - Windows 7, 8.1, 10 (32, 64 bits)
 - .Net Framework: 4.6.2+
 
-## Features:
+## Features Overview:
 #### Quick Tools:
 - Rebuild Icon Cache
 - Rebuild Font Cache
@@ -45,7 +45,23 @@ Portable tool to tweak, clean and optimize Windows.
   - Filter by custom extensions
 - Chrome Extensions Manager
 
-Many more features to come in future...
+## What sets this toolbox apart from many others?
+Unlike others, this toolbox aims:
+- To be fast and lightweight regardless of feature set
+- Use modern technologies
+- No unnecessary things or bloat
+- Support latest version of Windows
+- Easy to use and have a pleasing interface
+
+## Project Goals - Plans
+- Add help wiki
+- Add a lot more features (Already have some in mind)
+- You can request a feature, open for all kinds of suggestions
+- Expected to get on par with other full toolbox suites in months' time
+
+## Support me if you can and enjoy my software
+[DigitalTipJar](https://digitaltipjar.com/zex)
+Every bit helps me out and will make me focus more time on this.
 
 ## Download and Changelog:
 Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
@@ -54,5 +70,5 @@ Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
 By [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) </br>
 By [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml) </br>
 By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) </br>
+By [Trishtech.com](https://www.trishtech.com/2018/01/xtr-toolbox-portable-windows-tweaker-and-optimizer/) </br>
 By [SnapFiles](http://www.snapfiles.com/get/xtrtoolbox.html) </br>
-By [Stahuj.cz](http://www.stahuj.centrum.cz/utility_a_ostatni/systemove_nastroje/ostatni/xtr-toolbox/)

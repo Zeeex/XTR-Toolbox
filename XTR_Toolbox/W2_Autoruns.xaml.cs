@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -17,7 +18,7 @@ namespace XTR_Toolbox
 {
     public partial class Window2
     {
-        private readonly ObservableCollection<RunItem> _autorunsList = new ObservableCollection<RunItem>();
+        private readonly ObservableCollection<StartupModel> _autorunsList = new ObservableCollection<StartupModel>();
         private readonly HashSet<string> _brokenRun = new HashSet<string>();
 
         private readonly string[] _groupName =
@@ -30,7 +31,7 @@ namespace XTR_Toolbox
         {
             InitializeComponent();
             AutorunsScan();
-            DataContext = new RunItem();
+            DataContext = new StartupModel();
             LvAutoruns.ItemsSource = _autorunsList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
             PropertyGroupDescription groupBind = new PropertyGroupDescription("Group");
@@ -43,7 +44,7 @@ namespace XTR_Toolbox
             if (brokenItems.Count <= 0) return;
             List<string> output = brokenItems.ToList();
             foreach (string outputItem in output)
-                _autorunsList.Add(new RunItem
+                _autorunsList.Add(new StartupModel
                 {
                     Name = outputItem,
                     Path = "",
@@ -108,7 +109,7 @@ namespace XTR_Toolbox
                 {
                     for (int index = LvAutoruns.SelectedItems.Count - 1; index >= 0; index--)
                     {
-                        RunItem itemToDelete = (RunItem) LvAutoruns.SelectedItems[index];
+                        StartupModel itemToDelete = (StartupModel) LvAutoruns.SelectedItems[index];
                         string nameAutorun = itemToDelete?.Name;
                         if (string.IsNullOrEmpty(nameAutorun)) continue;
                         string itemGroup = itemToDelete.Group;
@@ -193,7 +194,7 @@ namespace XTR_Toolbox
                         }
 
                         string fileExe = Environment.ExpandEnvironmentVariables(cleanValue);
-                        _autorunsList.Add(new RunItem
+                        _autorunsList.Add(new StartupModel
                         {
                             Name = runName,
                             Icon = Shared.PathToIcon(fileExe),
@@ -246,7 +247,7 @@ namespace XTR_Toolbox
         {
             try
             {
-                foreach (RunItem item in LvAutoruns.SelectedItems)
+                foreach (StartupModel item in LvAutoruns.SelectedItems)
                 {
                     string dirFull = Path.GetDirectoryName(item.Path);
                     if (dirFull != null)
@@ -273,7 +274,7 @@ namespace XTR_Toolbox
             };
             using (RegistryKey reg64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
             {
-                foreach (RunItem itemToSet in LvAutoruns.SelectedItems)
+                foreach (StartupModel itemToSet in LvAutoruns.SelectedItems)
                 {
                     if (itemToSet == null) continue;
                     itemToSet.Enabled = enb ? "Yes" : "No";
@@ -294,11 +295,11 @@ namespace XTR_Toolbox
 
         private void ValidItemCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = LvAutoruns.SelectedItems.Cast<RunItem>()
+            e.CanExecute = LvAutoruns.SelectedItems.Cast<StartupModel>()
                 .All(item => item.Group != _groupName[_groupName.Length - 1]);
         }
 
-        private class RunItem : INotifyPropertyChanged
+        private class StartupModel : INotifyPropertyChanged
         {
             private string _enabled;
 
@@ -323,6 +324,21 @@ namespace XTR_Toolbox
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
+
+        private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            int maxNameLength = (from StartupModel t in LvAutoruns.SelectedItems select t.Name.Length)
+                .Concat(new[] {0}).Max();
+            foreach (StartupModel t in LvAutoruns.SelectedItems)
+            {
+                string format = "{0,-" + maxNameLength + "}  | {1,-3} | {2}";
+                sb.AppendFormat(format, t.Name, t.Enabled, t.Path);
+                sb.AppendLine();
+            }
+
+            Clipboard.SetText(sb.ToString());
+        }
     }
 
     public static class StartupCmd
@@ -335,6 +351,9 @@ namespace XTR_Toolbox
 
         public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis", typeof(StartupCmd),
             new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Clip = new RoutedUICommand("Copy to Clipboard", "Clip",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
 
         public static readonly RoutedUICommand Delete = new RoutedUICommand("Delete", "Del", typeof(StartupCmd),
             new InputGestureCollection {new KeyGesture(Key.Delete, ModifierKeys.Control)});

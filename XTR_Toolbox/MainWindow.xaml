@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="XTR Toolbox 1.6" Height="442" Width="560"
+        Title="XTR Toolbox "
+        Height="442" Width="560"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.FontWeight="Medium"
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="settings.ico">
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="234" />
@@ -124,13 +125,20 @@
             </Grid>
         </GroupBox>
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
-                   Grid.Column="0" Grid.Row="2">
-            <TextBlock FontFamily="Roboto" FontSize="16" Margin="5,0,0,0">
+                   Grid.Column="0" Grid.Row="2" FontFamily="Roboto" FontSize="16" Padding="6,0">
+            <StatusBarItem>
                 <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://goo.gl/zEgLR6"
                            Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
                     https://xtrtoolbox.blogspot.com/
                 </Hyperlink>
-            </TextBlock>
+            </StatusBarItem>
+            <StatusBarItem DockPanel.Dock="Right">
+                <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://digitaltipjar.com/zex"
+                           Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
+                    Support me
+                </Hyperlink>
+            </StatusBarItem>
+            <TextBlock DockPanel.Dock="Right" />
         </StatusBar>
     </Grid>
     <Window.CommandBindings>

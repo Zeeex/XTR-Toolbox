@@ -24,16 +24,21 @@
                   FontSize="14" Margin="10,0"
                   Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="0" />
         <ListBox x:Name="AppsListBox" Margin="8,0" Grid.ColumnSpan="2" Grid.Column="0" FontSize="14" Grid.Row="1"
-                 SelectionChanged="AppsListBox_SelectionChanged">
+                 SelectionChanged="AppsListBox_SelectionChanged" Grid.IsSharedSizeScope="True">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox Content="{Binding Text}" IsChecked="{Binding Checked}"
-                              d:DataContext="{d:DesignData }" IsTabStop="False" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ColumnSize" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Content="{Binding Text}" IsChecked="{Binding Checked}"
+                                  d:DataContext="{d:DesignData }" IsTabStop="False" />
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
+                    <WrapPanel />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
         </ListBox>
