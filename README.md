@@ -61,8 +61,7 @@ Unlike others, this toolbox aims:
 
 ## Support me if you like my software
 <a href="https://www.patreon.com/bePatron?u=4319301">
-<img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a patron">
-</a>
+<img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a patron"></a><br>
 Every bit helps me out and will make me focus more time on this.
 
 ## Download and Changelog:
