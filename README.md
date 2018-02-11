@@ -60,7 +60,9 @@ Unlike others, this toolbox aims:
 - Expected to get on par with other full toolbox suites in months' time
 
 ## Support me if you like my software
-[DigitalTipJar](https://digitaltipjar.com/zex)
+<a href="https://www.patreon.com/bePatron?u=4319301">
+<img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a patron">
+</a>
 Every bit helps me out and will make me focus more time on this.
 
 ## Download and Changelog:
@@ -69,6 +71,6 @@ Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
 ## Reviews
 By [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) </br>
 By [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml) </br>
-By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) </br>
+By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) - Named [best freeware](http://www.chip.de/bildergalerie/Freeware-des-Monats-2018-Galerie_130718114.html) of the month of february 2018 </br>
 By [Trishtech.com](https://www.trishtech.com/2018/01/xtr-toolbox-portable-windows-tweaker-and-optimizer/) </br>
 By [SnapFiles](http://www.snapfiles.com/get/xtrtoolbox.html) </br>
