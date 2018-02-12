@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -6,13 +7,36 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using JetBrains.Annotations;
 
 namespace XTR_Toolbox
 {
     public partial class MainWindow
     {
+        public const string XtrVer = "1.8";
         private readonly HttpClient _cl = new HttpClient();
-        public const string XtrVer = "1.7";
+        private readonly TextModel _textBind = new TextModel();
+
+        private readonly string[] _updates =
+        {
+            "KB2976978",
+            "KB3075249",
+            "KB3080149",
+            "KB3021917",
+            "KB3022345",
+            "KB3068708",
+            "KB3044374",
+            "KB3035583",
+            "KB2990214",
+            "KB2952664",
+            "KB3075853",
+            "KB3065987",
+            "KB3050265",
+            "KB3075851",
+            "KB2902907"
+        };
+
+        private string _telemetryText;
 
         public MainWindow()
         {
@@ -22,22 +46,7 @@ namespace XTR_Toolbox
                 BtnWinApps.IsEnabled = false; // DISABLED FOR WIN7
             BtnChrome.IsEnabled = ChromeBtnState();
             UpdateCheckAsync();
-        }
-
-        private async void UpdateCheckAsync()
-        {
-            try
-            {
-                string res =
-                    await _cl.GetStringAsync(
-                        "https://gist.githubusercontent.com/Zeeex/33dc2b1bda3a4055a5bd293c4e425473/raw/");
-                if (string.CompareOrdinal(XtrVer, res) < 0)
-                    Title += @" (Latest: " + res + @")";
-            }
-            catch
-            {
-                // OFFLINE
-            }
+            TelemetryDialogText();
         }
 
         private static bool ChromeBtnState()
@@ -118,6 +127,7 @@ namespace XTR_Toolbox
             }
         }
 
+
         private void BtnFontRebuild_Click(object sender, RoutedEventArgs e)
         {
             Button btnFontReb = (Button) sender;
@@ -162,7 +172,6 @@ namespace XTR_Toolbox
             btnFontReb.IsEnabled = true;
         }
 
-
         private void BtnEventsCleaner_Click(object sender, RoutedEventArgs e)
         {
             Button btnEvent = (Button) sender;
@@ -191,46 +200,15 @@ namespace XTR_Toolbox
             btnEvent.IsEnabled = true;
         }
 
-        private void BtnRemoveTelemetry_Click(object sender, RoutedEventArgs e)
+        private void BtnTelemetryYes_Click(object sender, RoutedEventArgs e)
         {
-            Button btnTelemetry = (Button) sender;
-            btnTelemetry.IsEnabled = false;
-            string[] updates =
-            {
-                "KB2976978",
-                "KB3075249",
-                "KB3080149",
-                "KB3021917",
-                "KB3022345",
-                "KB3068708",
-                "KB3044374",
-                "KB3035583",
-                "KB2990214",
-                "KB2952664",
-                "KB3075853",
-                "KB3065987",
-                "KB3050265",
-                "KB3075851",
-                "KB2902907"
-            };
-            MessageBoxResult mB = MessageBox.Show(
-                "This will remove Windows Updates related to telemetry in Windows 7 and 8.1. This has no effect on Windows 10. It's safe to run. \n\nUpdates to uninstall:\n" +
-                string.Join("\n", updates) +
-                "\n\nAre you sure you want to do this?",
-                "Uninstall Telemetry Updates", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
-            if (mB == MessageBoxResult.No)
-            {
-                btnTelemetry.IsEnabled = true;
-                return;
-            }
-
             string batPath = Path.Combine(Path.GetTempPath(), "Uninstall_Telemetry_Updates.bat");
             if (File.Exists(batPath))
                 File.Delete(batPath);
             using (StreamWriter sw = File.CreateText(batPath))
             {
                 sw.WriteLine("@echo off");
-                foreach (string up in updates)
+                foreach (string up in _updates)
                     sw.WriteLine("start /w wusa.exe /uninstall /kb:" + up.Replace("KB", "") + " /quiet /norestart");
 
                 sw.WriteLine("exit");
@@ -238,12 +216,59 @@ namespace XTR_Toolbox
 
             Shared.StartProc(batPath, exMsg: "There was an error uninstalling telemetry updates.\n");
             File.Delete(batPath);
-            btnTelemetry.IsEnabled = true;
         }
 
         private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e) =>
             Process.Start(e.Uri.AbsoluteUri);
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
+
+        private void TelemetryDialogText()
+        {
+            _telemetryText =
+                "This will remove Windows Updates related to telemetry in Windows 7 and 8.1. \nThis has no effect on Windows 10. It's safe to run. \n\nUpdates to uninstall:\n" +
+                string.Join("\n", _updates) +
+                "\n\nAre you sure you want to do this?";
+            TbTelemetry.DataContext = _textBind;
+            _textBind.TelemetryText = _telemetryText;
+        }
+
+        private async void UpdateCheckAsync()
+        {
+            try
+            {
+                string res =
+                    await _cl.GetStringAsync(
+                        "https://gist.githubusercontent.com/Zeeex/33dc2b1bda3a4055a5bd293c4e425473/raw/");
+                if (string.CompareOrdinal(XtrVer, res) < 0)
+                    Title += @" (Latest: " + res + @")";
+            }
+            catch
+            {
+                // OFFLINE
+            }
+        }
+
+        private class TextModel : INotifyPropertyChanged
+        {
+            private string _telText;
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public string TelemetryText
+            {
+                [UsedImplicitly] get => _telText;
+
+                set
+                {
+                    if (_telText == value) return;
+                    _telText = value;
+                    NotifyPropertyChanged(nameof(TelemetryText));
+                }
+            }
+
+            private void NotifyPropertyChanged(string propName) =>
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        }
     }
 }

@@ -6,11 +6,11 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Services Manager" Height="700" Width="910"
+        Title="Services Manager" Height="700" Width="920"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14">
+        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
@@ -18,12 +18,12 @@
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="10,5">
-            <materialDesign:PackIcon Kind="Magnify" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
-            <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+            <materialDesign:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
+            <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
                      materialDesign:HintAssist.Hint=" Quick Name Filter"
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
-        <ListView x:Name="LvServices" Margin="0" Grid.Row="1">
+        <ListView x:Name="LvServices" Margin="0" Grid.Row="1" FontSize="14">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="self:ServiceCmd.Start" />
@@ -38,7 +38,8 @@
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
                     <GridViewColumn DisplayMemberBinding="{Binding Full}" Width="380">
-                        <GridViewColumnHeader Tag="Full" Click="LvUsersColumnHeader_Click" Content="Full Name" FontWeight="Bold" />
+                        <GridViewColumnHeader Tag="Full" Click="LvUsersColumnHeader_Click" Content="Full Name"
+                                              FontWeight="Bold" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="240">
                         <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Service Name" />

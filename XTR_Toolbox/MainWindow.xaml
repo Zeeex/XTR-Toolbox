@@ -13,134 +13,152 @@
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="234" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="29" />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-        </Grid.ColumnDefinitions>
-        <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,8"
-                  Style="{DynamicResource MaterialDesignCardGroupBox}"
-                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
-            <GroupBox.Header>
-                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
-                    <TextBlock FontSize="16">
-                        Quick Tools
-                    </TextBlock>
+    <materialDesign:DialogHost CloseOnClickAway="True" IsTabStop="False">
+        <materialDesign:DialogHost.DialogContent>
+            <StackPanel Margin="12" Orientation="Vertical" Width="400">
+                <TextBlock x:Name="TbTelemetry" Text="{Binding TelemetryText}" TextWrapping="Wrap"
+                           FontSize="14" Margin="10,0" />
+                <Separator Margin="0,8" Background="{DynamicResource PrimaryHueMidBrush}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Yes" Style="{DynamicResource MaterialDesignFlatButton}"
+                            Command="materialDesign:DialogHost.CloseDialogCommand"
+                            Width="100" Click="BtnTelemetryYes_Click" />
+                    <Button Content="No" Style="{DynamicResource MaterialDesignFlatButton}" IsCancel="True"
+                            IsDefault="True" Command="materialDesign:DialogHost.CloseDialogCommand" Width="100" />
                 </StackPanel>
-            </GroupBox.Header>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                </Grid.RowDefinitions>
-                <Button Content="Rebuild Icon Cache" Click="BtnIconRebuild_Click" Margin="5" Height="Auto" />
-                <Button Content="Rebuild Font Cache" Grid.Row="1" Click="BtnFontRebuild_Click" Margin="5" Height="Auto" />
-                <Button Content="Reset Event Logs" Grid.Row="2" Click="BtnEventsCleaner_Click" Margin="5" Height="Auto" />
-            </Grid>
-        </GroupBox>
-        <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,8"
-                  Style="{DynamicResource MaterialDesignCardGroupBox}"
-                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
-            <GroupBox.Header>
-                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
-                    <TextBlock FontSize="16">
-                        Privacy Tools
+            </StackPanel>
+        </materialDesign:DialogHost.DialogContent>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="234" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="29" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,8"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <TextBlock Text="Quick Tools" FontSize="16" />
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Button Content="Rebuild Icon Cache" Click="BtnIconRebuild_Click" Margin="5" Height="Auto" />
+                    <Button Content="Rebuild Font Cache" Grid.Row="1" Click="BtnFontRebuild_Click" Margin="5"
+                            Height="Auto" />
+                    <Button Content="Reset Event Logs" Grid.Row="2" Click="BtnEventsCleaner_Click" Margin="5"
+                            Height="Auto" />
+                </Grid>
+            </GroupBox>
+            <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,8"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <TextBlock Text="Privacy Tools" FontSize="16" />
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Button x:Name="BtnWinApps" Content="Windows Apps Manager..." Click="BtnMultiWindowOpener"
+                            Height="Auto" Margin="5" />
+                    <Button Grid.Row="1" Content="Remove Telemetry Updates" Height="Auto" Margin="5"
+                            Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" />
+                </Grid>
+            </GroupBox>
+            <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <TextBlock Text="Other Tools" FontSize="16" />
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Button x:Name="BtnAutoruns" Content="Startup Manager..." Click="BtnMultiWindowOpener"
+                            Height="Auto"
+                            Margin="5" />
+                    <Button x:Name="BtnServices" Content="Services Manager..." Grid.Row="1"
+                            Click="BtnMultiWindowOpener"
+                            Height="Auto" Margin="5" />
+                    <Button x:Name="BtnSoftware" Content="Software Manager..." Grid.Row="2"
+                            Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
+                    <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Grid.Row="3"
+                            Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
+                </Grid>
+            </GroupBox>
+            <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,8"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <TextBlock Text="Cleanup Tools" FontSize="16" />
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Button x:Name="BtnCleaner" Content="Junk Files Cleaner..." Click="BtnMultiWindowOpener"
+                            Height="Auto" Margin="5" />
+                    <Button Grid.Row="1" x:Name="BtnChrome" Content="Chrome Extensions Manager..."
+                            Click="BtnMultiWindowOpener"
+                            Height="Auto" Margin="5" />
+                </Grid>
+            </GroupBox>
+            <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
+                       Grid.Column="0" Grid.Row="2" FontFamily="Roboto" FontSize="16" Padding="6,0">
+                <StatusBarItem>
+                    <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://goo.gl/zEgLR6"
+                               Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
+                        https://xtrtoolbox.blogspot.com/
+                    </Hyperlink>
+                </StatusBarItem>
+                <StatusBarItem DockPanel.Dock="Right">
+                    <TextBlock>
+
+                        <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate"
+                                   NavigateUri="https://www.patreon.com/bePatron?u=4319301"
+                                   Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
+                            <InlineUIContainer>
+                                <materialDesign:PackIcon Kind="Gift" />
+                            </InlineUIContainer>
+                            <Run Text=" Become a Patron" />
+                        </Hyperlink>
                     </TextBlock>
-                </StackPanel>
-            </GroupBox.Header>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                </Grid.RowDefinitions>
-                <Button x:Name="BtnWinApps" Content="Windows Apps Manager..." Click="BtnMultiWindowOpener"
-                        Height="Auto"
-                        Margin="5" />
-                <Button Grid.Row="1" Content="Remove Telemetry Updates" Height="Auto"
-                        Margin="5" Click="BtnRemoveTelemetry_Click" />
-            </Grid>
-        </GroupBox>
-        <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
-                  Style="{DynamicResource MaterialDesignCardGroupBox}"
-                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
-            <GroupBox.Header>
-                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,-3,5,0" />
-                    <TextBlock FontSize="16">
-                        Other Tools
-                    </TextBlock>
-                </StackPanel>
-            </GroupBox.Header>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                </Grid.RowDefinitions>
-                <Button x:Name="BtnAutoruns" Content="Startup Manager..." Click="BtnMultiWindowOpener" Height="Auto"
-                        Margin="5" />
-                <Button x:Name="BtnServices" Content="Services Manager..." Grid.Row="1" Click="BtnMultiWindowOpener"
-                        Height="Auto" Margin="5" />
-                <Button x:Name="BtnSoftware" Content="Software Manager..." Grid.Row="2"
-                        Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
-                <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Grid.Row="3"
-                        Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
-            </Grid>
-        </GroupBox>
-        <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,8"
-                  Style="{DynamicResource MaterialDesignCardGroupBox}"
-                  Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
-            <GroupBox.Header>
-                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                    <materialDesign:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,-3,5,0" />
-                    <TextBlock FontSize="16">
-                        Cleanup Tools
-                    </TextBlock>
-                </StackPanel>
-            </GroupBox.Header>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="40" />
-                </Grid.RowDefinitions>
-                <Button x:Name="BtnCleaner" Content="Junk Files Cleaner..." Click="BtnMultiWindowOpener"
-                        Height="Auto" Margin="5" />
-                <Button Grid.Row="1" x:Name="BtnChrome" Content="Chrome Extensions Manager..."
-                        Click="BtnMultiWindowOpener"
-                        Height="Auto" Margin="5" />
-            </Grid>
-        </GroupBox>
-        <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
-                   Grid.Column="0" Grid.Row="2" FontFamily="Roboto" FontSize="16" Padding="6,0">
-            <StatusBarItem>
-                <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://goo.gl/zEgLR6"
-                           Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
-                    https://xtrtoolbox.blogspot.com/
-                </Hyperlink>
-            </StatusBarItem>
-            <StatusBarItem DockPanel.Dock="Right">
-                <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://digitaltipjar.com/zex"
-                           Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
-                    Support me
-                </Hyperlink>
-            </StatusBarItem>
-            <TextBlock DockPanel.Dock="Right" />
-        </StatusBar>
-    </Grid>
+                </StatusBarItem>
+                <TextBlock DockPanel.Dock="Right" />
+            </StatusBar>
+        </Grid>
+    </materialDesign:DialogHost>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>

@@ -6,35 +6,32 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Junk File Cleaner" Height="754" Width="1070"
+        Title="Junk File Cleaner" Height="830" Width="1220"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" FontSize="16" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="120" />
+            <RowDefinition MinHeight="200" />
+            <RowDefinition Height="180" />
+            <RowDefinition Height="150" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition MaxWidth="284" />
-            <ColumnDefinition />
+            <ColumnDefinition MinWidth="284" />
         </Grid.ColumnDefinitions>
         <GroupBox Margin="10,5,10,8" Grid.Row="0" Grid.Column="0"
                   Style="{DynamicResource MaterialDesignCardGroupBox}"
                   materialDesign:ColorZoneAssist.Mode="PrimaryDark">
             <GroupBox.Header>
-                <CheckBox Checked="CheckBoxAll_Checked" Unchecked="CheckBoxAll_Unchecked"
+                <CheckBox Content="Directory" Checked="CheckBoxAll_Checked" Unchecked="CheckBoxAll_Unchecked"
                           FontWeight="Bold" Style="{DynamicResource MaterialDesignUserForegroundCheckBox}"
-                          Padding="4,0,0,0">
-                    Directory
-                </CheckBox>
+                          Padding="4,0,0,0" />
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*" />
-                    <RowDefinition Height="15" />
-                    <RowDefinition Height="70" />
                 </Grid.RowDefinitions>
                 <ListBox x:Name="LbDir" SelectionChanged="LbSidebar_SelectionChanged"
                          DockPanel.Dock="Top">
@@ -46,41 +43,57 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <Separator Grid.Row="1" Style="{StaticResource MaterialDesignDarkSeparator}" Margin="5,0" />
-                <StackPanel Grid.Row="2" Margin="0,4">
-                    <TextBlock Margin="0,0,0,5">Filter by extension</TextBlock>
-                    <TextBox x:Name="TBoxTypes" materialDesign:HintAssist.Hint=".tmp, *.log" Margin="0,5,0,0" />
-                </StackPanel>
             </Grid>
         </GroupBox>
-        <Grid Grid.Row="1" Grid.Column="0" Margin="8">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <CheckBox x:Name="BtnGroup" Content="Show Groups (Impacts speed)" Margin="10,2" Height="26" />
-            <DockPanel Grid.Row="1" Margin="10,0">
-                <Label Content="Scan Depth Level:"
-                       Margin="0" VerticalAlignment="Center" />
-                <ComboBox x:Name="CbBoxLevel" SelectedIndex="5" Margin="0" Width="50" VerticalAlignment="Center"
-                          HorizontalAlignment="Right">
-                    <ComboBoxItem Content="0" />
-                    <ComboBoxItem Content="1" />
-                    <ComboBoxItem Content="2" />
-                    <ComboBoxItem Content="3" />
-                    <ComboBoxItem Content="4" />
-                    <ComboBoxItem Content="5" />
-                    <ComboBoxItem Content="20" />
-                </ComboBox>
-            </DockPanel>
-            <DockPanel Grid.Row="2" Margin="10,3">
-                <Label Content="Scan Time: " FontWeight="Bold" VerticalAlignment="Center" />
-                <Label x:Name="LabelScanValue" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Right"
-                       HorizontalContentAlignment="Right" Content="{Binding ScanTime, Mode=OneWay}" />
-            </DockPanel>
-        </Grid>
-        <ListView x:Name="LvCleaner" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+        <GroupBox Margin="10,5,10,8" Grid.Row="1" Grid.Column="0"
+                  Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+            <GroupBox.Header>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Filter" Width="22" Height="22" Margin="0,-3,5,0"
+                                             Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" />
+                    <TextBlock Text="Filter" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" />
+                </StackPanel>
+            </GroupBox.Header>
+            <StackPanel>
+                <DockPanel>
+                    <TextBlock Text="Extension:" VerticalAlignment="Center" />
+                    <TextBox x:Name="TBoxTypes" materialDesign:HintAssist.Hint=".tmp, *.log" Margin="10,0" />
+                </DockPanel>
+                <Separator Style="{StaticResource MaterialDesignDarkSeparator}" Margin="5,0" />
+                <DockPanel>
+                    <TextBlock Text="Date:" VerticalAlignment="Center" />
+                    <DatePicker x:Name="DateFilter" materialDesign:HintAssist.Hint="Pick Date" Margin="10,0" />
+                </DockPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,13,0,0" HorizontalAlignment="Left">
+                    <TextBlock Text="Before Date" VerticalAlignment="Center" />
+                    <ToggleButton x:Name="TglDate" Margin="16,0" />
+                    <TextBlock Text="After Date" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Margin="10,5,10,8" Grid.Row="2" Grid.Column="0"
+                  Style="{DynamicResource MaterialDesignCardGroupBox}"
+                  materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+            <GroupBox.Header>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Settings" Width="22" Height="22" Margin="0,-3,5,0"
+                                             Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" />
+                    <TextBlock Text="Advanced" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" />
+                </StackPanel>
+            </GroupBox.Header>
+            <StackPanel>
+                <CheckBox x:Name="CheckBoxGroup" Content="Group Items" Height="30" />
+                <Separator Style="{StaticResource MaterialDesignDarkSeparator}" Margin="5,0" />
+                <DockPanel>
+                    <Label Content="Scan Depth Level:" />
+                    <ComboBox x:Name="CbBoxLevel" Width="50" HorizontalAlignment="Right" Margin="0,0,10,0" />
+                </DockPanel>
+            </StackPanel>
+        </GroupBox>
+        <ListView x:Name="LvCleaner" Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" FontSize="14" Margin="0,0,0,8">
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.ContainerStyle>
@@ -92,7 +105,8 @@
                                             <Expander.Header>
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Name}" FontWeight="Bold"
-                                                               Foreground="Brown" FontSize="16" />
+                                                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                               FontSize="16" />
                                                     <TextBlock Text="{Binding ItemCount}" FontSize="16"
                                                                FontWeight="Bold" Margin="10,0,0,0" />
                                                     <TextBlock Text=" item(s) found" FontSize="16" />
@@ -128,26 +142,40 @@
                     <GridViewColumn DisplayMemberBinding="{Binding Size}">
                         <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click" Content="File Size" />
                     </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Date}">
+                        <GridViewColumnHeader Tag="Date" Click="LvUsersColumnHeader_Click" Content="Date Accessed" />
+                    </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Extension}">
                         <GridViewColumnHeader Tag="Extension" Click="LvUsersColumnHeader_Click" Content="Extension" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
-        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" Grid.Row="1"
+        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" Grid.Row="2"
                                  Grid.Column="1" IsTabStop="False" />
-        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom" Margin="0,0,30,19">
-            <Button x:Name="BtnAnalyze" Command="self:CleanCmd.Scan"
-                    Style="{DynamicResource MaterialDesignFloatingActionButton}"
-                    ToolTip="Start Scan [Ctrl + S]" Margin="8">
-                <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" />
-            </Button>
-            <Button Command="self:CleanCmd.Delete"
-                    Style="{DynamicResource MaterialDesignFloatingActionButton}"
-                    ToolTip="Delete Selected Files [Ctrl + DEL]" Margin="8">
-                <materialDesign:PackIcon Kind="Delete" Width="24" Height="24" />
-            </Button>
+        <StackPanel x:Name="StackPanelBtns" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom" Margin="0,0,30,20" Grid.RowSpan="3">
+            <materialDesign:Badged Badge="{Binding ScanTime, Mode=OneWay}" BadgePlacementMode="Top"
+                                   BadgeColorZoneMode="PrimaryDark">
+                <Button x:Name="BtnAnalyze" Command="self:CleanCmd.Scan"
+                        Style="{DynamicResource MaterialDesignFloatingActionLightButton}"
+                        materialDesign:ButtonProgressAssist.IsIndeterminate="{Binding ScanIndicator, Mode=OneWay}"
+                        materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding ScanIndicator, Mode=OneWay}"
+                        ToolTip="Start Scan [Ctrl + S]" Margin="0,0,0,20">
+                    <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" />
+                </Button>
+            </materialDesign:Badged>
+            <materialDesign:Badged Badge="{Binding ElementName=LvCleaner, Path=SelectedItems.Count}"
+                                   BadgePlacementMode="Top" BadgeColorZoneMode="PrimaryLight">
+                <Button Command="self:CleanCmd.Delete"
+                        Style="{DynamicResource MaterialDesignFloatingActionDarkButton}"
+                        materialDesign:ButtonProgressAssist.Maximum="{Binding ElementName=LvCleaner, Path=SelectedItems.Count}"
+                        materialDesign:ButtonProgressAssist.Value="{Binding DeleteProgress, Mode=OneWay}"
+                        materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding DeleteIndicator, Mode=OneWay}"
+                        ToolTip="Delete Selected Files [Ctrl + DEL]" Margin="0,0,0,8">
+                    <materialDesign:PackIcon Kind="Delete" Width="24" Height="24" />
+                </Button>
+            </materialDesign:Badged>
         </StackPanel>
     </Grid>
     <Window.CommandBindings>

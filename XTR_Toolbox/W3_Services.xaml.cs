@@ -24,14 +24,6 @@ namespace XTR_Toolbox
         {
             InitializeComponent();
             PopulateServices();
-            TbRunNum.Text = _numRunning.ToString();
-            DataContext = new ServiceModel();
-            LvServices.ItemsSource = _servicesList;
-            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
-            view.SortDescriptions.Add(new SortDescription("Full", ListSortDirection.Ascending));
-            view.Filter = UserFilter;
-            TbSearch.Focus();
-            Shared.SnackBarTip(MainSnackbar);
         }
 
         private static string GetStartType(ServiceController service)
@@ -189,6 +181,18 @@ namespace XTR_Toolbox
 
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            TbRunNum.Text = _numRunning.ToString();
+            DataContext = new ServiceModel();
+            LvServices.ItemsSource = _servicesList;
+            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
+            view.SortDescriptions.Add(new SortDescription("Full", ListSortDirection.Ascending));
+            view.Filter = UserFilter;
+            TbSearch.Focus();
+            Shared.SnackBarTip(MainSnackbar);
         }
     }
 

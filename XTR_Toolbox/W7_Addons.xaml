@@ -18,25 +18,22 @@
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="10,5">
-            <materialDesign:PackIcon Kind="Magnify" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
-            <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+            <materialDesign:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
+            <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
                      materialDesign:HintAssist.Hint=" Quick Name Filter"
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
-        <ListView x:Name="LvAddons" Margin="0" Grid.Row="1">
+        <ListView x:Name="LvAddons" Margin="0" Grid.Row="1" FontSize="14">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="self:BrowserCmd.Delete">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Delete" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:BrowserCmd.Delete" Icon="{materialDesign:PackIcon Delete}"/>
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
                     <GridViewColumn DisplayMemberBinding="{Binding Name}" Width="290">
-                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" FontWeight="Bold" />
+                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name"
+                                              FontWeight="Bold" />
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding Id}" Width="280">
                         <GridViewColumnHeader Tag="Id" Click="LvUsersColumnHeader_Click" Content="ID" />

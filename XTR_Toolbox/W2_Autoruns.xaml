@@ -15,34 +15,14 @@
         <ListView x:Name="LvAutoruns">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="self:StartupCmd.Enable">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Check" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Command="self:StartupCmd.Disable">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="BlockHelper" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:StartupCmd.Enable" Icon="{materialDesign:PackIcon Check}" />
+                    <MenuItem Command="self:StartupCmd.Disable" Icon="{materialDesign:PackIcon BlockHelper}" />
                     <Separator />
-                    <MenuItem Command="self:StartupCmd.Dir">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Folder" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:StartupCmd.Dir" Icon="{materialDesign:PackIcon Folder}" />
                     <Separator />
-                    <MenuItem Command="self:StartupCmd.Clip">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="ClipboardOutline" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:StartupCmd.Clip" Icon="{materialDesign:PackIcon ClipboardOutline}" />
                     <Separator />
-                    <MenuItem Command="self:StartupCmd.Delete">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Delete" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:StartupCmd.Delete" Icon="{materialDesign:PackIcon Delete}" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.GroupStyle>

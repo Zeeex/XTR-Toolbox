@@ -29,7 +29,6 @@ namespace XTR_Toolbox
         {
             InitializeComponent();
             PopulateSoftware();
-            TbSearch.Focus();
         }
 
 
@@ -311,9 +310,10 @@ namespace XTR_Toolbox
         {
             DataContext = new SoftwareModel();
             LvSoftware.ItemsSource = _softwareList;
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
+            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("DateInstalled", ListSortDirection.Descending));
             view.Filter = UserFilter;
+            TbSearch.Focus();
             Shared.SnackBarTip(MainSnackbar);
         }
     }

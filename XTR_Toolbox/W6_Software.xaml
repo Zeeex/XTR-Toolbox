@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Software Manager" Height="650" Width="925"
+        Title="Software Manager" Height="670" Width="930"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
@@ -18,47 +18,25 @@
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="10,5">
-            <materialDesign:PackIcon Kind="Magnify" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
-            <TextBox x:Name="TbSearch" TabIndex="0" FontSize="14" VerticalAlignment="Center"
+            <materialDesign:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
+            <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
                      materialDesign:HintAssist.Hint=" Quick Name Filter"
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
-        <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1">
+        <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1" FontSize="14">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="self:SoftwareCmd.Remove">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="DeleteForever" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Command="self:SoftwareCmd.Force">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="FolderRemove" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:SoftwareCmd.Remove" Icon="{materialDesign:PackIcon DeleteForever}" />
+                    <MenuItem Command="self:SoftwareCmd.Force" Icon="{materialDesign:PackIcon FolderRemove}" />
                     <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Msi" CommandParameter="Change" Header="Change">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Autorenew" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Command="self:SoftwareCmd.Msi" CommandParameter="Repair" Header="Repair">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Wrench" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:SoftwareCmd.Msi" Icon="{materialDesign:PackIcon Autorenew}"
+                              CommandParameter="Change" Header="Change" />
+                    <MenuItem Command="self:SoftwareCmd.Msi" Icon="{materialDesign:PackIcon Wrench}"
+                              CommandParameter="Repair" Header="Repair" />
                     <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Dir">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Folder" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:SoftwareCmd.Dir" Icon="{materialDesign:PackIcon Folder}" />
                     <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Clip">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="ClipboardOutline" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    <MenuItem Command="self:SoftwareCmd.Clip" Icon="{materialDesign:PackIcon ClipboardOutline}" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
@@ -68,18 +46,18 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData }">
                                     <Image Source="{Binding Icon}" Height="18" Margin="0,0,4,0" />
-                                    <TextBlock Text="{Binding Name}" FontSize="14" />
+                                    <TextBlock Text="{Binding Name}" />
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                         <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name"
                                               FontWeight="Bold" />
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding DateInstalled}" Width="120">
+                    <GridViewColumn DisplayMemberBinding="{Binding DateInstalled}" Width="130">
                         <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click"
                                               Content="Date Installed" />
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Size}" Width="90">
+                    <GridViewColumn DisplayMemberBinding="{Binding Size}" Width="85">
                         <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click" Content="Size" />
                     </GridViewColumn>
                 </GridView>
