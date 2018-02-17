@@ -24,8 +24,9 @@ Portable tool to tweak, clean and optimize Windows.
 - Remove Telemetry Updates for Win7, Win8.1
 
 #### Other Tools:
-- Batch Autoruns Manager:
-  - Shows valid and invalid values
+- Batch Startup Manager:
+  - Create startup entries
+  - Displays invalid values
 - Batch Services Manager
 - Batch Software Manager:
   - Export software info to clipboard
@@ -54,6 +55,7 @@ Unlike others, this toolbox aims:
 - Easy to use and have a pleasing interface
 
 ## Project Goals - Plans
+- Translate to other languages
 - Add help wiki
 - Add a lot more features (Already have some in mind)
 - You can request a feature, open for all kinds of suggestions
