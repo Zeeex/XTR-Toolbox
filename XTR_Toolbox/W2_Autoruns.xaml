@@ -3,62 +3,116 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
-        Title="Startup Manager" Height="520" Width="750"
+        Title="Startup Manager" Height="575" Width="900"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14">
-    <Grid>
-        <ListView x:Name="LvAutoruns">
-            <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="self:StartupCmd.Enable" Icon="{materialDesign:PackIcon Check}" />
-                    <MenuItem Command="self:StartupCmd.Disable" Icon="{materialDesign:PackIcon BlockHelper}" />
-                    <Separator />
-                    <MenuItem Command="self:StartupCmd.Dir" Icon="{materialDesign:PackIcon Folder}" />
-                    <Separator />
-                    <MenuItem Command="self:StartupCmd.Clip" Icon="{materialDesign:PackIcon ClipboardOutline}" />
-                    <Separator />
-                    <MenuItem Command="self:StartupCmd.Delete" Icon="{materialDesign:PackIcon Delete}" />
-                </ContextMenu>
-            </ListView.ContextMenu>
-            <ListView.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"
-                                       d:DataContext="{d:DesignData }" />
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ListView.GroupStyle>
-            <ListView.View>
-                <GridView AllowsColumnReorder="False">
-                    <GridViewColumn>
-                        <GridViewColumn.CellTemplate>
+        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
+    <mD:DialogHost CloseOnClickAway="True" IsTabStop="False">
+        <mD:DialogHost.DialogContent>
+            <StackPanel Margin="12" Orientation="Vertical" Width="500">
+                <StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Center">
+                    <TextBlock Text="Create a new startup entry for" FontSize="14" VerticalAlignment="Center" />
+                    <ComboBox x:Name="CBoxGroup" SelectedIndex="0" IsReadOnly="True" Margin="10,0,0,0" MinWidth="100">
+                        <ComboBoxItem Content="Current User" />
+                        <ComboBoxItem Content="All Users" />
+                    </ComboBox>
+                </StackPanel>
+                <TextBox x:Name="TbAutoPath" mD:HintAssist.Hint="Path (Enclose path in quotes if with argument)"
+                         Margin="0,5"
+                         Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                         TextChanged="TbAutoPath_TextChanged" />
+                <TextBox x:Name="TbAutoName" mD:HintAssist.Hint="Entry Name (Optional)" Margin="0,5"
+                         Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,5">
+                    <Button x:Name="BtnCreate" Content="Create" Style="{DynamicResource MaterialDesignFlatButton}"
+                            IsDefault="True" Command="mD:DialogHost.CloseDialogCommand" Width="100"
+                            IsEnabled="False" Click=" BtnCreate_Click" />
+                    <Button Content="Cancel" Style="{DynamicResource MaterialDesignFlatButton}" IsCancel="True"
+                            Command="mD:DialogHost.CloseDialogCommand" Width="100" />
+                </StackPanel>
+            </StackPanel>
+        </mD:DialogHost.DialogContent>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="29" />
+            </Grid.RowDefinitions>
+            <ListView x:Name="LvAutoruns" FontSize="14" mD:ListViewAssist.ListViewItemPadding="7"
+                      mD:DataGridAssist.ColumnHeaderPadding="7,4">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="self:StartupCmd.Enable" Icon="{mD:PackIcon Check}" />
+                        <MenuItem Command="self:StartupCmd.Disable" Icon="{mD:PackIcon BlockHelper}" />
+                        <Separator />
+                        <MenuItem Command="self:StartupCmd.Dir" Icon="{mD:PackIcon Folder}" />
+                        <Separator />
+                        <MenuItem Command="self:StartupCmd.Refresh" Icon="{mD:PackIcon Refresh}" />
+                        <Separator />
+                        <MenuItem Command="self:StartupCmd.Clip" Icon="{mD:PackIcon ClipboardOutline}" />
+                        <Separator />
+                        <MenuItem Command="self:StartupCmd.Delete" Icon="{mD:PackIcon Delete}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData }">
-                                    <Image Source="{Binding Icon}" Height="18" Margin="0,0,4,0" />
-                                    <TextBlock Text="{Binding Name}" FontSize="14" />
-                                </StackPanel>
+                                <TextBlock Text="{Binding Name,StringFormat='  {0}'}" FontWeight="Bold" FontSize="14"
+                                           d:DataContext="{d:DesignData }" Margin="0,3" />
                             </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" />
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path}">
-                        <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click" Content="Path" />
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Enabled}">
-                        <GridViewColumnHeader Tag="Enabled" Click="LvUsersColumnHeader_Click" Content="Enabled" />
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" />
-    </Grid>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False">
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData}">
+                                        <Image Source="{Binding Icon}" Height="18" Margin="0,0,7,0" />
+                                        <TextBlock Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Enabled}">
+                            <GridViewColumnHeader Tag="Enabled" Click="LvUsersColumnHeader_Click" Content="Enabled" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path}">
+                            <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click" Content="Path" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Args}">
+                            <GridViewColumnHeader Tag="Args" Click="LvUsersColumnHeader_Click" Content="Arguments" />
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <mD:Snackbar Grid.Row="0" MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar"
+                         IsTabStop="False" />
+            <StackPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,25,20">
+                <Button Command="{x:Static mD:DialogHost.OpenDialogCommand}"
+                        Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                        ToolTip="Create a new entry" HorizontalAlignment="Right" Margin="8">
+                    <mD:PackIcon Kind="Plus" Width="24" Height="24" />
+                </Button>
+            </StackPanel>
+            <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.Row="1"
+                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                       FontFamily="Roboto" FontSize="16">
+                <TextBlock Margin="5,0,0,0">Total:</TextBlock>
+                <TextBlock Text="{Binding ElementName=LvAutoruns, Path=Items.Count}" Margin="5,0,0,0" />
+                <TextBlock Margin="50,0,0,0">Selected:</TextBlock>
+                <TextBlock Text="{Binding ElementName=LvAutoruns, Path=SelectedItems.Count}" Margin="5,0,0,0" />
+                <TextBlock Margin="50,0,0,0">Enabled:</TextBlock>
+                <TextBlock x:Name="TbEnabledNum" Margin="5,0,0,0" />
+            </StatusBar>
+        </Grid>
+    </mD:DialogHost>
     <Window.CommandBindings>
         <CommandBinding Command="self:StartupCmd.Enable" CanExecute="ValidItemCmd_CanExecute"
                         Executed="StateChangeCmd_Executed" />
@@ -66,6 +120,7 @@
                         Executed="StateChangeCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Dir" CanExecute="ValidItemCmd_CanExecute"
                         Executed="OpenDirCmd_Executed" />
+        <CommandBinding Command="self:StartupCmd.Refresh" Executed="RefreshCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Clip" Executed="ClipboardCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Delete" Executed="DeleteCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />

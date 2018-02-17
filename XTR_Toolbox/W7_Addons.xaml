@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:self="clr-namespace:XTR_Toolbox"
         mc:Ignorable="d"
         Title="Chrome Extensions Manager" Height="724" Width="696"
@@ -18,15 +18,16 @@
             <RowDefinition Height="29" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="10,5">
-            <materialDesign:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
+            <mD:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
             <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
-                     materialDesign:HintAssist.Hint=" Quick Name Filter"
+                     mD:HintAssist.Hint=" Quick Name Filter"
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
-        <ListView x:Name="LvAddons" Margin="0" Grid.Row="1" FontSize="14">
+        <ListView x:Name="LvAddons" Margin="0" Grid.Row="1" FontSize="14" mD:ListViewAssist.ListViewItemPadding="7"
+                  mD:DataGridAssist.ColumnHeaderPadding="7,4">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="self:BrowserCmd.Delete" Icon="{materialDesign:PackIcon Delete}"/>
+                    <MenuItem Command="self:BrowserCmd.Delete" Icon="{mD:PackIcon Delete}" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.View>
@@ -41,8 +42,8 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <materialDesign:Snackbar Grid.Row="1" MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar"
-                                 IsTabStop="False" />
+        <mD:Snackbar Grid.Row="1" MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar"
+                     IsTabStop="False" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                    FontFamily="Roboto" FontSize="16">

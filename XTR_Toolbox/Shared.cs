@@ -37,7 +37,7 @@ namespace XTR_Toolbox
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(exMsg + "Error: " + ex.Message);
+                    MessageBox.Show($"{exMsg}Error: {ex.Message}");
                 }
 
                 return proc.ExitCode;
@@ -66,26 +66,44 @@ namespace XTR_Toolbox
             }
         }
 
-        public static void ServiceRestarter(string serviceName, bool serviceRestart)
+        public static bool ServiceRestarter(string name, bool isStart)
         {
-            ServiceController serCont = new ServiceController(serviceName);
+            ServiceController service = new ServiceController(name);
             try
             {
-                if (serCont.Status.Equals(ServiceControllerStatus.Running) ||
-                    serCont.Status.Equals(ServiceControllerStatus.StartPending))
+                if (service.Status.Equals(ServiceControllerStatus.Running) ||
+                    service.Status.Equals(ServiceControllerStatus.StartPending))
                 {
-                    serCont.Stop();
-                    serCont.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(8));
+                    service.Stop();
+                    service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+                    if (!service.Status.Equals(ServiceControllerStatus.Stopped) &&
+                        !service.Status.Equals(ServiceControllerStatus.StopPending))
+                    {
+                        MessageBox.Show($"Service: {service.DisplayName} can\'t be stopped.");
+                        return false;
+                    }
                 }
 
-                if (!serviceRestart) return;
-                serCont.Start();
-                serCont.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(8));
+                if (isStart)
+                {
+                    service.Start();
+                    service.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+                    if (!service.Status.Equals(ServiceControllerStatus.Running) &&
+                        !service.Status.Equals(ServiceControllerStatus.StartPending))
+                    {
+                        MessageBox.Show($"Service: {service.DisplayName} can\'t be started.");
+                        return false;
+                    }
+                }
+
+                return true;
             }
             catch
             {
                 //ignored
             }
+
+            return false;
         }
 
         public static void ServiceStartType(string serviceName, string startType, string delayed = null)

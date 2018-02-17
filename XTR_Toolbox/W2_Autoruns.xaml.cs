@@ -18,11 +18,15 @@ namespace XTR_Toolbox
 {
     public partial class Window2
     {
-        private readonly ObservableCollection<StartupModel> _autorunsList = new ObservableCollection<StartupModel>();
-        private readonly HashSet<string> _brokenRun = new HashSet<string>();
+        private const string InfoConst = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        private const string Run32Const = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32";
+        private const string RunConst = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
 
-        private readonly string[] _groupName =
-            {"All Users", "Current User", "All Users (x64)", "Invalid (Broken)"};
+        private static readonly string[] GroupName =
+            {"All Users (x64)", "Current User", "All Users", "Invalid (Broken)"};
+
+        private readonly ObservableCollection<StartupModel> _autorunsList = new ObservableCollection<StartupModel>();
+        private readonly Dictionary<string, string> _brokenRun = new Dictionary<string, string>();
 
         private SortAdorner _listViewSortAdorner;
         private GridViewColumnHeader _listViewSortCol;
@@ -30,187 +34,285 @@ namespace XTR_Toolbox
         public Window2()
         {
             InitializeComponent();
-            AutorunsScan();
-            DataContext = new StartupModel();
-            LvAutoruns.ItemsSource = _autorunsList;
-            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
-            PropertyGroupDescription groupBind = new PropertyGroupDescription("Group");
-            view.GroupDescriptions.Add(groupBind);
-            Shared.SnackBarTip(MainSnackbar);
         }
 
-        private void AddBroken(IReadOnlyCollection<string> brokenItems, int groupNum)
+        private void AddBroken()
         {
-            if (brokenItems.Count <= 0) return;
-            List<string> output = brokenItems.ToList();
-            foreach (string outputItem in output)
+            foreach (KeyValuePair<string, string> kvp in _brokenRun)
                 _autorunsList.Add(new StartupModel
                 {
-                    Name = outputItem,
-                    Path = "",
-                    Enabled = "",
-                    Group = _groupName[groupNum]
+                    Name = kvp.Key,
+                    Group = GroupName[GroupName.Length - 1],
+                    RunReg = kvp.Value
                 });
+            _brokenRun.Clear();
         }
 
-        private void AddHklm(ref int groupNum, RegistryKey reg64)
+        private string AddHkcu()
         {
-            RegistryKey keyInfo = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-            RegistryKey runInfo64 =
-                reg64.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32");
-            if (keyInfo != null && runInfo64 != null)
-                GetEntries(keyInfo, runInfo64, _groupName[groupNum++]);
+            try
+            {
+                RegistryKey info = Registry.CurrentUser.OpenSubKey(InfoConst);
+                RegistryKey run = Registry.CurrentUser.OpenSubKey(RunConst);
+                if (info != null && run != null)
+                    GetEntries(info, run, GroupName[1]);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
-        private void AddHkcu(ref int groupNum)
+        private string AddHklm()
         {
-            RegistryKey keyInfo = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-            RegistryKey runInfo =
-                Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run");
-            if (keyInfo != null && runInfo != null)
-                GetEntries(keyInfo, runInfo, _groupName[groupNum++]);
+            try
+            {
+                RegistryKey runView = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                RegistryKey info = Registry.LocalMachine.OpenSubKey(InfoConst);
+                RegistryKey run64 = runView.OpenSubKey(Run32Const);
+                if (info != null && run64 != null)
+                    GetEntries(info, run64, GroupName[2]);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
-        private void AddHkcu64(ref int groupNum, RegistryKey reg64)
+        private string AddHklm64()
         {
-            RegistryKey keyInfo64 = reg64.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-            RegistryKey runInfo64 =
-                reg64.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run");
-            if (keyInfo64 != null && runInfo64 != null)
-                GetEntries(keyInfo64, runInfo64, _groupName[groupNum++]);
+            try
+            {
+                RegistryKey runView = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                RegistryKey info64 = runView.OpenSubKey(InfoConst);
+                RegistryKey run64 = runView.OpenSubKey(RunConst);
+                if (info64 != null && run64 != null)
+                    GetEntries(info64, run64, GroupName[0]);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         private void AutorunsScan()
         {
-            int groupNum = 0;
-            RegistryKey reg64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            AddHklm(ref groupNum, reg64);
-            AddHkcu(ref groupNum);
-            AddHkcu64(ref groupNum, reg64);
-            AddBroken(_brokenRun, groupNum);
+            StringBuilder errorAll = new StringBuilder();
+            List<string> regSector = new List<string>
+            {
+                AddHklm64(),
+                AddHkcu(),
+                AddHklm()
+            };
+            foreach (string error in regSector)
+            {
+                if (error != null)
+                    errorAll.AppendLine(error);
+            }
+
+            if (errorAll.Length > 0)
+                MessageBox.Show($"Errors found - {errorAll.Length} : \n{errorAll}");
+            AddBroken();
+            UpdateEnabledCount();
+        }
+
+        private void BtnCreate_Click(object sender, RoutedEventArgs e)
+        {
+            string tbPath = TbAutoPath.Text;
+            string[] pathAndArgs = tbPath.TrimStart('\"').Split(new[] {'\"'}, 2);
+            string path = pathAndArgs[0];
+            if (!File.Exists(path)) return;
+            string args = pathAndArgs.Length == 2 ? pathAndArgs[1] : string.Empty;
+            string tbName = TbAutoName.Text;
+            if (tbName.Trim().Length == 0) tbName = Path.GetFileNameWithoutExtension(path);
+            int groupIndex = CBoxGroup.SelectedIndex == 0 ? 1 : 2;
+            byte[] enableBytes = {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            string infoKey = null, runKey = null;
+            try
+            {
+                if (groupIndex == 1)
+                {
+                    using (RegistryKey info = Registry.CurrentUser.OpenSubKey(InfoConst, true))
+                    {
+                        if (info != null)
+                        {
+                            info.SetValue(tbName, tbPath, RegistryValueKind.String);
+                            infoKey = info.ToString();
+                        }
+                    }
+
+                    using (RegistryKey run = Registry.CurrentUser.OpenSubKey(RunConst, true))
+                    {
+                        if (run != null)
+                        {
+                            run.SetValue(tbName, enableBytes, RegistryValueKind.Binary);
+                            runKey = run.ToString();
+                        }
+                    }
+                }
+                else
+                {
+                    RegistryKey runView = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                    using (RegistryKey info = Registry.LocalMachine.OpenSubKey(InfoConst, true))
+                    {
+                        if (info != null)
+                        {
+                            info.SetValue(tbName, tbPath, RegistryValueKind.String);
+                            infoKey = info.ToString();
+                        }
+                    }
+
+                    using (RegistryKey run = runView.OpenSubKey(Run32Const, true))
+                    {
+                        if (run != null)
+                        {
+                            run.SetValue(tbName, enableBytes, RegistryValueKind.Binary);
+                            runKey = run.ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error creating entry! " + ex.Message);
+            }
+
+            if (infoKey == null || runKey == null) return;
+            _autorunsList.Add(new StartupModel
+            {
+                Name = tbName,
+                Icon = Shared.PathToIcon(path),
+                Path = path,
+                Args = args,
+                Enabled = "Yes",
+                Group = GroupName[groupIndex],
+                RunReg = runKey
+            });
+        }
+
+        private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            int maxNameLength = (from StartupModel t in LvAutoruns.SelectedItems select t.Name.Length)
+                .Concat(new[] {0}).Max();
+            foreach (StartupModel t in LvAutoruns.SelectedItems)
+            {
+                string format = "{0,-" + maxNameLength + "}  | {1,-3} | {2}";
+                sb.AppendFormat(format, t.Name, t.Enabled, t.Path);
+                sb.AppendLine();
+            }
+
+            Clipboard.SetText(sb.ToString());
         }
 
         private void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             MessageBoxResult mB = MessageBox.Show("Are you sure you want to delete selected item(s)?",
                 "Delete Confirmation",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.Yes);
             if (mB == MessageBoxResult.No) return;
-            const string startKeyString = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            string[] runKeys =
-            {
-                @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32",
-                @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
-            };
-            try
-            {
-                using (RegistryKey reg64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+            for (int index = LvAutoruns.SelectedItems.Count - 1; index >= 0; index--)
+                try
                 {
-                    for (int index = LvAutoruns.SelectedItems.Count - 1; index >= 0; index--)
+                    StartupModel itemToDelete = (StartupModel) LvAutoruns.SelectedItems[index];
+                    string deleteName = itemToDelete.Name;
+                    if (string.IsNullOrEmpty(deleteName)) continue;
+                    string itemGroup = itemToDelete.Group;
+                    string runRegPath = itemToDelete.RunReg.Split(new[] {'\\'}, 2)[1];
+                    RegistryKey infoKey, runKey;
+                    using (RegistryKey reg64 =
+                        RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
                     {
-                        StartupModel itemToDelete = (StartupModel) LvAutoruns.SelectedItems[index];
-                        string nameAutorun = itemToDelete?.Name;
-                        if (string.IsNullOrEmpty(nameAutorun)) continue;
-                        string itemGroup = itemToDelete.Group;
-                        _autorunsList.Remove(itemToDelete);
-                        RegistryKey startupKey, runKey;
-                        if (Equals(itemGroup, _groupName[0]))
+                        if (itemGroup == GroupName[0])
                         {
-                            startupKey = Registry.LocalMachine.OpenSubKey(startKeyString, true);
-                            runKey = reg64.OpenSubKey(runKeys[0], true);
+                            infoKey = runKey = reg64;
                         }
-                        else if (Equals(itemGroup, _groupName[1]))
+                        else if (itemGroup == GroupName[1])
                         {
-                            startupKey = Registry.CurrentUser.OpenSubKey(startKeyString, true);
-                            runKey = Registry.CurrentUser.OpenSubKey(runKeys[1], true);
+                            infoKey = runKey = Registry.CurrentUser;
                         }
-                        else if (Equals(itemGroup, _groupName[2]))
+                        else if (itemGroup == GroupName[2])
                         {
-                            startupKey = reg64.OpenSubKey(startKeyString, true);
-                            runKey = reg64.OpenSubKey(runKeys[1], true);
+                            infoKey = Registry.LocalMachine;
+                            runKey = reg64;
                         }
-                        // INVALID LIST
-                        else if (Equals(itemGroup, _groupName[_groupName.Length - 1]))
+                        else if (itemGroup == GroupName[GroupName.Length - 1])
                         {
-                            foreach (string sK in runKeys)
-                                using (RegistryKey keyVoid = reg64.OpenSubKey(sK, true))
-                                {
-                                    keyVoid?.DeleteValue(nameAutorun, false);
-                                }
-
-                            using (RegistryKey keyVoid1 = Registry.CurrentUser.OpenSubKey(runKeys[1], true))
-                            {
-                                keyVoid1?.DeleteValue(nameAutorun, false);
-                            }
-
+                            reg64.OpenSubKey(runRegPath, true)?.DeleteValue(itemToDelete.Name, false);
+                            Registry.CurrentUser.OpenSubKey(runRegPath, true)?.DeleteValue(itemToDelete.Name, false);
+                            reg64.Close();
+                            _autorunsList.Remove(itemToDelete);
                             continue;
                         }
                         else
                         {
                             continue;
                         }
-
-                        // DELETING VALID ENTRY
-                        startupKey?.DeleteValue(nameAutorun, false);
-                        runKey?.DeleteValue(nameAutorun, false);
-                        startupKey?.Close();
-                        runKey?.Close();
                     }
+
+                    infoKey?.OpenSubKey(InfoConst, true)
+                        ?.DeleteValue(itemToDelete.Name, false);
+                    runKey?.OpenSubKey(runRegPath, true)?.DeleteValue(itemToDelete.Name, false);
+                    infoKey?.Close();
+                    runKey?.Close();
+                    _autorunsList.Remove(itemToDelete);
                 }
-            }
-            catch
-            {
-                //ignored
-            }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Error deleting value: {((StartupModel) LvAutoruns.SelectedItems[index]).Name}\n{ex.Message}");
+                }
         }
 
-        private void GetEntries(RegistryKey entryKey, RegistryKey runKey, string groupName)
+        private void GetEntries(RegistryKey infoKey, RegistryKey runKey, string groupName)
         {
             try
             {
-                foreach (string pathName in entryKey.GetValueNames())
-                foreach (string runName in runKey.GetValueNames())
+                string[] infoValues = infoKey.GetValueNames();
+                foreach (string infoValue in infoValues)
+                foreach (string runValue in runKey.GetValueNames())
                 {
-                    if (runKey.GetValue(runName).GetType().Name != "Byte[]") continue;
-                    if (pathName == runName)
+                    if (runKey.GetValue(runValue).GetType().Name != "Byte[]") continue;
+                    if (infoValue == runValue)
                     {
-                        byte[] runValueBytes = (byte[]) runKey.GetValue(runName);
-                        string cleanValue = entryKey
-                            .GetValue(pathName, "", RegistryValueOptions.DoNotExpandEnvironmentNames).ToString();
-                        // REMOVE QUOTES AND PARAMETERS FROM NAMES =======
-                        if (cleanValue.IndexOf(".exe", StringComparison.Ordinal) != -1)
-                            cleanValue =
-                                cleanValue.Substring(0, cleanValue.IndexOf(".exe", StringComparison.Ordinal) + 4)
-                                    .Replace("\"", "");
+                        byte[] runValueBytes = (byte[]) runKey.GetValue(runValue);
+                        string regPath = infoKey
+                            .GetValue(infoValue, string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames)
+                            .ToString();
+                        string[] pathAndArgs = regPath.TrimStart('\"').Split(new[] {'\"'}, 2);
+                        string path = pathAndArgs[0];
                         // IMPROVE...
-                        if (cleanValue.LastIndexOf("%ProgramFiles%", StringComparison.Ordinal) != -1 &&
+                        if (path.LastIndexOf("%ProgramFiles%", StringComparison.Ordinal) != -1 &&
                             Environment.Is64BitOperatingSystem)
                         {
-                            cleanValue =
-                                cleanValue.Substring(cleanValue.LastIndexOf("%", StringComparison.Ordinal) + 1);
-                            cleanValue =
-                                Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + cleanValue);
+                            path = path.Substring(path.LastIndexOf("%", StringComparison.Ordinal) + 1);
+                            path = Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + path);
                         }
 
-                        string fileExe = Environment.ExpandEnvironmentVariables(cleanValue);
+                        string filePath = Environment.ExpandEnvironmentVariables(path);
                         _autorunsList.Add(new StartupModel
                         {
-                            Name = runName,
-                            Icon = Shared.PathToIcon(fileExe),
-                            Path = fileExe,
+                            Name = runValue,
+                            Icon = Shared.PathToIcon(filePath),
+                            Path = filePath,
+                            Args = pathAndArgs.Length == 2 ? pathAndArgs[1] : string.Empty,
                             Enabled = runValueBytes[0] == 02 ? "Yes" : "No",
-                            Group = groupName
+                            Group = groupName,
+                            RunReg = runKey.ToString()
                         });
                     }
+
                     else
                     {
-                        if (!entryKey.GetValueNames().Contains(runName))
-                            _brokenRun.Add(runName);
+                        if (!_brokenRun.ContainsKey(runValue) && !infoValues.Contains(runValue))
+                            _brokenRun.Add(runValue, runKey.ToString());
                     }
                 }
 
-                entryKey.Close();
+                infoKey.Close();
                 runKey.Close();
             }
             catch (Exception ex)
@@ -260,43 +362,62 @@ namespace XTR_Toolbox
             }
         }
 
+        private void RefreshCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            _autorunsList.Clear();
+            AutorunsScan();
+        }
+
         private void StateChangeCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (!(e.Command is RoutedUICommand eCommand)) return;
-            bool enb = eCommand == StartupCmd.Enable;
-            byte[] itemState = enb
+            bool isEnabled = eCommand == StartupCmd.Enable;
+            byte[] itemState = isEnabled
                 ? new byte[] {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
                 : new byte[] {0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            string[] runKeyList =
-            {
-                @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32",
-                @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
-            };
-            using (RegistryKey reg64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-            {
-                foreach (StartupModel itemToSet in LvAutoruns.SelectedItems)
+            string stringState = isEnabled ? "Yes" : "No";
+            foreach (StartupModel itemToSet in LvAutoruns.SelectedItems)
+                try
                 {
-                    if (itemToSet == null) continue;
-                    itemToSet.Enabled = enb ? "Yes" : "No";
-                    RegistryKey startupKey;
-                    if (Equals(itemToSet.Group, _groupName[0]))
-                        startupKey = reg64.OpenSubKey(runKeyList[0], true);
-                    else if (Equals(itemToSet.Group, _groupName[1]))
-                        startupKey = Registry.CurrentUser.OpenSubKey(runKeyList[1], true);
-                    else if (Equals(itemToSet.Group, _groupName[2]))
-                        startupKey = reg64.OpenSubKey(runKeyList[1], true);
+                    RegistryKey runKey;
+                    string itemGroup = itemToSet.Group;
+                    if (itemGroup == GroupName[0] || itemGroup == GroupName[2])
+                        runKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                    else if (itemGroup == GroupName[1])
+                        runKey = Registry.CurrentUser;
                     else
                         continue;
-                    startupKey?.SetValue(itemToSet.Name, itemState, RegistryValueKind.Binary);
-                    startupKey?.Close();
+                    runKey.OpenSubKey(itemToSet.RunReg.Split(new[] {'\\'}, 2)[1], true)
+                        ?.SetValue(itemToSet.Name, itemState, RegistryValueKind.Binary);
+                    runKey?.Close();
+                    itemToSet.Enabled = stringState;
                 }
-            }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error changing value: {itemToSet.Name}\n{ex.Message}");
+                }
+
+            UpdateEnabledCount();
         }
 
-        private void ValidItemCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
+        private void TbAutoPath_TextChanged(object sender, TextChangedEventArgs e) => BtnCreate.IsEnabled =
+            ((TextBox) sender).Text.Trim().Length != 0;
+
+        private void UpdateEnabledCount() =>
+            TbEnabledNum.Text = _autorunsList.Count(item => item.Enabled == "Yes").ToString();
+
+        private void ValidItemCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e) =>
             e.CanExecute = LvAutoruns.SelectedItems.Cast<StartupModel>()
-                .All(item => item.Group != _groupName[_groupName.Length - 1]);
+                .All(item => item.Group != GroupName[GroupName.Length - 1]);
+
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            AutorunsScan();
+            LvAutoruns.ItemsSource = _autorunsList;
+            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
+            view.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
+            Shared.SnackBarTip(MainSnackbar);
         }
 
         private class StartupModel : INotifyPropertyChanged
@@ -304,6 +425,7 @@ namespace XTR_Toolbox
             private string _enabled;
 
             public event PropertyChangedEventHandler PropertyChanged;
+            public string Args { [UsedImplicitly] get; set; }
 
             public string Enabled
             {
@@ -320,42 +442,31 @@ namespace XTR_Toolbox
             public BitmapSource Icon { [UsedImplicitly] get; set; }
             public string Name { [UsedImplicitly] get; set; }
             public string Path { [UsedImplicitly] get; set; }
+            public string RunReg { [UsedImplicitly] get; set; }
 
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
-
-        private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            StringBuilder sb = new StringBuilder();
-            int maxNameLength = (from StartupModel t in LvAutoruns.SelectedItems select t.Name.Length)
-                .Concat(new[] {0}).Max();
-            foreach (StartupModel t in LvAutoruns.SelectedItems)
-            {
-                string format = "{0,-" + maxNameLength + "}  | {1,-3} | {2}";
-                sb.AppendFormat(format, t.Name, t.Enabled, t.Path);
-                sb.AppendLine();
-            }
-
-            Clipboard.SetText(sb.ToString());
         }
     }
 
     public static class StartupCmd
     {
-        public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir", typeof(StartupCmd),
-            new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Delete = new RoutedUICommand("Delete", "Del",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.Delete)});
 
-        public static readonly RoutedUICommand Enable = new RoutedUICommand("Enable", "En", typeof(StartupCmd),
-            new InputGestureCollection {new KeyGesture(Key.E, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis", typeof(StartupCmd),
-            new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Enable = new RoutedUICommand("Enable", "En",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.E, ModifierKeys.Control)});
+
+        public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
 
         public static readonly RoutedUICommand Clip = new RoutedUICommand("Copy to Clipboard", "Clip",
             typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Delete = new RoutedUICommand("Delete", "Del", typeof(StartupCmd),
-            new InputGestureCollection {new KeyGesture(Key.Delete, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Refresh = new RoutedUICommand("Quick Refresh", "Refresh",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.F5)});
     }
 }

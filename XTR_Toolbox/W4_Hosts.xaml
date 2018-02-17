@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Hosts File Editor" Height="630" Width="750"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -19,18 +19,18 @@
                     Style="{DynamicResource MaterialDesignFloatingActionButton}"
                     ToolTip="Save Hosts File"
                     IsEnabled="False" HorizontalAlignment="Right" Margin="8">
-                <materialDesign:PackIcon Kind="ContentSave" Width="24" Height="24" />
+                <mD:PackIcon Kind="ContentSave" Width="24" Height="24" />
             </Button>
             <Button Click="BtnDownload_Click"
                     Style="{DynamicResource MaterialDesignFloatingActionButton}"
                     ToolTip="Download Hosts File from winhelp2002.mvps.org"
                     HorizontalAlignment="Right" Margin="8">
-                <materialDesign:PackIcon Kind="CloudDownload" Width="24" Height="24" />
+                <mD:PackIcon Kind="CloudDownload" Width="24" Height="24" />
             </Button>
             <Button x:Name="BtnReset" Click="BtnHostsManage_Click"
                     Style="{DynamicResource MaterialDesignFloatingActionButton}"
                     ToolTip="Reset Rules" HorizontalAlignment="Right" Margin="8">
-                <materialDesign:PackIcon Kind="Replay" Width="24" Height="24" />
+                <mD:PackIcon Kind="Replay" Width="24" Height="24" />
             </Button>
         </StackPanel>
     </Grid>

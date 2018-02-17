@@ -20,7 +20,7 @@ namespace XTR_Toolbox
 {
     public partial class Window6
     {
-        private readonly ObservableCollection<SoftwareModel> _softwareList = new ObservableCollection<SoftwareModel>();
+        private ObservableCollection<SoftwareModel> _softwareList;
         private SortAdorner _listViewSortAdorner;
 
         private GridViewColumnHeader _listViewSortCol;
@@ -107,7 +107,7 @@ namespace XTR_Toolbox
             return (!isMsi || exitCode == 0) && !File.Exists(uninstallPath);
         }
 
-        private void GetRegItems(RegistryKey key)
+        private static void GetSoftware(ICollection<SoftwareModel> tList, RegistryKey key)
         {
             if (key == null) return;
             foreach (string subSoftware in key.GetSubKeyNames())
@@ -127,7 +127,7 @@ namespace XTR_Toolbox
                         bool isMsi = regRemv.Contains("MsiExec");
                         if (ico == null && isMsi)
                             ico = Shared.PathToIcon(GetMsiIconPath(regRemv));
-                        _softwareList.Add(new SoftwareModel
+                        tList.Add(new SoftwareModel
                         {
                             Name = regName + "  " + GetVersion(subKey, regName),
                             Size = FormatSize(regSize),
@@ -190,23 +190,25 @@ namespace XTR_Toolbox
 
         private void PopulateSoftware()
         {
-            const string uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            List<SoftwareModel> tL = new List<SoftwareModel>();
             try
             {
-                GetRegItems(Registry.LocalMachine.OpenSubKey(uninstallKey));
-                GetRegItems(RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
+                const string uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+                GetSoftware(tL, Registry.LocalMachine.OpenSubKey(uninstallKey));
+                GetSoftware(tL, RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
                     .OpenSubKey(uninstallKey));
+                GetSoftware(tL, Registry.CurrentUser.OpenSubKey(uninstallKey));
             }
             catch (SecurityException ex)
             {
                 MessageBox.Show("No permission to read registry. Error: " + ex.Message);
             }
+
+            _softwareList = new ObservableCollection<SoftwareModel>(tL);
         }
 
-        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
+        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e) =>
             CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource).Refresh();
-        }
 
         private bool UserFilter(object item)
         {
@@ -214,10 +216,8 @@ namespace XTR_Toolbox
             return ((SoftwareModel) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private void MsiCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
+        private void MsiCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e) =>
             e.CanExecute = LvSoftware.SelectedItems.Cast<SoftwareModel>().All(item => item.Msi);
-        }
 
         private void MsiCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -308,7 +308,6 @@ namespace XTR_Toolbox
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            DataContext = new SoftwareModel();
             LvSoftware.ItemsSource = _softwareList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("DateInstalled", ListSortDirection.Descending));
@@ -321,18 +320,17 @@ namespace XTR_Toolbox
     public static class SoftwareCmd
     {
         public static readonly RoutedUICommand Clip = new RoutedUICommand("Copy to Clipboard", "Clip",
-            typeof(SoftwareCmd),
-            new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
+            typeof(SoftwareCmd), new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir", typeof(SoftwareCmd),
-            new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir",
+            typeof(SoftwareCmd), new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Force = new RoutedUICommand("Force Remove", "Force", typeof(SoftwareCmd),
-            new InputGestureCollection {new KeyGesture(Key.F, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Force = new RoutedUICommand("Force Remove...", "Force",
+            typeof(SoftwareCmd), new InputGestureCollection {new KeyGesture(Key.F, ModifierKeys.Control)});
 
         public static readonly RoutedUICommand Msi = new RoutedUICommand();
 
-        public static readonly RoutedUICommand Remove = new RoutedUICommand("Uninstall", "Rem", typeof(SoftwareCmd),
-            new InputGestureCollection {new KeyGesture(Key.R, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Remove = new RoutedUICommand("Uninstall", "Rem",
+            typeof(SoftwareCmd), new InputGestureCollection {new KeyGesture(Key.R, ModifierKeys.Control)});
     }
 }

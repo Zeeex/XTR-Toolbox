@@ -13,7 +13,7 @@ namespace XTR_Toolbox
 {
     public partial class MainWindow
     {
-        public const string XtrVer = "1.8";
+        public const string XtrVer = "1.9";
         private readonly HttpClient _cl = new HttpClient();
         private readonly TextModel _textBind = new TextModel();
 

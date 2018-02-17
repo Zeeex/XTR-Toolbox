@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="XTR Toolbox "
         Height="442" Width="560"
@@ -13,21 +13,21 @@
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
-    <materialDesign:DialogHost CloseOnClickAway="True" IsTabStop="False">
-        <materialDesign:DialogHost.DialogContent>
+    <mD:DialogHost CloseOnClickAway="True" IsTabStop="False">
+        <mD:DialogHost.DialogContent>
             <StackPanel Margin="12" Orientation="Vertical" Width="400">
                 <TextBlock x:Name="TbTelemetry" Text="{Binding TelemetryText}" TextWrapping="Wrap"
                            FontSize="14" Margin="10,0" />
                 <Separator Margin="0,8" Background="{DynamicResource PrimaryHueMidBrush}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Content="Yes" Style="{DynamicResource MaterialDesignFlatButton}"
-                            Command="materialDesign:DialogHost.CloseDialogCommand"
+                            Command="mD:DialogHost.CloseDialogCommand"
                             Width="100" Click="BtnTelemetryYes_Click" />
                     <Button Content="No" Style="{DynamicResource MaterialDesignFlatButton}" IsCancel="True"
-                            IsDefault="True" Command="materialDesign:DialogHost.CloseDialogCommand" Width="100" />
+                            IsDefault="True" Command="mD:DialogHost.CloseDialogCommand" Width="100" />
                 </StackPanel>
             </StackPanel>
-        </materialDesign:DialogHost.DialogContent>
+        </mD:DialogHost.DialogContent>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="234" />
@@ -41,10 +41,10 @@
             <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,8"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                      mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <mD:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
                         <TextBlock Text="Quick Tools" FontSize="16" />
                     </StackPanel>
                 </GroupBox.Header>
@@ -65,10 +65,10 @@
             <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,8"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                      mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <mD:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
                         <TextBlock Text="Privacy Tools" FontSize="16" />
                     </StackPanel>
                 </GroupBox.Header>
@@ -80,16 +80,16 @@
                     <Button x:Name="BtnWinApps" Content="Windows Apps Manager..." Click="BtnMultiWindowOpener"
                             Height="Auto" Margin="5" />
                     <Button Grid.Row="1" Content="Remove Telemetry Updates" Height="Auto" Margin="5"
-                            Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" />
+                            Command="{x:Static mD:DialogHost.OpenDialogCommand}" />
                 </Grid>
             </GroupBox>
             <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                      mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <mD:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,-3,5,0" />
                         <TextBlock Text="Other Tools" FontSize="16" />
                     </StackPanel>
                 </GroupBox.Header>
@@ -115,10 +115,10 @@
             <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,8"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                      materialDesign:ColorZoneAssist.Mode="PrimaryDark">
+                      mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,-3,5,0" />
+                        <mD:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,-3,5,0" />
                         <TextBlock Text="Cleanup Tools" FontSize="16" />
                     </StackPanel>
                 </GroupBox.Header>
@@ -149,7 +149,7 @@
                                    NavigateUri="https://www.patreon.com/bePatron?u=4319301"
                                    Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
                             <InlineUIContainer>
-                                <materialDesign:PackIcon Kind="Gift" />
+                                <mD:PackIcon Kind="Gift" />
                             </InlineUIContainer>
                             <Run Text=" Become a Patron" />
                         </Hyperlink>
@@ -158,7 +158,7 @@
                 <TextBlock DockPanel.Dock="Right" />
             </StatusBar>
         </Grid>
-    </materialDesign:DialogHost>
+    </mD:DialogHost>
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>

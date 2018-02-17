@@ -304,11 +304,11 @@ namespace XTR_Toolbox
             int depth = Convert.ToInt32(CbBoxLevel.SelectionBoxItem);
             _date = DateFilter.Text;
             _befDate = TglDate.IsChecked != null && (bool) !TglDate.IsChecked;
-            List<CleanModel> tempList = new List<CleanModel>();
+            List<CleanModel> tList = new List<CleanModel>();
             await Task.Factory.StartNew(() =>
-                DirectorySearch(selectedDirs, multiExt, tempList, depth, isSteam, ref maxSize));
+                DirectorySearch(selectedDirs, multiExt, tList, depth, isSteam, ref maxSize));
 
-            _cleanList = new ObservableCollection<CleanModel>(tempList);
+            _cleanList = new ObservableCollection<CleanModel>(tList);
             LvCleaner.ItemsSource = _cleanList;
             if (CheckBoxGroup.IsChecked != null && (bool) CheckBoxGroup.IsChecked)
             {
