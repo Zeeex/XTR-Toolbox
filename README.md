@@ -74,4 +74,4 @@ By [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) </br>
 By [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml) </br>
 By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) - [Best freeware](http://www.chip.de/bildergalerie/Freeware-des-Monats-2018-Galerie_130718114.html) of february 2018, [v1.9 Review](http://www.chip.de/news/Update-fuer-XTR-Toolbox-CCleaner-Alternative-mit-neuen-Funktionen_131614814.html) </br>
 By [Trishtech.com](https://www.trishtech.com/2018/01/xtr-toolbox-portable-windows-tweaker-and-optimizer/) </br>
-By [SnapFiles](http://www.snapfiles.com/get/xtrtoolbox.html) </br>
+By [WinTotal.de](https://www.wintotal.de/download/xtr-toolbox/)
