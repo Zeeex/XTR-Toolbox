@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.ServiceProcess;
@@ -10,20 +11,24 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using Microsoft.Win32;
+using XTR_Toolbox.Classes;
 
 namespace XTR_Toolbox
 {
     public partial class Window3
     {
-        private readonly List<ServiceModel> _servicesList = new List<ServiceModel>();
-        private SortAdorner _listViewSortAdorner;
+        private static readonly ObservableCollection<ServiceLogModel> HistoryList =
+            new ObservableCollection<ServiceLogModel>();
 
+        private static bool _enableLog;
+        private readonly List<ServiceModel> _servicesList = new List<ServiceModel>();
+
+        private SortAdorner _listViewSortAdorner;
         private GridViewColumnHeader _listViewSortCol;
 
         public Window3()
         {
             InitializeComponent();
-            PopulateServices();
         }
 
         private static string GetStartType(ServiceController service)
@@ -157,13 +162,22 @@ namespace XTR_Toolbox
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            _enableLog = false;
+            PopulateServices();
             UpdateRunningCount();
             LvServices.ItemsSource = _servicesList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvServices.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("Full", ListSortDirection.Ascending));
             view.Filter = UserFilter;
             TbSearch.Focus();
-            Shared.SnackBarTip(MainSnackbar);
+            LbHistory.ItemsSource = HistoryList;
+            _enableLog = true;
+            Shared.ShowSnackBar(MainSnackbar);
+        }
+
+        private class ServiceLogModel
+        {
+            public string History { [UsedImplicitly] get; set; }
         }
 
         private class ServiceModel : INotifyPropertyChanged
@@ -182,6 +196,9 @@ namespace XTR_Toolbox
                     if (_startup == value) return;
                     _startup = value;
                     NotifyPropertyChanged(nameof(Startup));
+                    if (!_enableLog) return;
+                    HistoryList.Add(
+                        new ServiceLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {Name} : {value}"});
                 }
             }
 
@@ -193,6 +210,10 @@ namespace XTR_Toolbox
                     if (_status == value) return;
                     _status = value;
                     NotifyPropertyChanged(nameof(Status));
+                    if (!_enableLog) return;
+                    if (value != ServiceControllerStatus.Running.ToString()) value = "Stopped";
+                    HistoryList.Add(
+                        new ServiceLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {Name} : {value}"});
                 }
             }
 
@@ -203,11 +224,11 @@ namespace XTR_Toolbox
 
     public static class ServiceCmd
     {
-        public static readonly RoutedUICommand Start = new RoutedUICommand("Start Service", "Start",
-            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.S, ModifierKeys.Control)});
+        public static readonly RoutedUICommand AutoDelayed = new RoutedUICommand("Auto (Delayed)", "AutoDel",
+            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D4, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Stop = new RoutedUICommand("Stop Service", "Stop",
-            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Automatic = new RoutedUICommand("Automatic", "Auto",
+            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D3, ModifierKeys.Control)});
 
         public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis",
             typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D1, ModifierKeys.Control)});
@@ -215,10 +236,10 @@ namespace XTR_Toolbox
         public static readonly RoutedUICommand Manual = new RoutedUICommand("Manual", "Man",
             typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D2, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Automatic = new RoutedUICommand("Automatic", "Auto",
-            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D3, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Start = new RoutedUICommand("Start Service", "Start",
+            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.S, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand AutoDelayed = new RoutedUICommand("Auto (Delayed)", "AutoDel",
-            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D4, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Stop = new RoutedUICommand("Stop Service", "Stop",
+            typeof(ServiceCmd), new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
     }
 }

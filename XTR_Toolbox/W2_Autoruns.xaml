@@ -1,41 +1,20 @@
-﻿<Window x:Class="XTR_Toolbox.Window2"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:self="clr-namespace:XTR_Toolbox"
-        mc:Ignorable="d"
-        Title="Startup Manager" Height="575" Width="900"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
-    <mD:DialogHost CloseOnClickAway="True" IsTabStop="False">
-        <mD:DialogHost.DialogContent>
-            <StackPanel Margin="12" Orientation="Vertical" Width="500">
-                <StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Center">
-                    <TextBlock Text="Create a new startup entry for" FontSize="14" VerticalAlignment="Center" />
-                    <ComboBox x:Name="CBoxGroup" SelectedIndex="0" IsReadOnly="True" Margin="10,0,0,0" MinWidth="100">
-                        <ComboBoxItem Content="Current User" />
-                        <ComboBoxItem Content="All Users" />
-                    </ComboBox>
-                </StackPanel>
-                <TextBox x:Name="TbAutoPath" mD:HintAssist.Hint="Path (Enclose path in quotes if with argument)"
-                         Margin="0,5"
-                         Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-                         TextChanged="TbAutoPath_TextChanged" />
-                <TextBox x:Name="TbAutoName" mD:HintAssist.Hint="Entry Name (Optional)" Margin="0,5"
-                         Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,5">
-                    <Button x:Name="BtnCreate" Content="Create" Style="{DynamicResource MaterialDesignFlatButton}"
-                            IsDefault="True" Command="mD:DialogHost.CloseDialogCommand" Width="100"
-                            IsEnabled="False" Click=" BtnCreate_Click" />
-                    <Button Content="Cancel" Style="{DynamicResource MaterialDesignFlatButton}" IsCancel="True"
-                            Command="mD:DialogHost.CloseDialogCommand" Width="100" />
-                </StackPanel>
-            </StackPanel>
-        </mD:DialogHost.DialogContent>
+﻿<mah:MetroWindow x:Class="XTR_Toolbox.Window2"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:self="clr-namespace:XTR_Toolbox"
+                 xmlns:classes="clr-namespace:XTR_Toolbox.Classes"
+                 mc:Ignorable="d"
+                 Title="Startup Manager" TitleCharacterCasing="Normal" Height="575" Width="800"
+                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Background="{DynamicResource MaterialDesignPaper}"
+                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
+                 ContentRendered="Window_ContentRendered">
+    <mD:DialogHost CloseOnClickAway="True" IsTabStop="False" Identifier="RootDialog">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition />
@@ -61,7 +40,8 @@
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name,StringFormat='  {0}'}" FontWeight="Bold" FontSize="14"
+                                <TextBlock Text="{Binding Name,StringFormat='  {0}'}" FontWeight="Bold"
+                                           FontSize="14"
                                            d:DataContext="{d:DesignData }" Margin="0,3" />
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
@@ -72,16 +52,20 @@
                         <GridViewColumn>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
+                                    <DataTemplate.Resources>
+                                        <classes:StringVisibilityConverter x:Key="StringVisConverter" />
+                                    </DataTemplate.Resources>
                                     <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData}">
+                                        <CheckBox IsChecked="{Binding Enabled}"
+                                                  Visibility="{Binding Path ,Converter={StaticResource StringVisConverter}}"
+                                                  d:DataContext="{d:DesignData }" IsTabStop="False"
+                                                  IsHitTestVisible="False" Margin="0,0,7,0" />
                                         <Image Source="{Binding Icon}" Height="18" Margin="0,0,7,0" />
                                         <TextBlock Text="{Binding Name}" />
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                             <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name" />
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding Enabled}">
-                            <GridViewColumnHeader Tag="Enabled" Click="LvUsersColumnHeader_Click" Content="Enabled" />
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding Path}">
                             <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click" Content="Path" />
@@ -92,24 +76,42 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <mD:Snackbar Grid.Row="0" MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar"
-                         IsTabStop="False" />
-            <StackPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,25,20">
-                <Button Command="{x:Static mD:DialogHost.OpenDialogCommand}"
-                        Style="{DynamicResource MaterialDesignFloatingActionButton}"
-                        ToolTip="Create a new entry" HorizontalAlignment="Right" Margin="8">
-                    <mD:PackIcon Kind="Plus" Width="24" Height="24" />
-                </Button>
-            </StackPanel>
+            <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" Grid.Row="0" />
+            <mD:DrawerHost Grid.Row="0">
+                <mD:DrawerHost.RightDrawerContent>
+                    <ListBox x:Name="LbHistory" Margin="6" Width="350">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding History, Mode=OneWay}" d:DataContext="{d:DesignData }"
+                                           TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </mD:DrawerHost.RightDrawerContent>
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,25,20">
+                    <Button Command="{x:Static mD:DrawerHost.OpenDrawerCommand}"
+                            CommandParameter="{x:Static Dock.Right}"
+                            Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                            ToolTip="View Log History" Margin="8">
+                        <mD:PackIcon Kind="NoteText" Width="24" Height="24" />
+                    </Button>
+                    <Button Command="self:StartupCmd.Create"
+                            Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                            ToolTip="Create a new startup entry" Margin="8">
+                        <mD:PackIcon Kind="Plus" Width="24" Height="24" />
+                    </Button>
+                </StackPanel>
+            </mD:DrawerHost>
             <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.Row="1"
                        Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                        FontFamily="Roboto" FontSize="16">
-                <TextBlock Margin="5,0,0,0">Total:</TextBlock>
-                <TextBlock Text="{Binding ElementName=LvAutoruns, Path=Items.Count}" Margin="5,0,0,0" />
-                <TextBlock Margin="50,0,0,0">Selected:</TextBlock>
-                <TextBlock Text="{Binding ElementName=LvAutoruns, Path=SelectedItems.Count}" Margin="5,0,0,0" />
-                <TextBlock Margin="50,0,0,0">Enabled:</TextBlock>
+                <TextBlock Text="{Binding ElementName=LvAutoruns, Path=Items.Count, StringFormat='Total:  {0}'}"
+                           Margin="5,0,0,0" />
+                <TextBlock Text="Enabled:" Margin="50,0,0,0" />
                 <TextBlock x:Name="TbEnabledNum" Margin="5,0,0,0" />
+                <TextBlock
+                    Text="{Binding ElementName=LvAutoruns, Path=SelectedItems.Count, StringFormat='Selected:  {0}'}"
+                    Margin="50,0,0,0" />
             </StatusBar>
         </Grid>
     </mD:DialogHost>
@@ -123,9 +125,10 @@
         <CommandBinding Command="self:StartupCmd.Refresh" Executed="RefreshCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Clip" Executed="ClipboardCmd_Executed" />
         <CommandBinding Command="self:StartupCmd.Delete" Executed="DeleteCmd_Executed" />
+        <CommandBinding Command="self:StartupCmd.Create" Executed="CreateCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Command="Close" Key="Escape" />
     </Window.InputBindings>
-</Window>
+</mah:MetroWindow>

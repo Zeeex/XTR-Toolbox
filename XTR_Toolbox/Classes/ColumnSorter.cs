@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace XTR_Toolbox
+namespace XTR_Toolbox.Classes
 {
     public class SortAdorner : Adorner
     {

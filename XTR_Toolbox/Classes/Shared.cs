@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
 using System.Threading;
@@ -11,53 +10,27 @@ using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 using Icon = System.Drawing.Icon;
 
-namespace XTR_Toolbox
+namespace XTR_Toolbox.Classes
 {
     internal static class Shared
     {
         private static int _tipCount;
 
-        public static int StartProc(string file, string arg = "", ProcessWindowStyle style = ProcessWindowStyle.Normal,
-            string exMsg = "", bool wait = true)
+        public static BitmapSource PathToIcon(string filePath)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = file,
-                Arguments = arg,
-                WindowStyle = style
-            };
-            using (Process proc = new Process())
-            {
-                try
-                {
-                    proc.StartInfo = startInfo;
-                    proc.Start();
-                    if (wait)
-                        proc.WaitForExit();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"{exMsg}Error: {ex.Message}");
-                }
-
-                return proc.ExitCode;
-            }
-        }
-
-        public static BitmapSource PathToIcon(string regIcon)
-        {
-            if (string.IsNullOrEmpty(regIcon))
+            if (string.IsNullOrEmpty(filePath))
                 return null;
-            if (!File.Exists(regIcon))
+            if (!File.Exists(filePath))
             {
-                int commaIndex = regIcon.LastIndexOf(",", regIcon.Length - 2, StringComparison.Ordinal);
+                int commaIndex = filePath.LastIndexOf(",", filePath.Length - 2, StringComparison.Ordinal);
+
                 if (commaIndex >= 0)
-                    regIcon = regIcon.Substring(0, commaIndex);
+                    filePath = filePath.Substring(0, commaIndex);
             }
 
-            if (!File.Exists(regIcon))
+            if (!File.Exists(filePath))
                 return null;
-            using (Icon sysicon = Icon.ExtractAssociatedIcon(regIcon))
+            using (Icon sysicon = Icon.ExtractAssociatedIcon(filePath))
             {
                 return sysicon == null
                     ? null
@@ -69,6 +42,7 @@ namespace XTR_Toolbox
         public static bool ServiceRestarter(string name, bool isStart)
         {
             ServiceController service = new ServiceController(name);
+
             try
             {
                 if (service.Status.Equals(ServiceControllerStatus.Running) ||
@@ -125,13 +99,20 @@ namespace XTR_Toolbox
             }
         }
 
-        public static void SnackBarTip(Snackbar sender)
+        public static void ShowSnackBar(Snackbar sender)
         {
             _tipCount++;
+            const string defMessage = "Tip: You can select multiple items by holding CTRL.";
             if (_tipCount < 5)
-                Task.Factory.StartNew(() => { Thread.Sleep(100); }).ContinueWith(
-                    t => { sender.MessageQueue.Enqueue("Tip: You can select multiple items by holding CTRL."); },
+                Task.Run(() => { Thread.Sleep(100); }).ContinueWith(t => { sender.MessageQueue.Enqueue(defMessage); },
                     TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        public static RegistryHive StringToRegistryHive(string hive)
+        {
+            RegistryHive converted = RegistryHive.LocalMachine;
+            if (hive == "HKEY_CURRENT_USER") converted = RegistryHive.CurrentUser;
+            return converted;
         }
     }
 }

@@ -1,16 +1,18 @@
-﻿<Window x:Class="XTR_Toolbox.Window3"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:self="clr-namespace:XTR_Toolbox"
-        mc:Ignorable="d"
-        Title="Services Manager" Height="700" Width="920"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
+﻿<mah:MetroWindow x:Class="XTR_Toolbox.Window3"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:self="clr-namespace:XTR_Toolbox"
+                 mc:Ignorable="d"
+                 Title="Services Manager" TitleCharacterCasing="Normal" Height="700" Width="920"
+                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Background="{DynamicResource MaterialDesignPaper}"
+                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
+                 Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
@@ -19,7 +21,7 @@
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="10,5">
             <mD:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
-            <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
+            <TextBox x:Name="TbSearch" VerticalAlignment="Center"
                      mD:HintAssist.Hint=" Quick Name Filter"
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
@@ -54,17 +56,36 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar"
-                     Grid.Row="1" IsTabStop="False" />
+        <mD:DrawerHost Grid.Row="0" Grid.RowSpan="2">
+            <mD:DrawerHost.RightDrawerContent>
+                <ListBox x:Name="LbHistory" Margin="6" Width="350">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding History, Mode=OneWay}" d:DataContext="{d:DesignData }"
+                                       TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </mD:DrawerHost.RightDrawerContent>
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,25,20">
+                <Button Command="{x:Static mD:DrawerHost.OpenDrawerCommand}"
+                        CommandParameter="{x:Static Dock.Right}"
+                        Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                        ToolTip="View Log History" Margin="8">
+                    <mD:PackIcon Kind="NoteText" Width="24" Height="24" />
+                </Button>
+            </StackPanel>
+        </mD:DrawerHost>
+        <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" Grid.Row="1" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                    FontFamily="Roboto" FontSize="16">
-            <TextBlock Margin="5,0,0,0">Filtered:</TextBlock>
-            <TextBlock Text="{Binding ElementName=LvServices, Path=Items.Count}" Margin="5,0,0,0" />
-            <TextBlock Margin="50,0,0,0">Selected:</TextBlock>
-            <TextBlock Text="{Binding ElementName=LvServices, Path=SelectedItems.Count}" Margin="5,0,0,0" />
-            <TextBlock Margin="50,0,0,0">Running:</TextBlock>
+            <TextBlock Text="{Binding ElementName=LvServices, Path=Items.Count, StringFormat='Filtered:  {0}'}"
+                       Margin="5,0,0,0" />
+            <TextBlock Text="Running:" Margin="50,0,0,0" />
             <TextBlock x:Name="TbRunNum" Margin="5,0,0,0" />
+            <TextBlock Text="{Binding ElementName=LvServices, Path=SelectedItems.Count, StringFormat='Selected:  {0}'}"
+                       Margin="50,0,0,0" />
         </StatusBar>
     </Grid>
     <Window.CommandBindings>
@@ -81,4 +102,4 @@
     <Window.InputBindings>
         <KeyBinding Command="Close" Key="Escape" />
     </Window.InputBindings>
-</Window>
+</mah:MetroWindow>

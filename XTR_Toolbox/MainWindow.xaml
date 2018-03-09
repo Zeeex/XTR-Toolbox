@@ -1,18 +1,29 @@
-﻿<Window x:Class="XTR_Toolbox.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
-        mc:Ignorable="d"
-        Title="XTR Toolbox "
-        Height="442" Width="560"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Background="{DynamicResource MaterialDesignPaper}"
-        TextElement.FontWeight="Medium"
-        TextElement.FontSize="14"
-        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+﻿<mah:MetroWindow x:Class="XTR_Toolbox.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:self="clr-namespace:XTR_Toolbox"
+                 GlowBrush="{DynamicResource AccentColorBrush}"
+                 mc:Ignorable="d"
+                 Title="XTR Toolbox " TitleCharacterCasing="Normal" Height="442" Width="560"
+                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Background="{DynamicResource MaterialDesignPaper}"
+                 TextElement.FontWeight="Medium" BorderThickness="0"
+                 FontSize="16"
+                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Icon="XTR_Toolbox.ico"
+                 IconScalingMode="NoScaleSmallerFrame" WindowTransitionsEnabled="False"
+                 ContentRendered="Window_ContentRendered">
+    <mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands>
+            <Button Command="self:MainCmd.Dark" ToolTip="Dark Mode Toggle [Ctrl + N]">
+                <mD:PackIcon Kind="WeatherNight" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center" />
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>
     <mD:DialogHost CloseOnClickAway="True" IsTabStop="False">
         <mD:DialogHost.DialogContent>
             <StackPanel Margin="12" Orientation="Vertical" Width="400">
@@ -30,121 +41,91 @@
         </mD:DialogHost.DialogContent>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="234" />
-                <RowDefinition Height="1*" />
+                <RowDefinition Height="224*" />
+                <RowDefinition Height="146*" />
                 <RowDefinition Height="29" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,8"
+            <GroupBox Grid.Row="0" Grid.Column="0" BorderThickness="1" Margin="10" Padding="5,6"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                       mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <mD:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,-3,5,0" />
-                        <TextBlock Text="Quick Tools" FontSize="16" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <mD:PackIcon Kind="Speedometer" Width="22" Height="22" Margin="0,0,5,0" />
+                        <TextBlock Text="Quick Tools" VerticalAlignment="Center" />
                     </StackPanel>
                 </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                    </Grid.RowDefinitions>
-                    <Button Content="Rebuild Icon Cache" Click="BtnIconRebuild_Click" Margin="5" Height="Auto" />
-                    <Button Content="Rebuild Font Cache" Grid.Row="1" Click="BtnFontRebuild_Click" Margin="5"
-                            Height="Auto" />
-                    <Button Content="Reset Event Logs" Grid.Row="2" Click="BtnEventsCleaner_Click" Margin="5"
-                            Height="Auto" />
-                </Grid>
+                <StackPanel>
+                    <Button Content="Rebuild Icon Cache" Click="BtnIconRebuild_Click" Margin="4,5" />
+                    <Button Content="Rebuild Font Cache" Click="BtnFontRebuild_Click" Margin="4,5" />
+                    <Button Content="Reset Event Logs" Click="BtnEventsCleaner_Click" Margin="4,5" />
+                </StackPanel>
             </GroupBox>
-            <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,8"
+            <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,6"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                       mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <mD:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,-3,5,0" />
-                        <TextBlock Text="Privacy Tools" FontSize="16" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <mD:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,0,5,0" />
+                        <TextBlock Text="Other Tools" VerticalAlignment="Center" />
                     </StackPanel>
                 </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                    </Grid.RowDefinitions>
-                    <Button x:Name="BtnWinApps" Content="Windows Apps Manager..." Click="BtnMultiWindowOpener"
-                            Height="Auto" Margin="5" />
-                    <Button Grid.Row="1" Content="Remove Telemetry Updates" Height="Auto" Margin="5"
+                <StackPanel>
+                    <Button x:Name="BtnAutoruns" Content="Startup Manager..." Click="BtnWinOpener" Margin="4,5" />
+                    <Button x:Name="BtnServices" Content="Services Manager..." Click="BtnWinOpener" Margin="4,5" />
+                    <Button x:Name="BtnSoftware" Content="Software Manager..." Click="BtnWinOpener" Margin="4,5" />
+                    <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Click="BtnWinOpener" Margin="4,5" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Margin="10" Padding="5,6"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                      mD:ColorZoneAssist.Mode="PrimaryDark">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <mD:PackIcon Kind="Windows" Width="22" Height="22" Margin="0,0,5,0" />
+                        <TextBlock Text="Privacy Tools" VerticalAlignment="Center" />
+                    </StackPanel>
+                </GroupBox.Header>
+                <StackPanel>
+                    <Button x:Name="BtnWinApps" Content="Windows Apps Manager..." Click="BtnWinOpener" Margin="4,5" />
+                    <Button Content="Remove Telemetry Updates" Margin="4,5"
                             Command="{x:Static mD:DialogHost.OpenDialogCommand}" />
-                </Grid>
+                </StackPanel>
             </GroupBox>
-            <GroupBox BorderThickness="1" Grid.Row="0" Grid.Column="1" Margin="10" Padding="5,8"
+            <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,6"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                       mD:ColorZoneAssist.Mode="PrimaryDark">
                 <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <mD:PackIcon Kind="Menu" Width="22" Height="22" Margin="0,-3,5,0" />
-                        <TextBlock Text="Other Tools" FontSize="16" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <mD:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,0,5,0" />
+                        <TextBlock Text="Cleanup Tools" VerticalAlignment="Center" />
                     </StackPanel>
                 </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                    </Grid.RowDefinitions>
-                    <Button x:Name="BtnAutoruns" Content="Startup Manager..." Click="BtnMultiWindowOpener"
-                            Height="Auto"
-                            Margin="5" />
-                    <Button x:Name="BtnServices" Content="Services Manager..." Grid.Row="1"
-                            Click="BtnMultiWindowOpener"
-                            Height="Auto" Margin="5" />
-                    <Button x:Name="BtnSoftware" Content="Software Manager..." Grid.Row="2"
-                            Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
-                    <Button x:Name="BtnHostsEditor" Content="Hosts File Manager..." Grid.Row="3"
-                            Click="BtnMultiWindowOpener" Height="Auto" Margin="5" />
-                </Grid>
+                <StackPanel>
+                    <Button x:Name="BtnCleaner" Content="Junk Files Cleaner..." Click="BtnWinOpener" Margin="4,5" />
+                    <Button x:Name="BtnChrome" Content="Chrome Extensions Manager..." Click="BtnWinOpener" Margin="4,5" />
+                </StackPanel>
             </GroupBox>
-            <GroupBox BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="10" Padding="5,8"
-                      Style="{DynamicResource MaterialDesignCardGroupBox}"
-                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                      mD:ColorZoneAssist.Mode="PrimaryDark">
-                <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,5,0" HorizontalAlignment="Center">
-                        <mD:PackIcon Kind="Broom" Width="22" Height="22" Margin="0,-3,5,0" />
-                        <TextBlock Text="Cleanup Tools" FontSize="16" />
-                    </StackPanel>
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="40" />
-                    </Grid.RowDefinitions>
-                    <Button x:Name="BtnCleaner" Content="Junk Files Cleaner..." Click="BtnMultiWindowOpener"
-                            Height="Auto" Margin="5" />
-                    <Button Grid.Row="1" x:Name="BtnChrome" Content="Chrome Extensions Manager..."
-                            Click="BtnMultiWindowOpener"
-                            Height="Auto" Margin="5" />
-                </Grid>
-            </GroupBox>
-            <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2"
-                       Grid.Column="0" Grid.Row="2" FontFamily="Roboto" FontSize="16" Padding="6,0">
+            <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.ColumnSpan="2" Grid.Column="0"
+                       Grid.Row="2" FontFamily="Roboto" FontSize="16" Padding="6,0">
                 <StatusBarItem>
                     <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate" NavigateUri="https://goo.gl/zEgLR6"
                                Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
-                        https://xtrtoolbox.blogspot.com/
+                        <InlineUIContainer>
+                            <mD:PackIcon Kind="Earth" />
+                        </InlineUIContainer>
+                        <Run Text="https://xtrtoolbox.blogspot.com" />
                     </Hyperlink>
                 </StatusBarItem>
                 <StatusBarItem DockPanel.Dock="Right">
                     <TextBlock>
-
                         <Hyperlink RequestNavigate="Hyperlink_OnRequestNavigate"
                                    NavigateUri="https://www.patreon.com/bePatron?u=4319301"
                                    Foreground="{DynamicResource PrimaryHueMidForegroundBrush}">
@@ -160,9 +141,10 @@
         </Grid>
     </mD:DialogHost>
     <Window.CommandBindings>
+        <CommandBinding Command="self:MainCmd.Dark" Executed="DarkCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Command="Close" Key="Escape" />
     </Window.InputBindings>
-</Window>
+</mah:MetroWindow>

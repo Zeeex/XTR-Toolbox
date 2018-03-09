@@ -11,7 +11,7 @@ Portable tool to tweak, clean and optimize Windows.
 
 ## Requirements:
 - Windows 7, 8.1, 10 (32, 64 bits)
-- .Net Framework: 4.6.2+
+- .Net Framework: 4.7+
 
 ## Features Overview:
 #### Quick Tools:
@@ -26,9 +26,13 @@ Portable tool to tweak, clean and optimize Windows.
 #### Other Tools:
 - Batch Startup Manager:
   - Create startup entries
-  - Displays invalid values
+  - Log startup changes
+  - Export startup info to clipboard
+  - Displays invalid entries
 - Batch Services Manager
+  - Log service changes
 - Batch Software Manager:
+  - Log software changes
   - Export software info to clipboard
   - Force remove software
 - Hosts File Editor / Manager:
@@ -59,9 +63,9 @@ Unlike others, this toolbox aims:
 - Add help wiki
 - Add a lot more features (Already have some in mind)
 - You can request a feature, open for all kinds of suggestions
-- Expected to get on par with other full toolbox suites in months' time
+- Get feature parity with other toolbox suites in months' time
 
-## Support me if you enjoy my software
+## Support me if you enjoy my software or spread the word
 <a href="https://www.patreon.com/bePatron?u=4319301">
 <img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a patron"></a><br>
 Every bit helps me out and will make me focus more time on this.

@@ -11,17 +11,20 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using JetBrains.Annotations;
+using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json.Linq;
+using XTR_Toolbox.Classes;
+using XTR_Toolbox.Dialogs;
 
 namespace XTR_Toolbox
 {
     public partial class Window7
     {
-        private readonly ObservableCollection<AddonModel> _addonList = new ObservableCollection<AddonModel>();
-
-        private readonly string _chromeData = Path.Combine(
+        public static readonly string ChromeDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             @"Google\Chrome\User Data\");
+
+        private readonly ObservableCollection<AddonModel> _addonList = new ObservableCollection<AddonModel>();
 
         private readonly List<string> _chromeProfileNames = new List<string>();
         private SortAdorner _listViewSortAdorner;
@@ -36,60 +39,49 @@ namespace XTR_Toolbox
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAddons.ItemsSource);
             view.Filter = UserFilter;
             TbSearch.Focus();
-            Shared.SnackBarTip(MainSnackbar);
+            Shared.ShowSnackBar(MainSnackbar);
         }
 
-        private static bool DeleteAddon(string deletePath)
+        private static IEnumerable<string> GetProfileNames()
         {
-            if (Process.GetProcessesByName("chrome").Length > 0)
-            {
-                MessageBoxResult mB = MessageBox.Show(
-                    "Google Chrome is currently open, extensions can't be uninstalled until all processes are closed." +
-                    "\n\nSAVE YOUR WORK BEFORE CONTINUING!" +
-                    "\n\nDo you want to force close Chrome?",
-                    "Close Google Chrome before continuing", MessageBoxButton.YesNo, MessageBoxImage.Warning,
-                    MessageBoxResult.No);
-                if (mB == MessageBoxResult.No) return false;
-                try
-                {
-                    foreach (Process processKill in Process.GetProcessesByName("chrome")) processKill.Kill();
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-
-            try
-            {
-                Directory.Delete(deletePath, true);
-            }
-            catch
-            {
-                //ignored
-            }
-
-            return !Directory.Exists(deletePath);
-        }
-
-        private void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            for (int index = LvAddons.SelectedItems.Count - 1; index >= 0; index--)
-            {
-                AddonModel item = (AddonModel) LvAddons.SelectedItems[index];
-                if (DeleteAddon(Path.Combine(item.Path, item.Id)))
-                    _addonList.Remove(item);
-            }
-        }
-
-        private IEnumerable<string> GetProfileNames()
-        {
-            string localJsonChrome = Path.Combine(_chromeData, "Local State");
+            string localJsonChrome = Path.Combine(ChromeDataPath, "Local State");
             JEnumerable<JToken> tokenEnumProfile =
                 JObject.Parse(File.ReadAllText(localJsonChrome))["profile"]["info_cache"].Children();
             List<string> profileList = tokenEnumProfile
                 .Select(item => item.Path.Substring(item.Path.LastIndexOf(".", StringComparison.Ordinal) + 1)).ToList();
             return profileList;
+        }
+
+        private async void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            int selCount = LvAddons.SelectedItems.Count;
+            if (selCount > 20)
+            {
+                object result = await DialogHost.Show(
+                    new GenYesNoUc($"Are you sure you want to delete {selCount} items?"), "RootDialog");
+                if (result == null || result.ToString() != "Y") return;
+            }
+
+            if (Process.GetProcessesByName("chrome").Length > 0)
+            {
+                object result = await DialogHost.Show(new ChromeProcessUc(), "RootDialog");
+                if (result == null || result.ToString() != "Y") return;
+                CustomProc.KillAllProc("chrome");
+            }
+
+            for (int index = selCount - 1; index >= 0; index--)
+            {
+                AddonModel item = (AddonModel) LvAddons.SelectedItems[index];
+                try
+                {
+                    Directory.Delete(Path.Combine(item.Path, item.Id), true);
+                    _addonList.Remove(item);
+                }
+                catch
+                {
+                    //ignored
+                }
+            }
         }
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
@@ -119,7 +111,7 @@ namespace XTR_Toolbox
             _chromeProfileNames.AddRange(GetProfileNames());
             foreach (string prof in _chromeProfileNames)
             {
-                string chromeAddonDir = Path.Combine(_chromeData, prof, "Extensions");
+                string chromeAddonDir = Path.Combine(ChromeDataPath, prof, "Extensions");
                 if (!Directory.Exists(chromeAddonDir))
                 {
                     MessageBox.Show("Error scanning for extensions.");
@@ -128,7 +120,7 @@ namespace XTR_Toolbox
 
                 string[] addonsIdDirs = Directory.GetDirectories(chromeAddonDir);
 
-                string secureJsonChrome = Path.Combine(_chromeData, prof, "Secure Preferences");
+                string secureJsonChrome = Path.Combine(ChromeDataPath, prof, "Secure Preferences");
                 if (!File.Exists(secureJsonChrome)) return;
                 JObject o = JObject.Parse(File.ReadAllText(secureJsonChrome));
                 JToken ids = o["extensions"]["settings"];
@@ -166,7 +158,7 @@ namespace XTR_Toolbox
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(_chromeData)) Close();
+            if (!Directory.Exists(ChromeDataPath)) Close();
         }
 
         private class AddonModel

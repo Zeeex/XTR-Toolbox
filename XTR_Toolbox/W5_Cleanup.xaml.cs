@@ -14,23 +14,22 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using JetBrains.Annotations;
+using XTR_Toolbox.Classes;
 
 namespace XTR_Toolbox
 {
     public partial class Window5
     {
-        private static readonly string WinDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
         private static readonly string SteamLibraryDir = GetSteamLibraryDir();
-        
+
         private static bool _befDate;
         private static string _date;
 
-        private readonly List<CheckBoxModel> _dirList = new List<CheckBoxModel>();
-        private readonly OperationModel _operationBind = new OperationModel();
+        private readonly ICollection<CheckBoxModel> _dirList = new Collection<CheckBoxModel>();
+        private readonly IndicatorModel _indicatorBind = new IndicatorModel();
         private ObservableCollection<CleanModel> _cleanList;
         private SortAdorner _listViewSortAdorner;
         private GridViewColumnHeader _listViewSortCol;
-        private bool _tipShown;
 
         public Window5()
         {
@@ -80,7 +79,7 @@ namespace XTR_Toolbox
         {
             if (dirs.Any())
             {
-                List<string> typeToScan = new List<string>();
+                ICollection<string> typeToScan = new Collection<string>();
                 if (multiExt != "")
                 {
                     string[] split = multiExt.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
@@ -107,11 +106,12 @@ namespace XTR_Toolbox
                 SteamLibrarySearch(SteamLibraryDir, tempList, ref maxSize);
         }
 
-        private static IEnumerable<string> GetDirectoryFilesLoop(string root, List<string> types, int depth)
+        private static IEnumerable<string> GetDirectoryFilesLoop(string root, IEnumerable<string> types, int depth)
         {
             List<string> foundFiles = new List<string>();
+            IEnumerable<string> typeEnum = types as string[] ?? types.ToArray();
 
-            foreach (string ext in types)
+            foreach (string ext in typeEnum)
                 try
                 {
                     if (_date.Length == 0)
@@ -120,7 +120,7 @@ namespace XTR_Toolbox
                     }
                     else
                     {
-                        List<string> dateList = new List<string>();
+                        ICollection<string> dateList = new Collection<string>();
                         foreach (string item in Directory.EnumerateFiles(root, ext))
                         {
                             FileInfo ii = new FileInfo(item);
@@ -146,7 +146,7 @@ namespace XTR_Toolbox
             try
             {
                 foreach (string subDir in Directory.EnumerateDirectories(root))
-                    foundFiles.AddRange(GetDirectoryFilesLoop(subDir, types, depth - 1));
+                    foundFiles.AddRange(GetDirectoryFilesLoop(subDir, typeEnum, depth - 1));
             }
             catch (UnauthorizedAccessException)
             {
@@ -157,10 +157,23 @@ namespace XTR_Toolbox
 
         private static string GetSteamLibraryDir()
         {
-            string programFilesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                @"Steam\SteamApps\common");
-            const string altPath = @"D:\SteamLibrary\SteamApps\common";
-            return Directory.Exists(altPath) ? altPath : programFilesPath;
+            string[] drives = DriveInfo.GetDrives()
+                .Where(info => info.DriveType == DriveType.Fixed).Select(info => info.Name).ToArray();
+            string[] dirs =
+            {
+                drives[1] + @"SteamLibrary\SteamApps\common",
+                drives[0] + @"SteamLibrary\SteamApps\common",
+                Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), @"Steam\SteamApps\common"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    @"Steam\SteamApps\common")
+            };
+            foreach (string one in dirs)
+            {
+                if (!Directory.Exists(one)) continue;
+                return one;
+            }
+
+            return dirs[0];
         }
 
         private static void SteamLibrarySearch(string root, ICollection<CleanModel> tempList, ref float totalSize)
@@ -205,41 +218,37 @@ namespace XTR_Toolbox
 
         private async void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (_operationBind.DeleteIndicator) return;
-            _operationBind.DeleteIndicator = true;
+            if (_indicatorBind.DeleteIndicator) return;
+            _indicatorBind.DeleteIndicator = true;
             IList input = LvCleaner.SelectedItems;
             List<CleanModel> output = new List<CleanModel>();
-            Progress<int> progress = new Progress<int>(s => _operationBind.DeleteProgress = s);
-            await Task.Factory.StartNew(() => DeleteOp(input, output, progress));
-            foreach (CleanModel item in output)
-                _cleanList.Remove(item);
-            _operationBind.DeleteIndicator = false;
+            Progress<int> progress = new Progress<int>(s => _indicatorBind.DeleteProgress = s);
+            await Task.Run(() => DeleteOp(input, output, progress));
+            output.ForEach(cm => _cleanList.Remove(cm));
+            _indicatorBind.DeleteIndicator = false;
         }
 
         private void DirSetup()
         {
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
             Dictionary<string, string> dirPreset = new Dictionary<string, string>
             {
                 {"Temporary Directory", Path.GetTempPath()},
-                {"Win Temporary Directory", Path.Combine(WinDir, @"Temp")},
-                {"Windows Installer Cache", Path.Combine(WinDir, @"Installer\$PatchCache$\Managed")},
-                {"Windows Update Cache", Path.Combine(WinDir, @"SoftwareDistribution\Download")},
-                {"Windows Logs Directory", Path.Combine(WinDir, @"Logs")},
-                {"Prefetch Cache", Path.Combine(WinDir, @"Prefetch")},
+                {"Win Temporary Directory", Path.Combine(winDir, @"Temp")},
+                {"Windows Installer Cache", Path.Combine(winDir, @"Installer\$PatchCache$\Managed")},
+                {"Windows Update Cache", Path.Combine(winDir, @"SoftwareDistribution\Download")},
+                {"Windows Logs Directory", Path.Combine(winDir, @"Logs")},
+                {"Prefetch Cache", Path.Combine(winDir, @"Prefetch")},
                 {
                     "Crash Dump Directory",
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                         @"CrashDumps")
                 },
+                {"Google Chrome Cache", Path.Combine(Window7.ChromeDataPath, @"Default\Cache")},
                 {"Steam Redist Packages", SteamLibraryDir}
             };
             foreach (KeyValuePair<string, string> oneDir in dirPreset)
-                _dirList.Add(new CheckBoxModel
-                {
-                    Text = oneDir.Key,
-                    Path = oneDir.Value,
-                    Enabled = Directory.Exists(oneDir.Value)
-                });
+                _dirList.Add(new CheckBoxModel(oneDir.Key, oneDir.Value, Directory.Exists(oneDir.Value)));
         }
 
         private void LbSidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -281,8 +290,9 @@ namespace XTR_Toolbox
         private async void ScanCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             BtnAnalyze.Focus(); // NEED TO FOCUS BECAUSE OF DATE PICKER
-            if (_operationBind.ScanIndicator) return;
-            _operationBind.ScanIndicator = true;
+            if (_indicatorBind.ScanIndicator) return;
+            MainSnackbar.IsActive = false;
+            _indicatorBind.ScanIndicator = true;
             Stopwatch sw = Stopwatch.StartNew();
             bool isSteam = false;
             List<string> selectedDirs = new List<string>();
@@ -304,12 +314,13 @@ namespace XTR_Toolbox
             int depth = Convert.ToInt32(CbBoxLevel.SelectionBoxItem);
             _date = DateFilter.Text;
             _befDate = TglDate.IsChecked != null && (bool) !TglDate.IsChecked;
-            List<CleanModel> tList = new List<CleanModel>();
-            await Task.Factory.StartNew(() =>
+            ICollection<CleanModel> tList = new List<CleanModel>();
+            await Task.Run(() =>
                 DirectorySearch(selectedDirs, multiExt, tList, depth, isSteam, ref maxSize));
 
             _cleanList = new ObservableCollection<CleanModel>(tList);
             LvCleaner.ItemsSource = _cleanList;
+
             if (CheckBoxGroup.IsChecked != null && (bool) CheckBoxGroup.IsChecked)
             {
                 CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvCleaner.ItemsSource);
@@ -319,32 +330,34 @@ namespace XTR_Toolbox
             sw.Stop();
 
             float mSec = sw.ElapsedMilliseconds;
-            _operationBind.ScanTime = mSec < 1000
+            _indicatorBind.ScanTime = mSec < 1000
                 ? mSec + " ms"
                 : (mSec / 1000).ToString("0.00") + " sec";
-            _operationBind.MaxSize = Convert.ToInt32(maxSize);
-
-            if (!_tipShown)
-            {
-                Shared.SnackBarTip(MainSnackbar);
-                _tipShown = true;
-            }
-
-            _operationBind.ScanIndicator = false;
+            _indicatorBind.MaxSize = Convert.ToInt32(maxSize);
+            _indicatorBind.ScanIndicator = false;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_ContentRendered(object sender, EventArgs e)
         {
             DirSetup();
             LbDir.ItemsSource = _dirList;
             CbBoxLevel.ItemsSource = new[] {0, 1, 2, 3, 4, 5, 20};
             CbBoxLevel.SelectedIndex = 5;
-            StackPanelBtns.DataContext = TbHeader.DataContext = _operationBind;
+            StackPanelBtns.DataContext = TbHeader.DataContext = _indicatorBind;
+            MainSnackbarMessage.Content = "Selecting many items at once can slow scan operation significantly";
+            MainSnackbar.IsActive = true;
         }
 
         private class CheckBoxModel : INotifyPropertyChanged
         {
             private bool _checked;
+
+            public CheckBoxModel(string text, string path, bool enabled)
+            {
+                Text = text;
+                Path = path;
+                Enabled = enabled;
+            }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -359,10 +372,9 @@ namespace XTR_Toolbox
                 }
             }
 
-            public bool Enabled { [UsedImplicitly] get; set; }
-            public string Path { [UsedImplicitly] get; set; }
-
-            public string Text { [UsedImplicitly] get; set; }
+            public bool Enabled { [UsedImplicitly] get; }
+            public string Path { [UsedImplicitly] get; }
+            public string Text { [UsedImplicitly] get; }
 
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
@@ -377,7 +389,7 @@ namespace XTR_Toolbox
             public string Size { [UsedImplicitly] get; set; }
         }
 
-        private class OperationModel : INotifyPropertyChanged
+        private class IndicatorModel : INotifyPropertyChanged
         {
             private bool _deleteIndicator;
             private int _deleteprogress;

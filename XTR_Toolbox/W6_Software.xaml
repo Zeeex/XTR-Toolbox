@@ -1,84 +1,118 @@
-﻿<Window x:Class="XTR_Toolbox.Window6"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:self="clr-namespace:XTR_Toolbox"
-        mc:Ignorable="d"
-        Title="Software Manager" Height="670" Width="930"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-        WindowStartupLocation="CenterScreen" FontSize="14" Loaded="Window_Loaded">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="29" />
-        </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="10,5">
-            <mD:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
-            <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
-                     mD:HintAssist.Hint=" Quick Name Filter"
-                     TextChanged="TbSearch_TextChanged" />
-        </DockPanel>
-        <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1" FontSize="14" mD:ListViewAssist.ListViewItemPadding="7"
-                  mD:DataGridAssist.ColumnHeaderPadding="7,4">
-            <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="self:SoftwareCmd.Remove" Icon="{mD:PackIcon DeleteForever}" />
-                    <MenuItem Command="self:SoftwareCmd.Force" Icon="{mD:PackIcon FolderRemove}" />
-                    <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Msi" Icon="{mD:PackIcon Autorenew}"
-                              CommandParameter="Change" Header="Change" />
-                    <MenuItem Command="self:SoftwareCmd.Msi" Icon="{mD:PackIcon Wrench}"
-                              CommandParameter="Repair" Header="Repair" />
-                    <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Dir" Icon="{mD:PackIcon Folder}" />
-                    <Separator />
-                    <MenuItem Command="self:SoftwareCmd.Clip" Icon="{mD:PackIcon ClipboardOutline}" />
-                </ContextMenu>
-            </ListView.ContextMenu>
-            <ListView.View>
-                <GridView AllowsColumnReorder="False">
-                    <GridViewColumn Width="660">
-                        <GridViewColumn.CellTemplate>
+﻿<mah:MetroWindow x:Class="XTR_Toolbox.Window6"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:self="clr-namespace:XTR_Toolbox"
+                 xmlns:classes="clr-namespace:XTR_Toolbox.Classes"
+                 mc:Ignorable="d"
+                 Title="Software Manager" TitleCharacterCasing="Normal" Height="670" Width="930"
+                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Background="{DynamicResource MaterialDesignPaper}"
+                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
+                 ContentRendered="Window_ContentRendered">
+    <mD:DialogHost CloseOnClickAway="True" IsTabStop="False" Identifier="RootDialog">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="29" />
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Margin="10,5">
+                <mD:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBox x:Name="TbSearch" TabIndex="0" VerticalAlignment="Center"
+                         mD:HintAssist.Hint=" Quick Name Filter"
+                         TextChanged="TbSearch_TextChanged" />
+            </DockPanel>
+            <ListView x:Name="LvSoftware" Margin="0" Grid.Row="1" FontSize="14"
+                      mD:ListViewAssist.ListViewItemPadding="7"
+                      mD:DataGridAssist.ColumnHeaderPadding="7,4" SelectionChanged="LvSoftware_SelectionChanged">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="self:SoftwareCmd.Remove" Icon="{mD:PackIcon DeleteForever}" />
+                        <MenuItem Command="self:SoftwareCmd.Force" Icon="{mD:PackIcon FolderRemove}" />
+                        <Separator />
+                        <MenuItem Command="self:SoftwareCmd.Msi" Icon="{mD:PackIcon Autorenew}"
+                                  CommandParameter="Change" Header="Change" />
+                        <MenuItem Command="self:SoftwareCmd.Msi" Icon="{mD:PackIcon Wrench}"
+                                  CommandParameter="Repair" Header="Repair" />
+                        <Separator />
+                        <MenuItem Command="self:SoftwareCmd.Dir" Icon="{mD:PackIcon Folder}" />
+                        <MenuItem Command="self:SoftwareCmd.RegJump" Icon="{mD:PackIcon Apps}" />
+                        <Separator />
+                        <MenuItem Command="self:SoftwareCmd.Clip" Icon="{mD:PackIcon ClipboardOutline}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False">
+                        <GridViewColumn Width="660">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData }">
+                                        <Image Source="{Binding Icon}" Width="18" Margin="0,0,7,0" />
+                                        <TextBlock Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                            <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name"
+                                                  FontWeight="Bold" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding DateInstalled}" Width="130">
+                            <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click"
+                                                  Content="Date Installed" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Size}">
+                            <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click" Content="Size (MB)" />
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <mD:DrawerHost Grid.Row="0" Grid.RowSpan="2">
+                <mD:DrawerHost.RightDrawerContent>
+                    <ListBox x:Name="LbHistory" Margin="6" Width="350">
+                        <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignData }">
-                                    <Image Source="{Binding Icon}" Height="18" Margin="0,0,7,0" />
-                                    <TextBlock Text="{Binding Name}" />
-                                </StackPanel>
+                                <TextBlock Text="{Binding History, Mode=OneWay}" d:DataContext="{d:DesignData }"
+                                           TextWrapping="Wrap" />
                             </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                        <GridViewColumnHeader Tag="Name" Click="LvUsersColumnHeader_Click" Content="Name"
-                                              FontWeight="Bold" />
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding DateInstalled}" Width="130">
-                        <GridViewColumnHeader Tag="DateInstalled" Click="LvUsersColumnHeader_Click"
-                                              Content="Date Installed" />
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Size}" Width="85">
-                        <GridViewColumnHeader Tag="Size" Click="LvUsersColumnHeader_Click" Content="Size" />
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar"
-                     Grid.Row="1" IsTabStop="False" />
-        <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
-                   Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                   FontFamily="Roboto" FontSize="16">
-            <TextBlock Margin="5,0,0,0">Filtered:</TextBlock>
-            <TextBlock Text="{Binding ElementName=LvSoftware, Path=Items.Count}" Margin="5,0,0,0" />
-            <TextBlock Margin="50,0,0,0">Selected:</TextBlock>
-            <TextBlock Text="{Binding ElementName=LvSoftware, Path=SelectedItems.Count}" Margin="5,0,0,0" />
-        </StatusBar>
-    </Grid>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </mD:DrawerHost.RightDrawerContent>
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,25,20">
+                    <Button Command="{x:Static mD:DrawerHost.OpenDrawerCommand}"
+                            CommandParameter="{x:Static Dock.Right}"
+                            Style="{DynamicResource MaterialDesignFloatingActionButton}"
+                            ToolTip="View Log History" Margin="8">
+                        <mD:PackIcon Kind="NoteText" Width="24" Height="24" />
+                    </Button>
+                </StackPanel>
+            </mD:DrawerHost>
+            <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" Grid.Row="1" />
+            <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
+                       Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                       FontFamily="Roboto" FontSize="16">
+                <StatusBar.Resources>
+                    <classes:DoubleVisibilityConverter x:Key="DoubleVisConverter" />
+                </StatusBar.Resources>
+                <TextBlock Text="{Binding ElementName=LvSoftware, Path=Items.Count, StringFormat='Filtered:  {0}'}"
+                           Margin="5,0,0,0" />
+                <TextBlock
+                    Text="{Binding ElementName=LvSoftware, Path=SelectedItems.Count, StringFormat='Selected:  {0}'}"
+                    Margin="50,0,0,0" />
+                <TextBlock x:Name="BtnSelSize" Text="{Binding SelectedSize, StringFormat='({0} MB)'}"
+                           Visibility="{Binding SelectedSize, Converter={StaticResource DoubleVisConverter}}"
+                           Margin="5,0,0,0" />
+            </StatusBar>
+        </Grid>
+    </mD:DialogHost>
     <Window.CommandBindings>
         <CommandBinding Command="self:SoftwareCmd.Msi" CanExecute="MsiCmd_CanExecute" Executed="MsiCmd_Executed" />
         <CommandBinding Command="self:SoftwareCmd.Dir" CanExecute="LocationCmd_CanExecute"
                         Executed="OpenDirCmd_Executed" />
+        <CommandBinding Command="self:SoftwareCmd.RegJump" Executed="OpenRegCmd_Executed" />
         <CommandBinding Command="self:SoftwareCmd.Force" CanExecute="LocationCmd_CanExecute"
                         Executed="UninstallCmd_Executed" />
         <CommandBinding Command="self:SoftwareCmd.Remove" Executed="UninstallCmd_Executed" />
@@ -88,4 +122,4 @@
     <Window.InputBindings>
         <KeyBinding Command="Close" Key="Escape" />
     </Window.InputBindings>
-</Window>
+</mah:MetroWindow>

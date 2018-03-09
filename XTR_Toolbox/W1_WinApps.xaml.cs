@@ -6,12 +6,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using JetBrains.Annotations;
+using XTR_Toolbox.Classes;
 
 namespace XTR_Toolbox
 {
     public partial class Window1
     {
-        private readonly Dictionary<string, string> _appList = new Dictionary<string, string>
+        private static readonly IReadOnlyDictionary<string, string> AppsList = new Dictionary<string, string>
         {
             {"Alarms & Clock", "*alarms*"},
             {"App Connector", "*appconnector*"},
@@ -71,13 +72,13 @@ namespace XTR_Toolbox
 
         private void ChBoxAll_Unchecked(object sender, RoutedEventArgs e)
         {
-            foreach (AppsModel t in LbApps.Items)
+            foreach (AppsModel t in _appsModelList)
                 t.Checked = false;
         }
 
         private void FillApps()
         {
-            foreach (KeyValuePair<string, string> kvp in _appList)
+            foreach (KeyValuePair<string, string> kvp in AppsList)
                 _appsModelList.Add(new AppsModel {CleanName = kvp.Key, ScriptName = kvp.Value});
         }
 
@@ -105,7 +106,7 @@ namespace XTR_Toolbox
                             @"$($_.InstallLocation)\AppXManifest.xml""}");
                 }
 
-                Shared.StartProc("powershell.exe", "\"{ Set-ExecutionPolicy Bypass }; clear; & '" + psPath + "'\"");
+                CustomProc.StartProc("powershell.exe", "\"{ Set-ExecutionPolicy Bypass }; clear; & '" + psPath + "'\"");
                 File.Delete(psPath);
             }
             finally

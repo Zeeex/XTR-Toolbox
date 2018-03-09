@@ -8,12 +8,14 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
 using JetBrains.Annotations;
+using MaterialDesignThemes.Wpf;
+using XTR_Toolbox.Classes;
 
 namespace XTR_Toolbox
 {
     public partial class MainWindow
     {
-        public const string XtrVer = "1.9";
+        public const string XtrVer = "2.0";
         private readonly HttpClient _cl = new HttpClient();
         private readonly TextModel _textBind = new TextModel();
 
@@ -42,28 +44,11 @@ namespace XTR_Toolbox
         {
             InitializeComponent();
             Title += XtrVer;
-            if (Environment.OSVersion.Version.Major <= 6 && Environment.OSVersion.Version.Minor < 2)
-                BtnWinApps.IsEnabled = false; // DISABLED FOR WIN7
-            BtnChrome.IsEnabled = ChromeBtnState();
-            UpdateCheckAsync();
-            TelemetryDialogText();
         }
 
-        private static bool ChromeBtnState()
-        {
-            try
-            {
-                return Directory.Exists(Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    @"Google\Chrome\User Data\"));
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        private static bool ChromeBtnState() => Directory.Exists(Window7.ChromeDataPath);
 
-        private void BtnMultiWindowOpener(object sender, RoutedEventArgs e)
+        private void BtnWinOpener(object sender, RoutedEventArgs e)
         {
             Window w = new Window();
             if (Equals(sender, BtnWinApps))
@@ -115,7 +100,7 @@ namespace XTR_Toolbox
                         //ignored
                     }
 
-                if (Process.GetProcessesByName("explorer").Length == 0) Shared.StartProc("explorer.exe");
+                if (Process.GetProcessesByName("explorer").Length == 0) CustomProc.StartProc("explorer.exe");
             }
             catch
             {
@@ -138,7 +123,7 @@ namespace XTR_Toolbox
                 string env = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
                 Shared.ServiceStartType(servName, "4");
                 Shared.ServiceRestarter(servName, false);
-                Shared.StartProc("cmd.exe",
+                CustomProc.StartProc("cmd.exe",
                     @"/C icacls ""%WinDir%\ServiceProfiles\LocalService"" /grant ""%UserName%"":F /C /T /Q",
                     ProcessWindowStyle.Hidden);
                 string font1 = Path.Combine(env, @"System32\FNTCACHE.DAT");
@@ -195,7 +180,7 @@ namespace XTR_Toolbox
                 sw.WriteLine("exit");
             }
 
-            Shared.StartProc(batPath, exMsg: "There was an error clearing event logs.\n");
+            CustomProc.StartProc(batPath, exMsg: "There was an error clearing event logs.\n");
             File.Delete(batPath);
             btnEvent.IsEnabled = true;
         }
@@ -214,7 +199,7 @@ namespace XTR_Toolbox
                 sw.WriteLine("exit");
             }
 
-            Shared.StartProc(batPath, exMsg: "There was an error uninstalling telemetry updates.\n");
+            CustomProc.StartProc(batPath, exMsg: "There was an error uninstalling telemetry updates.\n");
             File.Delete(batPath);
         }
 
@@ -249,6 +234,31 @@ namespace XTR_Toolbox
             }
         }
 
+        private void DarkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            PaletteHelper pH = new PaletteHelper();
+            string curPal = pH.QueryPalette().PrimarySwatch.Name;
+            if (string.Equals(curPal, "Brown", StringComparison.OrdinalIgnoreCase))
+            {
+                pH.ReplacePrimaryColor("LightGreen");
+                pH.SetLightDark(true);
+            }
+            else
+            {
+                pH.ReplacePrimaryColor("Brown");
+                pH.SetLightDark(false);
+            }
+        }
+
+        private void Window_ContentRendered(object sender, EventArgs e)
+        {
+            if (Environment.OSVersion.Version.Major <= 6 && Environment.OSVersion.Version.Minor < 2)
+                BtnWinApps.IsEnabled = false; // DISABLED FOR WIN7
+            BtnChrome.IsEnabled = ChromeBtnState();
+            UpdateCheckAsync();
+            TelemetryDialogText();
+        }
+
         private class TextModel : INotifyPropertyChanged
         {
             private string _telText;
@@ -270,5 +280,11 @@ namespace XTR_Toolbox
             private void NotifyPropertyChanged(string propName) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
+    }
+
+    public static class MainCmd
+    {
+        public static readonly RoutedCommand Dark = new RoutedCommand("Dark",
+            typeof(MainCmd), new InputGestureCollection {new KeyGesture(Key.N, ModifierKeys.Control)});
     }
 }

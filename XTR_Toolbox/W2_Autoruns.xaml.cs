@@ -12,7 +12,10 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
+using XTR_Toolbox.Classes;
+using XTR_Toolbox.Dialogs;
 
 namespace XTR_Toolbox
 {
@@ -25,8 +28,12 @@ namespace XTR_Toolbox
         private static readonly string[] GroupName =
             {"All Users (x64)", "Current User", "All Users", "Invalid (Broken)"};
 
-        private readonly ObservableCollection<StartupModel> _autorunsList = new ObservableCollection<StartupModel>();
-        private readonly Dictionary<string, string> _brokenRun = new Dictionary<string, string>();
+        private static readonly ObservableCollection<StartupLogModel> HistoryList =
+            new ObservableCollection<StartupLogModel>();
+
+        private static bool _enableLog;
+
+        private ObservableCollection<StartupModel> _autorunsList;
 
         private SortAdorner _listViewSortAdorner;
         private GridViewColumnHeader _listViewSortCol;
@@ -36,26 +43,14 @@ namespace XTR_Toolbox
             InitializeComponent();
         }
 
-        private void AddBroken()
-        {
-            foreach (KeyValuePair<string, string> kvp in _brokenRun)
-                _autorunsList.Add(new StartupModel
-                {
-                    Name = kvp.Key,
-                    Group = GroupName[GroupName.Length - 1],
-                    RunReg = kvp.Value
-                });
-            _brokenRun.Clear();
-        }
-
-        private string AddHkcu()
+        private static string AddHkcu(ICollection<StartupModel> mainList)
         {
             try
             {
                 RegistryKey info = Registry.CurrentUser.OpenSubKey(InfoConst);
                 RegistryKey run = Registry.CurrentUser.OpenSubKey(RunConst);
                 if (info != null && run != null)
-                    GetEntries(info, run, GroupName[1]);
+                    GetEntries(info, run, GroupName[1], mainList);
                 return null;
             }
             catch (Exception ex)
@@ -64,7 +59,7 @@ namespace XTR_Toolbox
             }
         }
 
-        private string AddHklm()
+        private static string AddHklm(ICollection<StartupModel> mainList)
         {
             try
             {
@@ -72,7 +67,7 @@ namespace XTR_Toolbox
                 RegistryKey info = Registry.LocalMachine.OpenSubKey(InfoConst);
                 RegistryKey run64 = runView.OpenSubKey(Run32Const);
                 if (info != null && run64 != null)
-                    GetEntries(info, run64, GroupName[2]);
+                    GetEntries(info, run64, GroupName[2], mainList);
                 return null;
             }
             catch (Exception ex)
@@ -81,7 +76,7 @@ namespace XTR_Toolbox
             }
         }
 
-        private string AddHklm64()
+        private static string AddHklm64(ICollection<StartupModel> mainList)
         {
             try
             {
@@ -89,7 +84,7 @@ namespace XTR_Toolbox
                 RegistryKey info64 = runView.OpenSubKey(InfoConst);
                 RegistryKey run64 = runView.OpenSubKey(RunConst);
                 if (info64 != null && run64 != null)
-                    GetEntries(info64, run64, GroupName[0]);
+                    GetEntries(info64, run64, GroupName[0], mainList);
                 return null;
             }
             catch (Exception ex)
@@ -98,37 +93,94 @@ namespace XTR_Toolbox
             }
         }
 
-        private void AutorunsScan()
+        private static void GetEntries(RegistryKey infoKey, RegistryKey runKey, string groupName,
+            ICollection<StartupModel> tList)
         {
-            StringBuilder errorAll = new StringBuilder();
-            List<string> regSector = new List<string>
+            try
             {
-                AddHklm64(),
-                AddHkcu(),
-                AddHklm()
-            };
-            foreach (string error in regSector)
-            {
-                if (error != null)
-                    errorAll.AppendLine(error);
-            }
+                string[] infoValues = infoKey.GetValueNames();
+                foreach (string infoValue in infoValues)
+                foreach (string runValue in runKey.GetValueNames())
+                {
+                    if (runKey.GetValue(runValue).GetType().Name != "Byte[]") continue;
+                    if (infoValue == runValue)
+                    {
+                        byte[] runValueBytes = (byte[]) runKey.GetValue(runValue);
+                        string regPath = infoKey
+                            .GetValue(infoValue, string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames)
+                            .ToString();
+                        string[] pathAndArgs = regPath.TrimStart('\"').Split(new[] {'\"'}, 2);
+                        string path = pathAndArgs[0];
+                        // IMPROVE...
+                        if (path.LastIndexOf("%ProgramFiles%", StringComparison.Ordinal) != -1 &&
+                            Environment.Is64BitOperatingSystem)
+                        {
+                            path = path.Substring(path.LastIndexOf("%", StringComparison.Ordinal) + 1);
+                            path = Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + path);
+                        }
 
-            if (errorAll.Length > 0)
-                MessageBox.Show($"Errors found - {errorAll.Length} : \n{errorAll}");
-            AddBroken();
-            UpdateEnabledCount();
+                        string filePath = Environment.ExpandEnvironmentVariables(path);
+                        tList.Add(new StartupModel
+                        {
+                            Name = runValue,
+                            Icon = Shared.PathToIcon(filePath),
+                            Path = filePath,
+                            Args = pathAndArgs.Length == 2 ? pathAndArgs[1] : string.Empty,
+                            Enabled = runValueBytes[0] == 02,
+                            Group = groupName,
+                            RunReg = runKey.ToString()
+                        });
+                    }
+
+                    else if (!infoValues.Contains(runValue))
+                    {
+                        tList.Add(new StartupModel
+                        {
+                            Name = runValue,
+                            Group = GroupName[GroupName.Length - 1],
+                            RunReg = runKey.ToString()
+                        });
+                    }
+                }
+
+                infoKey.Close();
+                runKey.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
-        private void BtnCreate_Click(object sender, RoutedEventArgs e)
+        private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            string tbPath = TbAutoPath.Text;
+            StringBuilder sb = new StringBuilder();
+            int maxNameLength = (from StartupModel t in LvAutoruns.SelectedItems select t.Name.Length)
+                .Concat(new[] {0}).Max();
+            foreach (StartupModel t in LvAutoruns.SelectedItems)
+            {
+                string format = "{0,-" + maxNameLength + "}  | {1,-3} | {2}";
+                sb.AppendFormat(format, t.Name, t.Enabled, t.Path);
+                sb.AppendLine();
+            }
+
+            Clipboard.SetText(sb.ToString());
+        }
+
+        private async void CreateCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            StartupCreateUc startupCreate = new StartupCreateUc();
+            object result = await DialogHost.Show(startupCreate, "RootDialog");
+            if (result == null || result.ToString() != "Y") return;
+
+            string tbPath = startupCreate.TbAutoPath.Text;
             string[] pathAndArgs = tbPath.TrimStart('\"').Split(new[] {'\"'}, 2);
             string path = pathAndArgs[0];
             if (!File.Exists(path)) return;
             string args = pathAndArgs.Length == 2 ? pathAndArgs[1] : string.Empty;
-            string tbName = TbAutoName.Text;
+            string tbName = startupCreate.TbAutoName.Text;
             if (tbName.Trim().Length == 0) tbName = Path.GetFileNameWithoutExtension(path);
-            int groupIndex = CBoxGroup.SelectedIndex == 0 ? 1 : 2;
+            int groupIndex = startupCreate.CBoxGroup.SelectedIndex == 0 ? 1 : 2;
             byte[] enableBytes = {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             string infoKey = null, runKey = null;
             try
@@ -181,40 +233,28 @@ namespace XTR_Toolbox
             }
 
             if (infoKey == null || runKey == null) return;
+
             _autorunsList.Add(new StartupModel
             {
                 Name = tbName,
                 Icon = Shared.PathToIcon(path),
                 Path = path,
                 Args = args,
-                Enabled = "Yes",
+                Enabled = true,
                 Group = GroupName[groupIndex],
                 RunReg = runKey
             });
+            HistoryList.Add(
+                new StartupLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {tbName} : Created"});
         }
 
-        private void ClipboardCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        private async void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            StringBuilder sb = new StringBuilder();
-            int maxNameLength = (from StartupModel t in LvAutoruns.SelectedItems select t.Name.Length)
-                .Concat(new[] {0}).Max();
-            foreach (StartupModel t in LvAutoruns.SelectedItems)
-            {
-                string format = "{0,-" + maxNameLength + "}  | {1,-3} | {2}";
-                sb.AppendFormat(format, t.Name, t.Enabled, t.Path);
-                sb.AppendLine();
-            }
-
-            Clipboard.SetText(sb.ToString());
-        }
-
-        private void DeleteCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            MessageBoxResult mB = MessageBox.Show("Are you sure you want to delete selected item(s)?",
-                "Delete Confirmation",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.Yes);
-            if (mB == MessageBoxResult.No) return;
-            for (int index = LvAutoruns.SelectedItems.Count - 1; index >= 0; index--)
+            int selCount = LvAutoruns.SelectedItems.Count;
+            object result = await DialogHost.Show(
+                new GenYesNoUc($"Are you sure you want to delete {selCount} items?"), "RootDialog");
+            if (result == null || result.ToString() != "Y") return;
+            for (int index = selCount - 1; index >= 0; index--)
                 try
                 {
                     StartupModel itemToDelete = (StartupModel) LvAutoruns.SelectedItems[index];
@@ -245,6 +285,11 @@ namespace XTR_Toolbox
                             Registry.CurrentUser.OpenSubKey(runRegPath, true)?.DeleteValue(itemToDelete.Name, false);
                             reg64.Close();
                             _autorunsList.Remove(itemToDelete);
+                            HistoryList.Add(
+                                new StartupLogModel
+                                {
+                                    History = $"{DateTime.Now.ToShortTimeString()} - {itemToDelete.Name} : Deleted"
+                                });
                             continue;
                         }
                         else
@@ -259,66 +304,17 @@ namespace XTR_Toolbox
                     infoKey?.Close();
                     runKey?.Close();
                     _autorunsList.Remove(itemToDelete);
+                    HistoryList.Add(
+                        new StartupLogModel
+                        {
+                            History = $"{DateTime.Now.ToShortTimeString()} - {itemToDelete.Name} : Deleted"
+                        });
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(
                         $"Error deleting value: {((StartupModel) LvAutoruns.SelectedItems[index]).Name}\n{ex.Message}");
                 }
-        }
-
-        private void GetEntries(RegistryKey infoKey, RegistryKey runKey, string groupName)
-        {
-            try
-            {
-                string[] infoValues = infoKey.GetValueNames();
-                foreach (string infoValue in infoValues)
-                foreach (string runValue in runKey.GetValueNames())
-                {
-                    if (runKey.GetValue(runValue).GetType().Name != "Byte[]") continue;
-                    if (infoValue == runValue)
-                    {
-                        byte[] runValueBytes = (byte[]) runKey.GetValue(runValue);
-                        string regPath = infoKey
-                            .GetValue(infoValue, string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames)
-                            .ToString();
-                        string[] pathAndArgs = regPath.TrimStart('\"').Split(new[] {'\"'}, 2);
-                        string path = pathAndArgs[0];
-                        // IMPROVE...
-                        if (path.LastIndexOf("%ProgramFiles%", StringComparison.Ordinal) != -1 &&
-                            Environment.Is64BitOperatingSystem)
-                        {
-                            path = path.Substring(path.LastIndexOf("%", StringComparison.Ordinal) + 1);
-                            path = Path.GetFullPath(Environment.GetEnvironmentVariable("ProgramW6432") + path);
-                        }
-
-                        string filePath = Environment.ExpandEnvironmentVariables(path);
-                        _autorunsList.Add(new StartupModel
-                        {
-                            Name = runValue,
-                            Icon = Shared.PathToIcon(filePath),
-                            Path = filePath,
-                            Args = pathAndArgs.Length == 2 ? pathAndArgs[1] : string.Empty,
-                            Enabled = runValueBytes[0] == 02 ? "Yes" : "No",
-                            Group = groupName,
-                            RunReg = runKey.ToString()
-                        });
-                    }
-
-                    else
-                    {
-                        if (!_brokenRun.ContainsKey(runValue) && !infoValues.Contains(runValue))
-                            _brokenRun.Add(runValue, runKey.ToString());
-                    }
-                }
-
-                infoKey.Close();
-                runKey.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
         }
 
         private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
@@ -353,7 +349,7 @@ namespace XTR_Toolbox
                 {
                     string dirFull = Path.GetDirectoryName(item.Path);
                     if (dirFull != null)
-                        Shared.StartProc(dirFull, wait: false);
+                        CustomProc.StartProc(dirFull, wait: false);
                 }
             }
             catch
@@ -364,8 +360,32 @@ namespace XTR_Toolbox
 
         private void RefreshCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            _autorunsList.Clear();
-            AutorunsScan();
+            StartupScan();
+        }
+
+        private void StartupScan()
+        {
+            StringBuilder errorAll = new StringBuilder();
+            List<StartupModel> mainList = new List<StartupModel>();
+            List<string> regSector = new List<string>
+            {
+                AddHklm64(mainList),
+                AddHkcu(mainList),
+                AddHklm(mainList)
+            };
+            foreach (string error in regSector)
+                if (error != null)
+                    errorAll.AppendLine(error);
+
+            if (errorAll.Length > 0)
+                MessageBox.Show($"Errors found - {errorAll.Length} : \n{errorAll}");
+
+            _autorunsList = new ObservableCollection<StartupModel>(mainList);
+            LvAutoruns.ItemsSource = _autorunsList;
+            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
+            view.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
+            view.SortDescriptions.Add(new SortDescription("Path", ListSortDirection.Descending));
+            UpdateEnabledCount();
         }
 
         private void StateChangeCmd_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -375,7 +395,6 @@ namespace XTR_Toolbox
             byte[] itemState = isEnabled
                 ? new byte[] {0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
                 : new byte[] {0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            string stringState = isEnabled ? "Yes" : "No";
             foreach (StartupModel itemToSet in LvAutoruns.SelectedItems)
                 try
                 {
@@ -390,7 +409,7 @@ namespace XTR_Toolbox
                     runKey.OpenSubKey(itemToSet.RunReg.Split(new[] {'\\'}, 2)[1], true)
                         ?.SetValue(itemToSet.Name, itemState, RegistryValueKind.Binary);
                     runKey?.Close();
-                    itemToSet.Enabled = stringState;
+                    itemToSet.Enabled = isEnabled;
                 }
                 catch (Exception ex)
                 {
@@ -400,34 +419,36 @@ namespace XTR_Toolbox
             UpdateEnabledCount();
         }
 
-        private void TbAutoPath_TextChanged(object sender, TextChangedEventArgs e) => BtnCreate.IsEnabled =
-            ((TextBox) sender).Text.Trim().Length != 0;
-
         private void UpdateEnabledCount() =>
-            TbEnabledNum.Text = _autorunsList.Count(item => item.Enabled == "Yes").ToString();
+            TbEnabledNum.Text = _autorunsList.Count(item => item.Enabled).ToString();
 
         private void ValidItemCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e) =>
             e.CanExecute = LvAutoruns.SelectedItems.Cast<StartupModel>()
                 .All(item => item.Group != GroupName[GroupName.Length - 1]);
 
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_ContentRendered(object sender, EventArgs e)
         {
-            AutorunsScan();
-            LvAutoruns.ItemsSource = _autorunsList;
-            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvAutoruns.ItemsSource);
-            view.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
-            Shared.SnackBarTip(MainSnackbar);
+            _enableLog = false;
+            StartupScan();
+            LbHistory.ItemsSource = HistoryList;
+            _enableLog = true;
+            Shared.ShowSnackBar(MainSnackbar);
+        }
+
+        private class StartupLogModel
+        {
+            public string History { [UsedImplicitly] get; set; }
         }
 
         private class StartupModel : INotifyPropertyChanged
         {
-            private string _enabled;
+            private bool _enabled;
 
             public event PropertyChangedEventHandler PropertyChanged;
             public string Args { [UsedImplicitly] get; set; }
 
-            public string Enabled
+            public bool Enabled
             {
                 [UsedImplicitly] get => _enabled;
                 set
@@ -435,6 +456,10 @@ namespace XTR_Toolbox
                     if (_enabled == value) return;
                     _enabled = value;
                     NotifyPropertyChanged(nameof(Enabled));
+                    if (!_enableLog) return;
+                    string stat = value ? "Enabled" : "Disabled";
+                    HistoryList.Add(
+                        new StartupLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {Name} : {stat}"});
                 }
             }
 
@@ -451,20 +476,23 @@ namespace XTR_Toolbox
 
     public static class StartupCmd
     {
+        public static readonly RoutedUICommand Clip = new RoutedUICommand("Copy to Clipboard", "Clip",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
+
+        public static readonly RoutedCommand Create = new RoutedCommand("Create",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.N, ModifierKeys.Control)});
+
         public static readonly RoutedUICommand Delete = new RoutedUICommand("Delete", "Del",
             typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.Delete)});
 
         public static readonly RoutedUICommand Dir = new RoutedUICommand("Open Directory", "Dir",
             typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.O, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Enable = new RoutedUICommand("Enable", "En",
-            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.E, ModifierKeys.Control)});
-
         public static readonly RoutedUICommand Disable = new RoutedUICommand("Disable", "Dis",
             typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.D, ModifierKeys.Control)});
 
-        public static readonly RoutedUICommand Clip = new RoutedUICommand("Copy to Clipboard", "Clip",
-            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.C, ModifierKeys.Control)});
+        public static readonly RoutedUICommand Enable = new RoutedUICommand("Enable", "En",
+            typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.E, ModifierKeys.Control)});
 
         public static readonly RoutedUICommand Refresh = new RoutedUICommand("Quick Refresh", "Refresh",
             typeof(StartupCmd), new InputGestureCollection {new KeyGesture(Key.F5)});
