@@ -46,6 +46,7 @@ Portable tool to tweak, clean and optimize Windows.
   - Windows Logs Directory
   - Prefetch Cache
   - Crash Dump Directory
+  - Google Chrome Cache
   - Steam Redistributable Packages
   - Filter by custom extensions
 - Chrome Extensions Manager
