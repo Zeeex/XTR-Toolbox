@@ -40,15 +40,17 @@ Portable tool to tweak, clean and optimize Windows.
 
 #### Cleanup Tools: 
 - Junk Files Cleaner:
-  - User and Windows Temporary Directories
-  - Windows Installer Cache
-  - Windows Update Cache
-  - Windows Logs Directory
-  - Prefetch Cache
-  - Crash Dump Directory
-  - Google Chrome Cache
-  - Steam Redistributable Packages
+  - Filter by date
   - Filter by custom extensions
+  - Cleaning support:
+    - User and Windows Temporary Directories
+    - Windows Installer Cache
+    - Windows Update Cache
+    - Windows Logs Directory
+    - Prefetch Cache
+    - Crash Dump Directory
+    - Google Chrome Cache
+    - Steam Redistributable Packages
 - Chrome Extensions Manager
 
 ## What sets this toolbox apart from many others?
