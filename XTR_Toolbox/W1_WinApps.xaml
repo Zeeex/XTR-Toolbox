@@ -7,41 +7,55 @@
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:self="clr-namespace:XTR_Toolbox"
                  mc:Ignorable="d"
-                 Title="Windows Apps Manager" TitleCharacterCasing="Normal" Height="495" Width="570"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Title="Store Apps Manager" TitleCharacterCasing="Normal"
+                 Foreground="{StaticResource MaterialDesignBody}"
                  Background="{DynamicResource MaterialDesignPaper}"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 FontFamily="{StaticResource MaterialDesignFont}"
                  WindowStartupLocation="CenterScreen" FontSize="15" WindowTransitionsEnabled="False"
-                 Loaded="Window_Loaded">
+                 ContentRendered="Window_ContentRendered" Height="480" Width="640">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="1*" />
             <RowDefinition Height="55" />
         </Grid.RowDefinitions>
-        <ListBox x:Name="LbApps" Margin="8,8,8,0" Grid.Row="0"
-                 SelectionChanged="AppsListBox_SelectionChanged" Grid.IsSharedSizeScope="True">
+        <DockPanel Grid.Row="0" Margin="10,5">
+            <mD:PackIcon Kind="Filter" Opacity=".6" VerticalAlignment="Center" Margin="0,0,5,0" />
+            <TextBox x:Name="TbSearch" VerticalAlignment="Center"
+                     mD:HintAssist.Hint=" Quick Name Filter"
+                     TextChanged="TbSearch_TextChanged" />
+        </DockPanel>
+        <ListBox Grid.Row="1" x:Name="LbApps" Margin="10,6,6,10" SelectionChanged="AppsListBox_SelectionChanged"
+                 Grid.IsSharedSizeScope="True">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="ColumnSize" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox Content="{Binding CleanName}" IsChecked="{Binding Checked}"
+                        <CheckBox Content="{Binding Name}" IsChecked="{Binding Checked}"
                                   d:DataContext="{d:DesignData }" IsTabStop="False" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel />
+                    <WrapPanel/>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
         </ListBox>
-        <DockPanel Grid.Row="1" Grid.Column="0" Background="{DynamicResource PrimaryHueDarkBrush}">
-            <CheckBox Content="Check All Items" Checked="ChBoxAll_Checked" Unchecked="ChBoxAll_Unchecked" Margin="10,0"
+        <DockPanel Grid.Row="2" Background="{DynamicResource PrimaryHueDarkBrush}">
+            <DockPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}" />
+                </Style>
+            </DockPanel.Resources>
+            <CheckBox Content="{Binding ElementName=LbApps, Path=Items.Count}"
+                      ContentStringFormat="Check {0} items" Checked="ChBoxAll_Checked"
+                      Unchecked="ChBoxAll_Unchecked" Margin="10,0"
                       VerticalAlignment="Center" Style="{DynamicResource MaterialDesignUserForegroundCheckBox}"
-                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                      FontWeight="Bold" />
+                      Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" />
             <StackPanel x:Name="StackPanelBtns" Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="10,-15,10,10">
                 <Button Command="self:WinAppsCmd.DeleteApps"
@@ -58,9 +72,9 @@
         </DockPanel>
     </Grid>
     <Window.CommandBindings>
-        <CommandBinding Command="self:WinAppsCmd.DeleteApps" Executed="ProcessAppsCmd_Executed"
+        <CommandBinding Command="self:WinAppsCmd.DeleteApps" Executed="DeleteAppsCmd_Executed"
                         CanExecute="UninstallCmd_CanExecute" />
-        <CommandBinding Command="self:WinAppsCmd.ReturnApps" Executed="ProcessAppsCmd_Executed" />
+        <CommandBinding Command="self:WinAppsCmd.ReturnApps" Executed="RestoreAppsCmd_Executed" />
         <CommandBinding Command="Close" Executed="OnCloseExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>

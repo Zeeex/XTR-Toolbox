@@ -8,11 +8,11 @@
                  xmlns:self="clr-namespace:XTR_Toolbox"
                  mc:Ignorable="d"
                  Title="Services Manager" TitleCharacterCasing="Normal" Height="700" Width="920"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Foreground="{StaticResource MaterialDesignBody}"
                  Background="{DynamicResource MaterialDesignPaper}"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 FontFamily="{StaticResource MaterialDesignFont}"
                  WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
-                 Loaded="Window_Loaded">
+                 ContentRendered="Window_ContentRendered">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
@@ -26,7 +26,7 @@
                      TextChanged="TbSearch_TextChanged" />
         </DockPanel>
         <ListView x:Name="LvServices" Grid.Row="1" FontSize="14" mD:ListViewAssist.ListViewItemPadding="7"
-                  mD:DataGridAssist.ColumnHeaderPadding="7,4">
+                  mD:DataGridAssist.ColumnHeaderPadding="7,4" VirtualizingStackPanel.IsVirtualizing="true">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="self:ServiceCmd.Start" />
@@ -79,7 +79,7 @@
         <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" Grid.Row="1" />
         <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                    Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                   FontFamily="Roboto" FontSize="16">
+                   FontFamily="{StaticResource MaterialDesignFont}" FontSize="16">
             <TextBlock Text="{Binding ElementName=LvServices, Path=Items.Count, StringFormat='Filtered:  {0}'}"
                        Margin="5,0,0,0" />
             <TextBlock Text="Running:" Margin="50,0,0,0" />

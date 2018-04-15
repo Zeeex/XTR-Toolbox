@@ -5,9 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
-             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-             Background="{DynamicResource MaterialDesignPaper}"
-             FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+             Foreground="{StaticResource MaterialDesignBody}"
+             Background="{StaticResource MaterialDesignPaper}"
+             FontFamily="{StaticResource MaterialDesignFont}"
              FontSize="14">
     <StackPanel Margin="12" Orientation="Vertical" Width="500">
         <StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Center">

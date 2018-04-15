@@ -7,10 +7,11 @@
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  mc:Ignorable="d"
                  Title="Hosts File Manager" TitleCharacterCasing="Normal" Height="630" Width="750"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Foreground="{StaticResource MaterialDesignBody}"
                  Background="{DynamicResource MaterialDesignPaper}"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-                 WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False">
+                 FontFamily="{StaticResource MaterialDesignFont}"
+                 WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
+                 ContentRendered="Window_ContentRendered">
     <Grid>
         <TextBox x:Name="TbHostsFile" Foreground="{DynamicResource MaterialDesignLightBackground}"
                  Background="{DynamicResource MaterialDesignDarkBackground}"

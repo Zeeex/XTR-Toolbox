@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="XTR_Toolbox.Dialogs.GenYesNoUc"
+﻿<UserControl x:Class="XTR_Toolbox.Dialogs.QuickToolsUc"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,18 +8,19 @@
              Foreground="{StaticResource MaterialDesignBody}"
              Background="{StaticResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
-             FontSize="14" Width="435">
-    <StackPanel>
-        <StackPanel Margin="12">
-            <TextBlock x:Name="TbText" Margin="0,4" HorizontalAlignment="Center" TextAlignment="Center"
-                       TextWrapping="Wrap" />
+             FontSize="14">
+    <StackPanel Margin="12" Orientation="Vertical">
+        <StackPanel Margin="10,5" HorizontalAlignment="Center">
+            <Button Content="Rebuild Icon Cache" Click="BtnIconRebuild_Click" Margin="4,5"
+                    mD:ButtonProgressAssist.Value="{Binding IconProgress, Mode=OneWay}" />
+            <Button Content="Rebuild Font Cache" Click="BtnFontRebuild_Click" Margin="4,5"
+                    mD:ButtonProgressAssist.Value="{Binding FontProgress, Mode=OneWay}" />
+            <Button Content="Reset Event Logs" Click="BtnEventsCleaner_Click" Margin="4,5" />
         </StackPanel>
         <Separator Background="{DynamicResource AccentColorBrush}" Margin="5,2" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,5">
-            <Button Content="_Yes" Style="{DynamicResource MaterialDesignFlatButton}" IsDefault="True"
-                    Command="mD:DialogHost.CloseDialogCommand" CommandParameter="Y" Width="100" />
-            <Button Content="_No" Style="{DynamicResource MaterialDesignFlatButton}" IsCancel="True"
-                    Command="mD:DialogHost.CloseDialogCommand" CommandParameter="N" Width="100" />
+            <Button Content="_Close" Style="{DynamicResource MaterialDesignFlatButton}" IsCancel="True"
+                    Command="mD:DialogHost.CloseDialogCommand" Width="100" />
         </StackPanel>
     </StackPanel>
 </UserControl>

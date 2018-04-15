@@ -7,12 +7,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Threading;
 using JetBrains.Annotations;
 using XTR_Toolbox.Classes;
 
@@ -30,6 +32,8 @@ namespace XTR_Toolbox
         private ObservableCollection<CleanModel> _cleanList;
         private SortAdorner _listViewSortAdorner;
         private GridViewColumnHeader _listViewSortCol;
+        private int _scanElapsed;
+        private readonly DispatcherTimer _dispatcherTimer = new DispatcherTimer {Interval = new TimeSpan(0, 0, 1)};
 
         public Window5()
         {
@@ -38,17 +42,26 @@ namespace XTR_Toolbox
 
         private static float AddModelToTemp(string baseDir, ICollection<CleanModel> tempList, string filePath)
         {
-            string cleanedPath = filePath.Replace(baseDir, "").TrimStart('\\');
-            FileInfo fileInfo = new FileInfo(filePath);
-            float fileSize = fileInfo.Length / 1024 + 1;
-            tempList.Add(new CleanModel
+            float fileSize;
+            try
             {
-                Path = cleanedPath,
-                Size = fileSize + " KB",
-                Date = fileInfo.LastAccessTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                Extension = Path.GetExtension(cleanedPath).ToLower(),
-                Group = baseDir
-            });
+                FileInfo fileInfo = new FileInfo(filePath);
+                fileSize = fileInfo.Length / 1024 + 1;
+                string cleanedPath = filePath.Replace(baseDir, "").TrimStart('\\');
+                tempList.Add(new CleanModel
+                {
+                    Path = cleanedPath,
+                    Size = fileSize + " KB",
+                    Date = fileInfo.LastAccessTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    Extension = Path.GetExtension(cleanedPath).ToLower(),
+                    Group = baseDir
+                });
+            }
+            catch (FileNotFoundException)
+            {
+                return 0;
+            }
+
             return fileSize;
         }
 
@@ -293,7 +306,9 @@ namespace XTR_Toolbox
             if (_indicatorBind.ScanIndicator) return;
             MainSnackbar.IsActive = false;
             _indicatorBind.ScanIndicator = true;
-            Stopwatch sw = Stopwatch.StartNew();
+            _scanElapsed = 1;
+            Stopwatch stopwatchScan = Stopwatch.StartNew();
+            _dispatcherTimer.Start();
             bool isSteam = false;
             List<string> selectedDirs = new List<string>();
             foreach (CheckBoxModel item in _dirList)
@@ -318,6 +333,8 @@ namespace XTR_Toolbox
             await Task.Run(() =>
                 DirectorySearch(selectedDirs, multiExt, tList, depth, isSteam, ref maxSize));
 
+            _dispatcherTimer.Stop();
+            stopwatchScan.Stop();
             _cleanList = new ObservableCollection<CleanModel>(tList);
             LvCleaner.ItemsSource = _cleanList;
 
@@ -327,18 +344,21 @@ namespace XTR_Toolbox
                 view.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
             }
 
-            sw.Stop();
-
-            float mSec = sw.ElapsedMilliseconds;
-            _indicatorBind.ScanTime = mSec < 1000
-                ? mSec + " ms"
-                : (mSec / 1000).ToString("0.00") + " sec";
+            _indicatorBind.ScanTime = FormatScanTime(stopwatchScan.ElapsedMilliseconds);
             _indicatorBind.MaxSize = Convert.ToInt32(maxSize);
             _indicatorBind.ScanIndicator = false;
         }
 
+        private void DispatcherTimer_Tick(object sender, EventArgs e) =>
+            _indicatorBind.ScanTime = $"{_scanElapsed++} sec";
+
+        private static string FormatScanTime(double mSec) => mSec < 1000
+            ? $"{mSec} ms"
+            : $"{mSec / 1000:0.00} sec";
+
         private void Window_ContentRendered(object sender, EventArgs e)
         {
+            Shared.FitWindow.Init(Width, Height);
             DirSetup();
             LbDir.ItemsSource = _dirList;
             CbBoxLevel.ItemsSource = new[] {0, 1, 2, 3, 4, 5, 20};
@@ -346,6 +366,7 @@ namespace XTR_Toolbox
             StackPanelBtns.DataContext = TbHeader.DataContext = _indicatorBind;
             MainSnackbarMessage.Content = "Selecting many items at once can slow scan operation significantly";
             MainSnackbar.IsActive = true;
+            _dispatcherTimer.Tick += DispatcherTimer_Tick;
         }
 
         private class CheckBoxModel : INotifyPropertyChanged
@@ -392,7 +413,7 @@ namespace XTR_Toolbox
         private class IndicatorModel : INotifyPropertyChanged
         {
             private bool _deleteIndicator;
-            private int _deleteprogress;
+            private int _deleteProgress;
             private int _maxSize;
             private bool _scanIndicator;
             private string _scanTime;
@@ -402,61 +423,39 @@ namespace XTR_Toolbox
             public bool DeleteIndicator
             {
                 [UsedImplicitly] get => _deleteIndicator;
-                set
-                {
-                    if (_deleteIndicator == value) return;
-                    _deleteIndicator = value;
-                    NotifyPropertyChanged(nameof(DeleteIndicator));
-                }
+                set => SetField(ref _deleteIndicator, value);
             }
 
             public int DeleteProgress
             {
-                [UsedImplicitly] get => _deleteprogress;
-                set
-                {
-                    if (_deleteprogress == value) return;
-                    _deleteprogress = value;
-                    NotifyPropertyChanged(nameof(DeleteProgress));
-                }
+                [UsedImplicitly] get => _deleteProgress;
+                set => SetField(ref _deleteProgress, value);
             }
 
             public int MaxSize
             {
                 [UsedImplicitly] get => _maxSize;
-                set
-                {
-                    if (_maxSize == value) return;
-                    _maxSize = value;
-                    NotifyPropertyChanged(nameof(MaxSize));
-                }
+                set => SetField(ref _maxSize, value);
             }
 
             public bool ScanIndicator
             {
                 [UsedImplicitly] get => _scanIndicator;
-                set
-                {
-                    if (_scanIndicator == value) return;
-                    _scanIndicator = value;
-                    NotifyPropertyChanged(nameof(ScanIndicator));
-                }
+                set => SetField(ref _scanIndicator, value);
             }
 
             public string ScanTime
             {
                 [UsedImplicitly] get => _scanTime;
-
-                set
-                {
-                    if (_scanTime == value) return;
-                    _scanTime = value;
-                    NotifyPropertyChanged(nameof(ScanTime));
-                }
+                set => SetField(ref _scanTime, value);
             }
 
-            private void NotifyPropertyChanged(string propName) =>
+            private void SetField<T>(ref T field, T value, [CallerMemberName] string propName = null)
+            {
+                if (EqualityComparer<T>.Default.Equals(field, value)) return;
+                field = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            }
         }
     }
 

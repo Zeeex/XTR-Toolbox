@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 using System.Windows;
@@ -379,6 +380,7 @@ namespace XTR_Toolbox
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
+            Shared.FitWindow.Init(Width, Height);
             _softwareList = PopulateSoftware();
             LvSoftware.ItemsSource = _softwareList;
             CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LvSoftware.ItemsSource);
@@ -399,15 +401,14 @@ namespace XTR_Toolbox
             public double SelectedSize
             {
                 [UsedImplicitly] get => _selectedSize;
-
                 set
                 {
                     _selectedSize = _selectedSize < 0 ? 0 : Math.Round(value, 2);
-                    NotifyPropertyChanged(nameof(SelectedSize));
+                    NotifyPropertyChanged();
                 }
             }
 
-            private void NotifyPropertyChanged(string propName) =>
+            private void NotifyPropertyChanged([CallerMemberName] string propName = null) =>
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 

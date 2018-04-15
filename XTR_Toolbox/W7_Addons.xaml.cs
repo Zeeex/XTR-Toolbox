@@ -20,7 +20,7 @@ namespace XTR_Toolbox
 {
     public partial class Window7
     {
-        public static readonly string ChromeDataPath = Path.Combine(
+        internal static readonly string ChromeDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             @"Google\Chrome\User Data\");
 
@@ -41,6 +41,8 @@ namespace XTR_Toolbox
             TbSearch.Focus();
             Shared.ShowSnackBar(MainSnackbar);
         }
+
+        internal static bool ChromeExists() => Directory.Exists(ChromeDataPath);
 
         private static IEnumerable<string> GetProfileNames()
         {
@@ -156,9 +158,10 @@ namespace XTR_Toolbox
             return ((AddonModel) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_ContentRendered(object sender, EventArgs e)
         {
-            if (!Directory.Exists(ChromeDataPath)) Close();
+            Shared.FitWindow.Init(Width, Height);
+            if (!ChromeExists()) Close();
         }
 
         private class AddonModel

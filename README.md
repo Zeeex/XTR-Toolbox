@@ -14,16 +14,8 @@ Portable tool to tweak, clean and optimize Windows.
 - .Net Framework: 4.7+
 
 ## Features Overview:
-#### Quick Tools:
-- Rebuild Icon Cache
-- Rebuild Font Cache
-- Reset Event Logs
 
-#### Privacy Tools:
-- Remove / Reinstall Windows Apps
-- Remove Telemetry Updates for Win7, Win8.1
-
-#### Other Tools:
+#### Main Tools:
 - Batch Startup Manager:
   - Create startup entries
   - Log startup changes
@@ -37,6 +29,15 @@ Portable tool to tweak, clean and optimize Windows.
   - Force remove software
 - Hosts File Editor / Manager:
   - Download hosts file from winhelp2002.mvps.org
+- Quick Tools:
+  - Rebuild Icon Cache
+  - Rebuild Font Cache
+  - Reset Event Logs
+
+#### Privacy Tools:
+- Remove / Reinstall Windows Apps
+  - Detects currently present apps
+- Remove Telemetry Updates for Win7, Win8.1
 
 #### Cleanup Tools: 
 - Junk Files Cleaner:
@@ -54,12 +55,12 @@ Portable tool to tweak, clean and optimize Windows.
 - Chrome Extensions Manager
 
 ## What sets this toolbox apart from many others?
-Unlike others, this toolbox aims:
-- To be fast and lightweight regardless of feature set
+Unlike others, this toolbox aims to:
+- Be fast and lightweight regardless of feature set
 - Use modern technologies
-- No unnecessary things or bloat
+- Have no unnecessary things or bloat
 - Support latest version of Windows
-- Easy to use and have a pleasing interface
+- Be easy to use and have a good looking interface
 
 ## Project Goals - Plans
 - Translate to other languages
@@ -79,6 +80,6 @@ Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
 ## Reviews
 By [MajorGeeks](http://www.majorgeeks.com/files/details/xtr_toolbox.html) </br>
 By [Softpedia](http://www.softpedia.com/get/PORTABLE-SOFTWARE/System/System-Enhancements/XTR-Toolbox.shtml) </br>
-By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) - [Best freeware](http://www.chip.de/bildergalerie/Freeware-des-Monats-2018-Galerie_130718114.html) of february 2018, [v1.9 Review](http://www.chip.de/news/Update-fuer-XTR-Toolbox-CCleaner-Alternative-mit-neuen-Funktionen_131614814.html) </br>
+By [chip.de](http://www.chip.de/downloads/XTR-Toolbox_131625845.html) - [Rated best freeware](http://www.chip.de/bildergalerie/Freeware-des-Monats-2018-Galerie_130718114.html) of february 2018, [v1.9 Review](http://www.chip.de/news/Update-fuer-XTR-Toolbox-CCleaner-Alternative-mit-neuen-Funktionen_131614814.html) </br>
 By [Trishtech.com](https://www.trishtech.com/2018/01/xtr-toolbox-portable-windows-tweaker-and-optimizer/) </br>
 By [WinTotal.de](https://www.wintotal.de/download/xtr-toolbox/)

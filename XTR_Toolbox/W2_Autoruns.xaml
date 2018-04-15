@@ -8,10 +8,10 @@
                  xmlns:self="clr-namespace:XTR_Toolbox"
                  xmlns:classes="clr-namespace:XTR_Toolbox.Classes"
                  mc:Ignorable="d"
-                 Title="Startup Manager" TitleCharacterCasing="Normal" Height="575" Width="800"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Title="Startup Manager" TitleCharacterCasing="Normal" Height="600" Width="800"
+                 Foreground="{StaticResource MaterialDesignBody}"
                  Background="{DynamicResource MaterialDesignPaper}"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 FontFamily="{StaticResource MaterialDesignFont}"
                  WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
                  ContentRendered="Window_ContentRendered">
     <mD:DialogHost CloseOnClickAway="True" IsTabStop="False" Identifier="RootDialog">
@@ -97,14 +97,14 @@
                     </Button>
                     <Button Command="self:StartupCmd.Create"
                             Style="{DynamicResource MaterialDesignFloatingActionButton}"
-                            ToolTip="Create a new startup entry" Margin="8">
+                            ToolTip="Create a new startup entry [Ctrl + N]" Margin="8">
                         <mD:PackIcon Kind="Plus" Width="24" Height="24" />
                     </Button>
                 </StackPanel>
             </mD:DrawerHost>
             <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}" Grid.Row="1"
                        Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                       FontFamily="Roboto" FontSize="16">
+                       FontFamily="{StaticResource MaterialDesignFont}" FontSize="16">
                 <TextBlock Text="{Binding ElementName=LvAutoruns, Path=Items.Count, StringFormat='Total:  {0}'}"
                            Margin="5,0,0,0" />
                 <TextBlock Text="Enabled:" Margin="50,0,0,0" />

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Input;
+using XTR_Toolbox.Classes;
 
 namespace XTR_Toolbox
 {
@@ -16,7 +17,21 @@ namespace XTR_Toolbox
         public Window4()
         {
             InitializeComponent();
-            HostsLoad();
+        }
+
+        private async void BtnDownload_Click(object sender, RoutedEventArgs e)
+        {
+            StackPanelBtns.IsEnabled = false;
+            using (HttpClient client = new HttpClient())
+            {
+                string result = await client.GetStringAsync("http://winhelp2002.mvps.org/hosts.txt");
+                TbHostsFile.TextChanged -= TbHostsFile_TextChanged;
+                TbHostsFile.Text = result;
+                TbHostsFile.TextChanged += TbHostsFile_TextChanged;
+                BtnHostsManage_Click(BtnSave, null);
+            }
+
+            StackPanelBtns.IsEnabled = true;
         }
 
         private void BtnHostsManage_Click(object sender, RoutedEventArgs e)
@@ -65,19 +80,10 @@ namespace XTR_Toolbox
 
         private void TbHostsFile_TextChanged(object sender, EventArgs e) => BtnSave.IsEnabled = true;
 
-        private async void BtnDownload_Click(object sender, RoutedEventArgs e)
+        private void Window_ContentRendered(object sender, EventArgs e)
         {
-            StackPanelBtns.IsEnabled = false;
-            using (HttpClient client = new HttpClient())
-            {
-                string result = await client.GetStringAsync("http://winhelp2002.mvps.org/hosts.txt");
-                TbHostsFile.TextChanged -= TbHostsFile_TextChanged;
-                TbHostsFile.Text = result;
-                TbHostsFile.TextChanged += TbHostsFile_TextChanged;
-                BtnHostsManage_Click(BtnSave, null);
-            }
-
-            StackPanelBtns.IsEnabled = true;
+            Shared.FitWindow.Init(Width, Height);
+            HostsLoad();
         }
     }
 }

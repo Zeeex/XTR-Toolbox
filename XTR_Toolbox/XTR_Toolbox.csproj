@@ -73,18 +73,19 @@
     <ApplicationIcon>XTR_Toolbox.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime" />
     <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="Windows">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\UnionMetadata\Windows.winmd</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -99,17 +100,23 @@
     <Compile Include="Classes\CustomProc.cs" />
     <Compile Include="Classes\Shared.cs" />
     <Compile Include="Classes\Converters.cs" />
-    <Compile Include="Dialogs\ChromeProcessUC.xaml.cs">
-      <DependentUpon>ChromeProcessUC.xaml</DependentUpon>
+    <Compile Include="Dialogs\ChromeProcessUc.xaml.cs">
+      <DependentUpon>ChromeProcessUc.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\ForceRemoveDialog.xaml.cs">
       <DependentUpon>ForceRemoveDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\GenYesNoUC.xaml.cs">
-      <DependentUpon>GenYesNoUC.xaml</DependentUpon>
+    <Compile Include="Dialogs\GenYesNoUc.xaml.cs">
+      <DependentUpon>GenYesNoUc.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\StartupCreateUC.xaml.cs">
-      <DependentUpon>StartupCreateUC.xaml</DependentUpon>
+    <Compile Include="Dialogs\RemoveTelemetryUc.xaml.cs">
+      <DependentUpon>RemoveTelemetryUc.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\StartupCreateUc.xaml.cs">
+      <DependentUpon>StartupCreateUc.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\QuickToolsUc.xaml.cs">
+      <DependentUpon>QuickToolsUc.xaml</DependentUpon>
     </Compile>
     <Compile Include="W1_WinApps.xaml.cs">
       <DependentUpon>W1_WinApps.xaml</DependentUpon>
@@ -132,7 +139,7 @@
     <Compile Include="W7_Addons.xaml.cs">
       <DependentUpon>W7_Addons.xaml</DependentUpon>
     </Compile>
-    <Page Include="Dialogs\ChromeProcessUC.xaml">
+    <Page Include="Dialogs\ChromeProcessUc.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -140,11 +147,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialogs\GenYesNoUC.xaml">
+    <Page Include="Dialogs\GenYesNoUc.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialogs\StartupCreateUC.xaml">
+    <Page Include="Dialogs\RemoveTelemetryUc.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\StartupCreateUc.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -160,6 +171,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Dialogs\QuickToolsUc.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="W1_WinApps.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -208,17 +223,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ControlzEx">
-      <Version>3.0.2.4</Version>
-    </PackageReference>
     <PackageReference Include="Costura.Fody">
-      <Version>1.6.2</Version>
+      <Version>2.0.0</Version>
     </PackageReference>
     <PackageReference Include="JetBrains.Annotations">
       <Version>11.1.0</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro">
-      <Version>1.6.0</Version>
+      <Version>1.6.1</Version>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes">
       <Version>2.3.1.953</Version>
@@ -227,7 +239,7 @@
       <Version>0.0.11</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>11.0.1</Version>
+      <Version>11.0.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

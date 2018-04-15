@@ -1,44 +1,18 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
-using JetBrains.Annotations;
 using MaterialDesignThemes.Wpf;
-using XTR_Toolbox.Classes;
+using XTR_Toolbox.Dialogs;
 
 namespace XTR_Toolbox
 {
     public partial class MainWindow
     {
-        public const string XtrVer = "2.0";
+        public const string XtrVer = "2.1";
         private readonly HttpClient _cl = new HttpClient();
-        private readonly TextModel _textBind = new TextModel();
-
-        private readonly string[] _updates =
-        {
-            "KB2976978",
-            "KB3075249",
-            "KB3080149",
-            "KB3021917",
-            "KB3022345",
-            "KB3068708",
-            "KB3044374",
-            "KB3035583",
-            "KB2990214",
-            "KB2952664",
-            "KB3075853",
-            "KB3065987",
-            "KB3050265",
-            "KB3075851",
-            "KB2902907"
-        };
-
-        private string _telemetryText;
 
         public MainWindow()
         {
@@ -46,7 +20,11 @@ namespace XTR_Toolbox
             Title += XtrVer;
         }
 
-        private static bool ChromeBtnState() => Directory.Exists(Window7.ChromeDataPath);
+        private async void Btn_QuickTools(object sender, RoutedEventArgs e) =>
+            await DialogHost.Show(new QuickToolsUc(), "MainDialog");
+
+        private async void Btn_Telemetry(object sender, RoutedEventArgs e) =>
+            await DialogHost.Show(new RemoveTelemetryUc(), "MainDialog");
 
         private void BtnWinOpener(object sender, RoutedEventArgs e)
         {
@@ -70,153 +48,26 @@ namespace XTR_Toolbox
             Show();
         }
 
-        private void BtnIconRebuild_Click(object sender, RoutedEventArgs e)
+        private void DarkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Button btnIcoReb = (Button) sender;
-            btnIcoReb.IsEnabled = false;
-            try
+            PaletteHelper pH = new PaletteHelper();
+            string curPal = pH.QueryPalette().PrimarySwatch.Name;
+            if (string.Equals(curPal, "Brown", StringComparison.OrdinalIgnoreCase))
             {
-                string env = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                if (env.Length == 0) return;
-                foreach (Process proc in Process.GetProcessesByName("explorer")) proc.Kill();
-
-                try
-                {
-                    File.Delete(Path.Combine(env, "IconCache.db"));
-                }
-                catch
-                {
-                    //ignored
-                }
-
-                foreach (string f in Directory.GetFiles(
-                    Path.Combine(env, @"Microsoft\Windows\Explorer"), "iconcache*"))
-                    try
-                    {
-                        File.Delete(f);
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
-
-                if (Process.GetProcessesByName("explorer").Length == 0) CustomProc.StartProc("explorer.exe");
+                pH.ReplacePrimaryColor("LightGreen");
+                pH.SetLightDark(true);
             }
-            catch
+            else
             {
-                //ignored
+                pH.ReplacePrimaryColor("Brown");
+                pH.SetLightDark(false);
             }
-            finally
-            {
-                btnIcoReb.IsEnabled = true;
-            }
-        }
-
-
-        private void BtnFontRebuild_Click(object sender, RoutedEventArgs e)
-        {
-            Button btnFontReb = (Button) sender;
-            btnFontReb.IsEnabled = false;
-            const string servName = "FontCache";
-            try
-            {
-                string env = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-                Shared.ServiceStartType(servName, "4");
-                Shared.ServiceRestarter(servName, false);
-                CustomProc.StartProc("cmd.exe",
-                    @"/C icacls ""%WinDir%\ServiceProfiles\LocalService"" /grant ""%UserName%"":F /C /T /Q",
-                    ProcessWindowStyle.Hidden);
-                string font1 = Path.Combine(env, @"System32\FNTCACHE.DAT");
-                try
-                {
-                    File.Delete(font1);
-                }
-                catch
-                {
-                    //ignored
-                }
-
-                foreach (string f in Directory.GetFiles(
-                    Path.Combine(env, @"ServiceProfiles\LocalService\AppData\Local\FontCache"), "*FontCache*"))
-                    try
-                    {
-                        File.Delete(f);
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
-            }
-            catch
-            {
-                //ignored
-            }
-
-            Shared.ServiceStartType(servName, "2", "0");
-            Shared.ServiceRestarter(servName, true);
-            btnFontReb.IsEnabled = true;
-        }
-
-        private void BtnEventsCleaner_Click(object sender, RoutedEventArgs e)
-        {
-            Button btnEvent = (Button) sender;
-            btnEvent.IsEnabled = false;
-            string batPath = Path.Combine(Path.GetTempPath(), "Clean_EventLogs.bat");
-            if (File.Exists(batPath))
-                File.Delete(batPath);
-            using (StreamWriter sw = File.CreateText(batPath))
-            {
-                sw.WriteLine("@echo off");
-                sw.WriteLine("FOR /F \"tokens=1,2*\" %%V IN ('bcdedit') DO SET adminTest=%%V");
-                sw.WriteLine("IF (%adminTest%)==(Access) goto noAdmin");
-                sw.WriteLine("for /F \"tokens=*\" %%G in ('wevtutil.exe el') DO (call :do_clear \"%%G\")");
-                sw.WriteLine("echo.");
-                sw.WriteLine("echo goto theEnd");
-                sw.WriteLine(":do_clear");
-                sw.WriteLine("echo clearing %1");
-                sw.WriteLine("wevtutil.exe cl %1");
-                sw.WriteLine("goto :eof");
-                sw.WriteLine(":noAdmin");
-                sw.WriteLine("exit");
-            }
-
-            CustomProc.StartProc(batPath, exMsg: "There was an error clearing event logs.\n");
-            File.Delete(batPath);
-            btnEvent.IsEnabled = true;
-        }
-
-        private void BtnTelemetryYes_Click(object sender, RoutedEventArgs e)
-        {
-            string batPath = Path.Combine(Path.GetTempPath(), "Uninstall_Telemetry_Updates.bat");
-            if (File.Exists(batPath))
-                File.Delete(batPath);
-            using (StreamWriter sw = File.CreateText(batPath))
-            {
-                sw.WriteLine("@echo off");
-                foreach (string up in _updates)
-                    sw.WriteLine("start /w wusa.exe /uninstall /kb:" + up.Replace("KB", "") + " /quiet /norestart");
-
-                sw.WriteLine("exit");
-            }
-
-            CustomProc.StartProc(batPath, exMsg: "There was an error uninstalling telemetry updates.\n");
-            File.Delete(batPath);
         }
 
         private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e) =>
             Process.Start(e.Uri.AbsoluteUri);
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
-
-        private void TelemetryDialogText()
-        {
-            _telemetryText =
-                "This will remove Windows Updates related to telemetry in Windows 7 and 8.1. \nThis has no effect on Windows 10. It's safe to run. \n\nUpdates to uninstall:\n" +
-                string.Join("\n", _updates) +
-                "\n\nAre you sure you want to do this?";
-            TbTelemetry.DataContext = _textBind;
-            _textBind.TelemetryText = _telemetryText;
-        }
 
         private async void UpdateCheckAsync()
         {
@@ -234,51 +85,12 @@ namespace XTR_Toolbox
             }
         }
 
-        private void DarkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            PaletteHelper pH = new PaletteHelper();
-            string curPal = pH.QueryPalette().PrimarySwatch.Name;
-            if (string.Equals(curPal, "Brown", StringComparison.OrdinalIgnoreCase))
-            {
-                pH.ReplacePrimaryColor("LightGreen");
-                pH.SetLightDark(true);
-            }
-            else
-            {
-                pH.ReplacePrimaryColor("Brown");
-                pH.SetLightDark(false);
-            }
-        }
-
         private void Window_ContentRendered(object sender, EventArgs e)
         {
             if (Environment.OSVersion.Version.Major <= 6 && Environment.OSVersion.Version.Minor < 2)
                 BtnWinApps.IsEnabled = false; // DISABLED FOR WIN7
-            BtnChrome.IsEnabled = ChromeBtnState();
+            BtnChrome.IsEnabled = Window7.ChromeExists();
             UpdateCheckAsync();
-            TelemetryDialogText();
-        }
-
-        private class TextModel : INotifyPropertyChanged
-        {
-            private string _telText;
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            public string TelemetryText
-            {
-                [UsedImplicitly] get => _telText;
-
-                set
-                {
-                    if (_telText == value) return;
-                    _telText = value;
-                    NotifyPropertyChanged(nameof(TelemetryText));
-                }
-            }
-
-            private void NotifyPropertyChanged(string propName) =>
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 

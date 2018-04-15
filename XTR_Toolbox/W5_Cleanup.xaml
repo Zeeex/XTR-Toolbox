@@ -7,10 +7,10 @@
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:self="clr-namespace:XTR_Toolbox"
                  mc:Ignorable="d"
-                 Title="Junk Files Cleaner" TitleCharacterCasing="Normal" Height="700" Width="1200"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Title="Junk Files Cleaner" TitleCharacterCasing="Normal" Height="670" Width="1140"
+                 Foreground="{StaticResource MaterialDesignBody}"
                  Background="{DynamicResource MaterialDesignPaper}"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 FontFamily="{StaticResource MaterialDesignFont}"
                  WindowStartupLocation="CenterScreen" FontSize="16" WindowTransitionsEnabled="False"
                  ContentRendered="Window_ContentRendered">
     <Grid>
@@ -22,10 +22,10 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition MinHeight="200" />
-                    <RowDefinition Height="180" />
-                    <RowDefinition Height="150" />
+                    <RowDefinition Height="162" />
+                    <RowDefinition Height="130" />
                 </Grid.RowDefinitions>
-                <GroupBox Margin="10,5,10,8" Padding="5,6" mD:ColorZoneAssist.Mode="PrimaryDark"
+                <GroupBox Margin="10,5,10,8" Padding="5" mD:ColorZoneAssist.Mode="PrimaryDark"
                           Style="{DynamicResource MaterialDesignCardGroupBox}" DockPanel.Dock="Top">
                     <GroupBox.Header>
                         <CheckBox Content="Select All" VerticalContentAlignment="Stretch"
@@ -49,7 +49,7 @@
                         </ListBox.ItemContainerStyle>
                     </ListBox>
                 </GroupBox>
-                <GroupBox Grid.Row="1" Margin="10,5,10,8" Padding="5,6" mD:ColorZoneAssist.Mode="PrimaryDark"
+                <GroupBox Grid.Row="1" Margin="10,5,10,8" Padding="2,5" mD:ColorZoneAssist.Mode="PrimaryDark"
                           Style="{DynamicResource MaterialDesignCardGroupBox}" DockPanel.Dock="Bottom">
                     <GroupBox.Header>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -60,7 +60,7 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </GroupBox.Header>
-                    <StackPanel Margin="0,0,0,2">
+                    <StackPanel Margin="5,0,0,0">
                         <DockPanel>
                             <TextBlock Text="Extension:" VerticalAlignment="Center" />
                             <TextBox x:Name="TBoxTypes" mD:HintAssist.Hint=".tmp, *.log" Margin="10,0" />
@@ -70,7 +70,7 @@
                             <TextBlock Text="Date:" VerticalAlignment="Center" />
                             <DatePicker x:Name="DateFilter" mD:HintAssist.Hint="Pick Date" Margin="10,0" />
                         </DockPanel>
-                        <DockPanel Margin="0,13,0,0">
+                        <DockPanel Margin="0,12,0,0">
                             <TextBlock Text="Before Date" VerticalAlignment="Center" />
                             <TextBlock Text="After Date" VerticalAlignment="Center" Margin="0,0,10,0"
                                        DockPanel.Dock="Right" />
@@ -78,7 +78,7 @@
                         </DockPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Grid.Row="2" Margin="10,5,10,8" Padding="5,6" mD:ColorZoneAssist.Mode="PrimaryDark"
+                <GroupBox Grid.Row="2" Margin="10,5,10,8" Padding="2,5" mD:ColorZoneAssist.Mode="PrimaryDark"
                           Style="{DynamicResource MaterialDesignCardGroupBox}" DockPanel.Dock="Bottom">
                     <GroupBox.Header>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -89,11 +89,13 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </GroupBox.Header>
-                    <StackPanel Margin="0,2">
-                        <CheckBox x:Name="CheckBoxGroup" Content="Show Groups" Height="25" />
+                    <StackPanel Margin="5,0,0,0">
+                        <DockPanel>
+                            <CheckBox x:Name="CheckBoxGroup" Content="Show Groups" Height="25" />
+                        </DockPanel>
                         <Separator Style="{StaticResource MaterialDesignDarkSeparator}" Margin="5,0" />
                         <DockPanel>
-                            <Label Content="Scan Depth Level:" VerticalAlignment="Center" />
+                            <TextBlock Text="Scan Depth Level:" VerticalAlignment="Center" />
                             <ComboBox x:Name="CbBoxLevel" Width="50" HorizontalAlignment="Right" Margin="0,0,10,0" />
                         </DockPanel>
                     </StackPanel>
@@ -131,7 +133,7 @@
             </ListView.GroupStyle>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn DisplayMemberBinding="{Binding Path}" Width="520">
+                    <GridViewColumn DisplayMemberBinding="{Binding Path}" Width="490">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Tag="Path" Click="LvUsersColumnHeader_Click">
                                 <GridViewColumnHeader.Content>

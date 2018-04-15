@@ -7,12 +7,12 @@
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:self="clr-namespace:XTR_Toolbox"
                  mc:Ignorable="d"
-                 Title="Chrome Extensions Manager" TitleCharacterCasing="Normal" Height="724" Width="696"
-                 TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                 Title="Chrome Extensions Manager" TitleCharacterCasing="Normal" Height="720" Width="700"
+                 Foreground="{StaticResource MaterialDesignBody}"
                  Background="{DynamicResource MaterialDesignPaper}"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                 FontFamily="{StaticResource MaterialDesignFont}"
                  WindowStartupLocation="CenterScreen" FontSize="14" WindowTransitionsEnabled="False"
-                 Loaded="Window_Loaded">
+                 ContentRendered="Window_ContentRendered">
     <mD:DialogHost CloseOnClickAway="True" IsTabStop="False" Identifier="RootDialog">
         <Grid>
             <Grid.RowDefinitions>
@@ -48,7 +48,7 @@
             <mD:Snackbar MessageQueue="{mD:MessageQueue}" x:Name="MainSnackbar" IsTabStop="False" Grid.Row="1" />
             <StatusBar Background="{DynamicResource PrimaryHueDarkBrush}"
                        Grid.Column="0" Grid.Row="2" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                       FontFamily="Roboto" FontSize="16">
+                       FontFamily="{StaticResource MaterialDesignFont}" FontSize="16">
                 <TextBlock Text="{Binding ElementName=LvAddons, Path=Items.Count, StringFormat='Total:  {0}'}"
                            Margin="5,0,0,0" />
                 <TextBlock

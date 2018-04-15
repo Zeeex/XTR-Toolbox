@@ -7,8 +7,10 @@
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  mc:Ignorable="d"
                  Title="Force Remove Application" TitleCharacterCasing="Normal" Height="500" Width="500"
-                 FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
-                 WindowStartupLocation="CenterScreen" SizeToContent="Width" FontSize="14" Loaded="Window_Loaded"
+                 Foreground="{StaticResource MaterialDesignBody}"
+                 Background="{StaticResource MaterialDesignPaper}"
+                 FontFamily="{StaticResource MaterialDesignFont}" WindowStartupLocation="CenterScreen"
+                 SizeToContent="Width" FontSize="14" Loaded="Window_Loaded"
                  SizeChanged="Window_SizeChanged">
     <Grid>
         <Grid.RowDefinitions>

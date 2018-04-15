@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -429,6 +430,7 @@ namespace XTR_Toolbox
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
+            Shared.FitWindow.Init(Width, Height);
             _enableLog = false;
             StartupScan();
             LbHistory.ItemsSource = HistoryList;
@@ -453,10 +455,7 @@ namespace XTR_Toolbox
                 [UsedImplicitly] get => _enabled;
                 set
                 {
-                    if (_enabled == value) return;
-                    _enabled = value;
-                    NotifyPropertyChanged(nameof(Enabled));
-                    if (!_enableLog) return;
+                    if (!SetField(ref _enabled, value) || !_enableLog) return;
                     string stat = value ? "Enabled" : "Disabled";
                     HistoryList.Add(
                         new StartupLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {Name} : {stat}"});
@@ -469,8 +468,13 @@ namespace XTR_Toolbox
             public string Path { [UsedImplicitly] get; set; }
             public string RunReg { [UsedImplicitly] get; set; }
 
-            private void NotifyPropertyChanged(string propName) =>
+            private bool SetField(ref bool field, bool value, [CallerMemberName] string propName = null)
+            {
+                if (field == value) return false;
+                field = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+                return true;
+            }
         }
     }
 

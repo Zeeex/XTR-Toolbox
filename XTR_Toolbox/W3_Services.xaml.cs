@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.ServiceProcess;
 using System.Windows;
 using System.Windows.Controls;
@@ -46,11 +47,32 @@ namespace XTR_Toolbox
             return startType;
         }
 
+        private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
+        {
+            GridViewColumnHeader column = sender as GridViewColumnHeader;
+            string sortBy = column?.Tag.ToString();
+            if (_listViewSortCol != null)
+            {
+                AdornerLayer.GetAdornerLayer(_listViewSortCol).Remove(_listViewSortAdorner);
+                LvServices.Items.SortDescriptions.Clear();
+            }
+
+            ListSortDirection newDir = ListSortDirection.Ascending;
+            if (Equals(_listViewSortCol, column) && Equals(_listViewSortAdorner.Direction, newDir))
+                newDir = ListSortDirection.Descending;
+
+            _listViewSortCol = column;
+            _listViewSortAdorner = new SortAdorner(_listViewSortCol, newDir);
+            if (_listViewSortCol != null) AdornerLayer.GetAdornerLayer(_listViewSortCol).Add(_listViewSortAdorner);
+            if (sortBy != null) LvServices.Items.SortDescriptions.Add(new SortDescription(sortBy, newDir));
+        }
+
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
 
         private void PopulateServices()
         {
-            foreach (ServiceController service in ServiceController.GetServices())
+            ServiceController[] servicesArray = ServiceController.GetServices();
+            foreach (ServiceController service in servicesArray)
             {
                 string[] array = new string[4];
                 try
@@ -74,70 +96,54 @@ namespace XTR_Toolbox
             }
         }
 
-        private void LvUsersColumnHeader_Click(object sender, RoutedEventArgs e)
-        {
-            GridViewColumnHeader column = sender as GridViewColumnHeader;
-            string sortBy = column?.Tag.ToString();
-            if (_listViewSortCol != null)
-            {
-                AdornerLayer.GetAdornerLayer(_listViewSortCol).Remove(_listViewSortAdorner);
-                LvServices.Items.SortDescriptions.Clear();
-            }
-
-            ListSortDirection newDir = ListSortDirection.Ascending;
-            if (Equals(_listViewSortCol, column) && Equals(_listViewSortAdorner.Direction, newDir))
-                newDir = ListSortDirection.Descending;
-
-            _listViewSortCol = column;
-            _listViewSortAdorner = new SortAdorner(_listViewSortCol, newDir);
-            if (_listViewSortCol != null) AdornerLayer.GetAdornerLayer(_listViewSortCol).Add(_listViewSortAdorner);
-            if (sortBy != null) LvServices.Items.SortDescriptions.Add(new SortDescription(sortBy, newDir));
-        }
-
         private void ServiceChange_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (!(e.Command is RoutedUICommand eCommand)) return;
             foreach (ServiceModel item in LvServices.SelectedItems)
             {
                 string serviceName = item.Name;
-                ServiceController service = new ServiceController(serviceName);
-                if (eCommand == ServiceCmd.Start)
+                using (ServiceController service = new ServiceController(serviceName))
                 {
-                    if (!Shared.ServiceRestarter(serviceName, true)) return;
-                    UpdateRunningCount();
-                }
-                else if (eCommand == ServiceCmd.Stop)
-                {
-                    if (!Shared.ServiceRestarter(serviceName, false)) return;
-                    UpdateRunningCount();
-                }
-                else
-                {
-                    string startType = null, delayed = null;
-                    if (eCommand == ServiceCmd.Disable)
+                    if (eCommand == ServiceCmd.Start)
                     {
-                        startType = "4";
+                        if (!Shared.ServiceRestarter(serviceName, true)) return;
+                        UpdateRunningCount();
                     }
-                    else if (eCommand == ServiceCmd.Manual)
+                    else if (eCommand == ServiceCmd.Stop)
                     {
-                        startType = "3";
+                        if (!Shared.ServiceRestarter(serviceName, false)) return;
+                        UpdateRunningCount();
                     }
-                    else if (eCommand == ServiceCmd.Automatic)
+                    else
                     {
-                        startType = "2";
-                        delayed = "0";
-                    }
-                    else if (eCommand == ServiceCmd.AutoDelayed)
-                    {
-                        startType = "2";
-                        delayed = "1";
+                        string startType = null, delayed = null;
+                        if (eCommand == ServiceCmd.Disable)
+                        {
+                            startType = "4";
+                        }
+                        else if (eCommand == ServiceCmd.Manual)
+                        {
+                            startType = "3";
+                        }
+                        else if (eCommand == ServiceCmd.Automatic)
+                        {
+                            startType = "2";
+                            delayed = "0";
+                        }
+                        else if (eCommand == ServiceCmd.AutoDelayed)
+                        {
+                            startType = "2";
+                            delayed = "1";
+                        }
+
+                        Shared.ServiceStartType(serviceName, startType, delayed);
                     }
 
-                    Shared.ServiceStartType(serviceName, startType, delayed);
+                    item.Status = service.Status.Equals(ServiceControllerStatus.Stopped)
+                        ? ""
+                        : service.Status.ToString();
+                    item.Startup = GetStartType(service);
                 }
-
-                item.Status = service.Status.Equals(ServiceControllerStatus.Stopped) ? "" : service.Status.ToString();
-                item.Startup = GetStartType(service);
             }
         }
 
@@ -160,8 +166,9 @@ namespace XTR_Toolbox
             return ((ServiceModel) item).Full.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_ContentRendered(object sender, EventArgs e)
         {
+            Shared.FitWindow.Init(Width, Height);
             _enableLog = false;
             PopulateServices();
             UpdateRunningCount();
@@ -193,10 +200,7 @@ namespace XTR_Toolbox
                 [UsedImplicitly] get => _startup;
                 set
                 {
-                    if (_startup == value) return;
-                    _startup = value;
-                    NotifyPropertyChanged(nameof(Startup));
-                    if (!_enableLog) return;
+                    if (!SetField(ref _startup, value) || !_enableLog) return;
                     HistoryList.Add(
                         new ServiceLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {Name} : {value}"});
                 }
@@ -207,18 +211,21 @@ namespace XTR_Toolbox
                 [UsedImplicitly] get => _status;
                 set
                 {
-                    if (_status == value) return;
-                    _status = value;
-                    NotifyPropertyChanged(nameof(Status));
-                    if (!_enableLog) return;
-                    if (value != ServiceControllerStatus.Running.ToString()) value = "Stopped";
+                    if (!SetField(ref _status, value) || !_enableLog) return;
+                    if (value != ServiceControllerStatus.Running.ToString())
+                        value = "Stopped";
                     HistoryList.Add(
                         new ServiceLogModel {History = $"{DateTime.Now.ToShortTimeString()} - {Name} : {value}"});
                 }
             }
 
-            private void NotifyPropertyChanged(string propName) =>
+            private bool SetField<T>(ref T field, T value, [CallerMemberName] string propName = null)
+            {
+                if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+                field = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+                return true;
+            }
         }
     }
 

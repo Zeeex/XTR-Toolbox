@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace XTR_Toolbox.Classes
     {
         private static int _tipCount;
 
-        public static BitmapSource PathToIcon(string filePath)
+        internal static BitmapSource PathToIcon(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
                 return null;
@@ -39,48 +40,49 @@ namespace XTR_Toolbox.Classes
             }
         }
 
-        public static bool ServiceRestarter(string name, bool isStart)
+        internal static bool ServiceRestarter(string name, bool isStart)
         {
-            ServiceController service = new ServiceController(name);
-
-            try
+            using (ServiceController service = new ServiceController(name))
             {
-                if (service.Status.Equals(ServiceControllerStatus.Running) ||
-                    service.Status.Equals(ServiceControllerStatus.StartPending))
+                try
                 {
-                    service.Stop();
-                    service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-                    if (!service.Status.Equals(ServiceControllerStatus.Stopped) &&
-                        !service.Status.Equals(ServiceControllerStatus.StopPending))
+                    if (service.Status.Equals(ServiceControllerStatus.Running) ||
+                        service.Status.Equals(ServiceControllerStatus.StartPending))
                     {
-                        MessageBox.Show($"Service: {service.DisplayName} can\'t be stopped.");
-                        return false;
+                        service.Stop();
+                        service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+                        if (!service.Status.Equals(ServiceControllerStatus.Stopped) &&
+                            !service.Status.Equals(ServiceControllerStatus.StopPending))
+                        {
+                            MessageBox.Show($"Service: {service.DisplayName} can\'t be stopped.");
+                            return false;
+                        }
                     }
-                }
 
-                if (isStart)
+                    if (isStart)
+                    {
+                        service.Start();
+                        service.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+                        if (!service.Status.Equals(ServiceControllerStatus.Running) &&
+                            !service.Status.Equals(ServiceControllerStatus.StartPending))
+                        {
+                            MessageBox.Show($"Service: {service.DisplayName} can\'t be started.");
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+                catch
                 {
-                    service.Start();
-                    service.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
-                    if (!service.Status.Equals(ServiceControllerStatus.Running) &&
-                        !service.Status.Equals(ServiceControllerStatus.StartPending))
-                    {
-                        MessageBox.Show($"Service: {service.DisplayName} can\'t be started.");
-                        return false;
-                    }
+                    //ignored
                 }
-
-                return true;
-            }
-            catch
-            {
-                //ignored
             }
 
             return false;
         }
 
-        public static void ServiceStartType(string serviceName, string startType, string delayed = null)
+        internal static void ServiceStartType(string serviceName, string startType, string delayed = null)
         {
             try
             {
@@ -99,7 +101,7 @@ namespace XTR_Toolbox.Classes
             }
         }
 
-        public static void ShowSnackBar(Snackbar sender)
+        internal static void ShowSnackBar(Snackbar sender)
         {
             _tipCount++;
             const string defMessage = "Tip: You can select multiple items by holding CTRL.";
@@ -108,11 +110,24 @@ namespace XTR_Toolbox.Classes
                     TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        public static RegistryHive StringToRegistryHive(string hive)
+        internal static RegistryHive StringToRegistryHive(string hive)
         {
             RegistryHive converted = RegistryHive.LocalMachine;
             if (hive == "HKEY_CURRENT_USER") converted = RegistryHive.CurrentUser;
             return converted;
+        }
+
+        internal static class FitWindow
+        {
+            private static readonly double SysHeight = SystemParameters.PrimaryScreenHeight;
+            private static readonly double SysWidth = SystemParameters.PrimaryScreenWidth;
+
+            internal static void Init(double w, double h)
+            {
+                if (SysWidth > w && SysHeight > h) return;
+                Window currWin = Application.Current.Windows.OfType<Window>().Single(win => win.IsActive);
+                if (currWin != null) currWin.WindowState = WindowState.Maximized;
+            }
         }
     }
 }

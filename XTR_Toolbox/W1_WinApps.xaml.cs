@@ -1,10 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using Windows.ApplicationModel;
+using Windows.Foundation;
+using Windows.Management.Deployment;
 using JetBrains.Annotations;
 using XTR_Toolbox.Classes;
 
@@ -12,48 +20,41 @@ namespace XTR_Toolbox
 {
     public partial class Window1
     {
-        private static readonly IReadOnlyDictionary<string, string> AppsList = new Dictionary<string, string>
-        {
-            {"Alarms & Clock", "*alarms*"},
-            {"App Connector", "*appconnector*"},
-            {"App Installer", "*appinstaller*"},
-            {"Calendar and Mail", "*communicationsapps*"},
-            {"Camera", "*camera*"},
-            {"Feedback Hub", "*feedback*"},
-            {"Get Help", "*gethelp*"},
-            {"Get Office", "*officehub*"},
-            {"Get Started", "*getstarted*"},
-            {"Groove Music", "*zunemusic*"},
-            {"Maps", "*maps*"},
-            {"Messaging", "*messaging*"},
-            {"Microsoft Wi-Fi", "*connectivitystore*"},
-            {"Money", "*bingfinance*"},
-            {"Movies & TV", "*zunevideo*"},
-            {"News", "*bingnews*"},
-            {"OneNote", "*onenote*"},
-            {"Paid Wi-Fi & Cellular", "*oneconnect*"},
-            {"Paint 3D", "*mspaint*"},
-            {"People", "*people*"},
-            {"Phone", "*phone*"},
-            {"Photos", "*photos*"},
-            {"Print 3D", "*print3d*"},
-            {"Scan", "*windowsscan*"},
-            {"Skype Preview", "*skypeapp*"},
-            {"Solitaire Collection", "*solitaire*"},
-            {"Sports", "*bingsports*"},
-            {"Sticky Notes", "*sticky*"},
-            {"Sway", "*sway*"},
-            {"Voice Recorder", "*soundrecorder*"},
-            {"Weather", "*bingweather*"},
-            {"Windows DVD Player", "*dvd*"},
-            {"Xbox", "*xbox*"}
-        };
-
-        private readonly List<AppsModel> _appsModelList = new List<AppsModel>();
+        private static readonly PackageManager PacManager = new PackageManager();
+        private ObservableCollection<AppsModel> _appsModelList = new ObservableCollection<AppsModel>();
 
         public Window1()
         {
             InitializeComponent();
+        }
+
+        private static IEnumerable<AppsModel> GetValidApps()
+        {
+            List<AppsModel> apps = new List<AppsModel>();
+            foreach (Package p in PacManager.FindPackagesForUser(""))
+                try
+                {
+                    if (p.IsFramework || !p.InstalledLocation.Path.Contains(@"\WindowsApps\")) continue;
+                    string appName = PrettyName(p.Id.Name);
+                    string appScriptName = p.Id.FullName;
+                    apps.Add(new AppsModel {Name = appName, ScriptName = appScriptName});
+                }
+                catch (FileNotFoundException)
+                {
+                }
+
+            return apps;
+        }
+
+        private static string PrettyName(string p)
+        {
+            const string ms = "Microsoft.";
+            p = p.Substring(p.IndexOf(ms, StringComparison.OrdinalIgnoreCase) + ms.Length - 1).Replace(".", "");
+            return string.Concat(p.Select((x, i) =>
+                i > 1 && i < p.Length - 1 && (!char.IsLower(x) && char.IsLower(p[i - 1]) ||
+                                              !char.IsLower(x) && char.IsLower(p[i + 1]))
+                    ? $" {x}"
+                    : x.ToString()));
         }
 
         private void AppsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -76,34 +77,53 @@ namespace XTR_Toolbox
                 t.Checked = false;
         }
 
-        private void FillApps()
+        private void DeleteAppsCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            foreach (KeyValuePair<string, string> kvp in AppsList)
-                _appsModelList.Add(new AppsModel {CleanName = kvp.Key, ScriptName = kvp.Value});
+            StackPanelBtns.IsEnabled = false;
+            for (int index = _appsModelList.Count - 1; index >= 0; index--)
+            {
+                AppsModel t = _appsModelList[index];
+                if (!t.Checked) continue;
+                IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> depOpe =
+                    PacManager.RemovePackageAsync(t.ScriptName);
+                ManualResetEvent opCompletedEvent = new ManualResetEvent(false);
+                depOpe.Completed = (depProgress, status) => { opCompletedEvent.Set(); };
+                opCompletedEvent.WaitOne();
+                switch (depOpe.Status)
+                {
+                    case AsyncStatus.Error:
+                        MessageBox.Show($"Error code: {depOpe.ErrorCode}\n" +
+                                        $"Error text: {depOpe.GetResults().ErrorText}");
+                        break;
+                    case AsyncStatus.Canceled:
+                        MessageBox.Show(@"Removal canceled");
+                        break;
+                    case AsyncStatus.Completed:
+                    case AsyncStatus.Started:
+                        _appsModelList.Remove(t);
+                        break;
+                    default:
+                        MessageBox.Show($"{t.Name} removal failed");
+                        break;
+                }
+            }
+
+            StackPanelBtns.IsEnabled = true;
         }
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
 
-        private void ProcessAppsCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void RestoreAppsCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (!(e.Command is RoutedCommand eCommand)) return;
-            bool delCmd = eCommand == WinAppsCmd.DeleteApps;
             StackPanelBtns.IsEnabled = false;
             string psPath = Path.Combine(Path.GetTempPath(), "Win_Apps_Worker.ps1");
             try
             {
-                using (StreamWriter printText = File.CreateText(psPath))
+                using (StreamWriter fText = File.CreateText(psPath))
                 {
-                    if (delCmd)
-                        foreach (AppsModel t in _appsModelList)
-                        {
-                            if (!t.Checked) continue;
-                            printText.WriteLine("get-appxpackage " + t.ScriptName + " | remove-appxpackage");
-                        }
-                    else
-                        printText.WriteLine(
-                            @"Get-AppXPackage | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register """ +
-                            @"$($_.InstallLocation)\AppXManifest.xml""}");
+                    string restoreApps =
+                        $@"Get-AppXPackage -AllUsers | Foreach {{Add-AppxPackage -DisableDevelopmentMode -Register ""$($_.InstallLocation)\AppXManifest.xml""}}";
+                    fText.WriteLine(restoreApps);
                 }
 
                 CustomProc.StartProc("powershell.exe", "\"{ Set-ExecutionPolicy Bypass }; clear; & '" + psPath + "'\"");
@@ -115,13 +135,26 @@ namespace XTR_Toolbox
             }
         }
 
+        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e) =>
+            CollectionViewSource.GetDefaultView(LbApps.ItemsSource).Refresh();
+
         private void UninstallCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e) =>
             e.CanExecute = LbApps.Items.Cast<AppsModel>().Any(item => item.Checked);
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private bool UserFilter(object item)
         {
-            FillApps();
+            if (TbSearch.Text.Length == 0) return true;
+            return ((AppsModel) item).Name.IndexOf(TbSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void Window_ContentRendered(object sender, EventArgs e)
+        {
+            Shared.FitWindow.Init(Width, Height);
+            _appsModelList = new ObservableCollection<AppsModel>(GetValidApps());
             LbApps.ItemsSource = _appsModelList;
+            CollectionView view = (CollectionView) CollectionViewSource.GetDefaultView(LbApps.ItemsSource);
+            view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            view.Filter = UserFilter;
         }
 
         private class AppsModel : INotifyPropertyChanged
@@ -133,19 +166,18 @@ namespace XTR_Toolbox
             public bool Checked
             {
                 [UsedImplicitly] get => _checked;
-                set
-                {
-                    if (_checked == value) return;
-                    _checked = value;
-                    NotifyPropertyChanged(nameof(Checked));
-                }
+                set => SetField(ref _checked, value);
             }
 
-            public string CleanName { [UsedImplicitly] get; set; }
+            public string Name { [UsedImplicitly] get; set; }
             public string ScriptName { [UsedImplicitly] get; set; }
 
-            private void NotifyPropertyChanged(string propName) =>
+            private void SetField(ref bool field, bool value, [CallerMemberName] string propName = null)
+            {
+                if (field == value) return;
+                field = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            }
         }
     }
 
