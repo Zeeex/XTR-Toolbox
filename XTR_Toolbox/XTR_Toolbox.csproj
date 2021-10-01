@@ -236,7 +236,7 @@
       <Version>2.3.1.953</Version>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes.MahApps">
-      <Version>0.0.11</Version>
+      <Version>0.1.9</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
