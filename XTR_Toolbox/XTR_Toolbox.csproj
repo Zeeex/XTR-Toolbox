@@ -233,7 +233,7 @@
       <Version>1.6.1</Version>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes">
-      <Version>2.3.1.953</Version>
+      <Version>4.2.1</Version>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes.MahApps">
       <Version>0.1.9</Version>
