@@ -96,7 +96,7 @@ namespace XTR_Toolbox
                                         $"Error text: {depOpe.GetResults().ErrorText}");
                         break;
                     case AsyncStatus.Canceled:
-                        MessageBox.Show(@"Removal canceled");
+                        MessageBox.Show(@"Removal cancelled.");
                         break;
                     case AsyncStatus.Completed:
                     case AsyncStatus.Started:
