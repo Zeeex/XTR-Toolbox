@@ -21,7 +21,7 @@ Portable tool to tweak, clean and optimize Windows.
 
 ## Supported platforms:
 - Windows 10, Windows 11 - x64 only (Use **v2.1** for x32)
-- .Net Framework: 4.8+ (Included with Windows 10 1903+)
+- .Net Framework: 4.8 (Included with Windows 10 1903+)
 - (Note: **Windows 7 && Windows 8** support is deprecated)
 
 ## Features Overview:
@@ -98,17 +98,21 @@ Software manager:
 - Batch software installer
 - More control over force uninstalling
 - Detection of different installers and uninstallers (Inno, NSIS, Msi,...)
+
 Services manager:
 - Preset services changer (Batch services changes based on definition file)
 - Services progress bar when changing
 - Better error handling
 - Add color coding for easier management of their change severity and recommendation
 - Add memory usage for running services
+
 Autoruns manager:
 - Check startup entries against known definition file for their validity (hosted on github)
 - More options when creating a new startup entry
+
 Junk Files Cleaner:
 - Improve scanning process (offer to cancel, improve scan progress)
+
 General:
 - Add a post scan / clean / tweak option (like restarting / shutting down PC)
 - Add a CLI interface for all tools
@@ -132,7 +136,7 @@ General:
 Latest release [page](https://github.com/Zeeex/XTR-Toolbox/releases/latest).
 
 ## Build tools
-- Visual Studio 2019 (Probably works on older versions too)
+- Visual Studio 2022 (Probably works on older versions too)
 - Windows 10 SDK (Project requests by default 10.0.18362.0 (Win 1903)) - Integrated into project
 
 ## Reviews
